@@ -35,6 +35,25 @@
  * ====================
  */
 
+
+// TEST
+ // Following goes in install script
+//$installed_wallet_settings = array(
+//     'vrsc' => array(
+//         'rpc_user' => 'user4123439994',
+//         'rpc_pass' => 'passf399cbdef8395ee5924e3893fd6da9b45b0ab0c4ef428e88ef6cf78c9ce1312ccb',
+//         'port' => '27486',
+//     ),
+//     'arrr' => array(
+//        'rpc_user' => 'userPIRATES',
+//        'rpc_pass' => 'pass_PIRATES',
+//        'port' => '1111',
+//     )
+// );
+//$installed_wallet_settings_serialized = serialize($installed_wallet_settings);
+//file_put_contents('veruschaintools_config.php', '<?php '.$installed_wallet_settings_serialized);
+// End TEST
+
 global $installed_wallets;
 require_once 'easybitcoin.php';
 // Config is created during installation script.
