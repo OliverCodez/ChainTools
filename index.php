@@ -7,6 +7,7 @@
  * @author   J Oliver Westbrook <johnwestbrook@pm.me>
  * @copyright Copyright (c) 2019, John Oliver Westbrook
  * @link     https://github.com/joliverwestbrook/VerusPHPTools
+ * @version 0.2.0
  * 
  * ====================
  * 
