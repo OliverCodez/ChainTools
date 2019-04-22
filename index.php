@@ -155,5 +155,51 @@ function verus_chain_tools_go_verus( $coin, $command, $hash, $amt ) {
             };
             $tbal = array_sum( $tbal );
             return $tbal;
+            break;
+        case 'show_taddr':
+            // Return the transparent address set
+            return $installed_wallets[$coin][ 'taddr' ];
+        case 'show_zaddr':
+            // Return the private address set
+            return $installed_wallets[$coin][ 'zaddr' ];
+        case 'cashout_t':
+            // Run transparent withdraw command and return the conf
+            if ( strtolower($coin) == 'arrr' ) {
+                return "Transparent TXs Not Supported";
+            }
+            else if ( strlen($installed_wallets[$coin][ 'taddr' ]) > 10 ) {
+                return $verus->sendtoaddress($installed_wallets[$coin][ 'taddr' ],$verus->getbalance(),"Cashout_" . time() . "","VerusPay",true);
+            }
+            else {
+                return "No Address Set!";
+            }
+            break;
+        case 'cashout_z':
+            // Run private withdraw command and return the conf
+            if ( strlen($installed_wallets[$coin][ 'zaddr' ]) > 10 ) {
+                $zaddresses = $verus->z_listaddresses();
+                $results = array();
+                foreach ( $zaddresses as $zaddress ) {
+                    $zbal = $verus->z_getbalance( $zaddress );
+                    $zbal = ($zbal - 0.00010000);
+                    if ( $zbal > 0.0000001 ) {
+                        $zbal = (float)number_format($zbal,8);
+                        $txdata = array(
+                            array(
+                            'address' => $installed_wallets[$coin][ 'zaddr' ],
+                            'amount' => $zbal)
+                        );
+                        $results[$zaddress] = array(
+                            'cashout_address' => $installed_wallets[$coin][ 'zaddr' ],
+                            'amount' => $zbal,
+                            'opid' => $verus->z_sendmany($zaddress, $txdata),
+                        );
+                    }
+                };
+                return json_encode( $results, true );
+            }
+            else {
+                return "No Address Set!";
+            }
     }
 }
