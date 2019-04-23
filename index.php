@@ -141,11 +141,16 @@ function verus_chain_tools_go_verus( $coin, $command, $hash, $amt ) {
             break;
         case 'getztotalbalance':
             $zaddresses = $verus->z_listaddresses();
-            $zbal = array();
-            foreach ( $zaddresses as $zaddress ) {
-                $zbal[] = $verus->z_getbalance( $zaddress );
-            };
-            return array_sum( $zbal );
+            if ( json_encode( $zaddresses, true ) == 'false' ) {
+                return null;
+            }
+            else {
+                $zbal = array();
+                foreach ( $zaddresses as $zaddress ) {
+                    $zbal[] = $verus->z_getbalance( $zaddress );
+                };
+                return array_sum( $zbal );
+            }
             break;
         case 'gettotalbalance':
             $tbal = array();
