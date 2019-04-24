@@ -35,23 +35,26 @@
  * 
  * ====================
  */
+$access_pass = $_POST['access'];
 
 global $installed_wallets;
 require_once 'easybitcoin.php';
 // Config is created during installation script.
 $installed_wallets = ltrim(file_get_contents('veruschaintools_config.php'), '<?php ');
-$installed_wallets = unserialize($installed_wallets);
-
-if ( isset( $_GET['coin'] ) ){
-    $coin = $_GET['coin'];
+$installed_wallets = unserialize( $installed_wallets );
+if ( $installed_wallets['access']['pass'] != $access_pass ) {
+    die();
+}
+if ( isset( $_POST['coin'] ) ){
+    $coin = $_POST['coin'];
 }
 else {
     // Set default coin to Verus Coin VRSC
     $coin = 'vrsc';
 }
-$exec = $_GET['exec'];
-$hash = $_GET['hash'];
-$amt = $_GET['amt'];
+$exec = $_POST['exec'];
+$hash = $_POST['hash'];
+$amt = $_POST['amt'];
 
 if ($exec == 'test'){
     echo verus_chain_tools_conn_stat( $coin );
