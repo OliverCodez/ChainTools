@@ -1,4 +1,5 @@
 <?php
+global $version = '0.2.1';
 /**
  * Verus Chain Tools
  *
@@ -35,15 +36,11 @@
  * 
  * ====================
  */
-$version = '0.2.1';
 if ( isset( $_POST['access'] ) ) {
     $access_pass = $_POST['access'];
 }
 else {
     $access_pass = null;
-}
-if ( isset( $_POST['ver'] ) ) {
-    echo $version;
 }
 global $installed_wallets;
 require_once 'easybitcoin.php';
@@ -101,9 +98,13 @@ function verus_chain_tools_conn_stat( $coin ) {
  */
 function verus_chain_tools_go_verus( $coin, $command, $hash, $amt ) {
     global $installed_wallets;
+    global $version;
     $verus = new Bitcoin( $installed_wallets[$coin][ 'rpc_user' ], $installed_wallets[$coin][ 'rpc_pass' ], 'localhost', $installed_wallets[$coin]['port'] );
     // Execute commands availabel for to interact with Verus Daemon
     switch ( $command ) {
+        case 'ver':
+            return $version;
+            break;
         case 'getnewaddress':
             return $verus->getnewaddress();
             break;
