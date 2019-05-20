@@ -4,10 +4,10 @@
  *
  * @category Cryptocurrency
  * @package  VerusChainTools
- * @author   J Oliver Westbrook <johnwestbrook@pm.me>
+ * @author   Oliver Westbrook <johnwestbrook@pm.me>
  * @copyright Copyright (c) 2019, John Oliver Westbrook
  * @link     https://github.com/joliverwestbrook/VerusPHPTools
- * @version 0.2.0
+ * @version 0.2.1
  * 
  * ====================
  * 
@@ -35,8 +35,16 @@
  * 
  * ====================
  */
-$access_pass = $_POST['access'];
-
+$version = '0.2.1';
+if ( isset( $_POST['access'] ) ) {
+    $access_pass = $_POST['access'];
+}
+else {
+    $access_pass = null;
+}
+if ( isset( $_POST['ver'] ) ) {
+    echo $version;
+}
 global $installed_wallets;
 require_once 'easybitcoin.php';
 // Config is created during installation script.
@@ -52,9 +60,24 @@ else {
     // Set default coin to Verus Coin VRSC
     $coin = 'vrsc';
 }
-$exec = $_POST['exec'];
-$hash = $_POST['hash'];
-$amt = $_POST['amt'];
+if ( isset( $_POST['exec'] ) ) {
+    $exec = $_POST['exec'];
+}
+else {
+    $exec = null;
+}
+if ( isset( $_POST['hash'] ) ) {
+    $hash = $_POST['hash'];
+}
+else {
+    $hash = null;
+}
+if ( isset( $_POST['amt'] ) ) {
+    $amt = $_POST['amt'];
+}
+else {
+    $amt = null;
+}
 
 if ($exec == 'test'){
     echo verus_chain_tools_conn_stat( $coin );
