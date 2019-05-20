@@ -1,5 +1,6 @@
 <?php
-global $version = '0.2.1';
+global $version;
+$version = '0.2.8';
 /**
  * Verus Chain Tools
  *
@@ -8,7 +9,7 @@ global $version = '0.2.1';
  * @author   Oliver Westbrook <johnwestbrook@pm.me>
  * @copyright Copyright (c) 2019, John Oliver Westbrook
  * @link     https://github.com/joliverwestbrook/VerusPHPTools
- * @version 0.2.1
+ * @version 0.2.8
  * 
  * ====================
  * 
@@ -105,18 +106,44 @@ function verus_chain_tools_go_verus( $coin, $command, $hash, $amt ) {
         case 'ver':
             return $version;
             break;
+        case 'generate':
+            if ( $hash == 'false' ) {
+                $verus->setgenerate( false, (int)$amt );
+            }
+            if ( $hash == 'true' ) {
+                $verus->setgenerate( true, (int)$amt );
+            }
+            break;
+        case 'generatestat':
+            $genstat = $verus->getgenerate();
+            if ( $genstat['staking'] == 'true' ) {
+                $stake = 1;
+            }
+            else {
+                $stake = 0;
+            }
+            if ( $genstat['generate'] == 'true' ) {
+                $mine = 1;
+                $threads = $genstat['numthreads'];
+            }
+            else {
+                $mine = 0;
+                $threads = 0;
+            }
+            return $stake.':'.$mine.':'.$threads;
+            break;
         case 'getnewaddress':
             return $verus->getnewaddress();
             break;
         case 'getnewsapling':
-            return $verus->z_getnewaddress( sapling );
+            return $verus->z_POSTnewaddress( sapling );
             break;
         case 'getbalance':
             if ( ! isset( $hash ) ) {
                 return "Error 2 - Hash Function";
             }
             else {
-                return $verus->z_getbalance( $hash );
+                return $verus->z_POSTbalance( $hash );
             }
         break;
         case 'lowestconfirm':
@@ -174,7 +201,7 @@ function verus_chain_tools_go_verus( $coin, $command, $hash, $amt ) {
             else {
                 $zbal = array();
                 foreach ( $zaddresses as $zaddress ) {
-                    $zbal[] = $verus->z_getbalance( $zaddress );
+                    $zbal[] = $verus->z_POSTbalance( $zaddress );
                 };
                 return array_sum( $zbal );
             }
@@ -184,7 +211,7 @@ function verus_chain_tools_go_verus( $coin, $command, $hash, $amt ) {
             $tbal[] = $verus->getbalance();
             $zaddresses = $verus->z_listaddresses();
             foreach ( $zaddresses as $zaddress ) {
-                $tbal[] = $verus->z_getbalance( $zaddress );
+                $tbal[] = $verus->z_POSTbalance( $zaddress );
             };
             $tbal = array_sum( $tbal );
             return $tbal;
@@ -213,7 +240,7 @@ function verus_chain_tools_go_verus( $coin, $command, $hash, $amt ) {
                 $zaddresses = $verus->z_listaddresses();
                 $results = array();
                 foreach ( $zaddresses as $zaddress ) {
-                    $zbal = $verus->z_getbalance( $zaddress );
+                    $zbal = $verus->z_POSTbalance( $zaddress );
                     $zbal = ($zbal - 0.00010000);
                     if ( $zbal > 0.0000001 ) {
                         $zbal = (float)number_format($zbal,8);
