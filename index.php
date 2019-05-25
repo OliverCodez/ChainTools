@@ -1,6 +1,6 @@
 <?php
 global $version;
-$version = '0.2.8';
+$version = '0.2.9';
 /**
  * Verus Chain Tools
  *
@@ -9,7 +9,7 @@ $version = '0.2.8';
  * @author   Oliver Westbrook <johnwestbrook@pm.me>
  * @copyright Copyright (c) 2019, John Oliver Westbrook
  * @link     https://github.com/joliverwestbrook/VerusPHPTools
- * @version 0.2.8
+ * @version 0.2.9
  * 
  * ====================
  * 
@@ -48,9 +48,11 @@ require_once 'easybitcoin.php';
 // Config is created during installation script.
 $installed_wallets = ltrim(file_get_contents('veruschaintools_config.php'), '<?php ');
 $installed_wallets = unserialize( $installed_wallets );
-if ( $installed_wallets['access']['pass'] != $access_pass ) {
-    die();
-}
+// TEST //
+//if ( $installed_wallets['access']['pass'] != $access_pass ) {
+//    die();
+//}
+// - //
 if ( isset( $_POST['coin'] ) ){
     $coin = $_POST['coin'];
 }
@@ -136,14 +138,14 @@ function verus_chain_tools_go_verus( $coin, $command, $hash, $amt ) {
             return $verus->getnewaddress();
             break;
         case 'getnewsapling':
-            return $verus->z_POSTnewaddress( sapling );
+            return $verus->z_getnewaddress( 'sapling' );
             break;
         case 'getbalance':
             if ( ! isset( $hash ) ) {
                 return "Error 2 - Hash Function";
             }
             else {
-                return $verus->z_POSTbalance( $hash );
+                return $verus->z_getbalance( $hash );
             }
         break;
         case 'lowestconfirm':
@@ -201,7 +203,7 @@ function verus_chain_tools_go_verus( $coin, $command, $hash, $amt ) {
             else {
                 $zbal = array();
                 foreach ( $zaddresses as $zaddress ) {
-                    $zbal[] = $verus->z_POSTbalance( $zaddress );
+                    $zbal[] = $verus->z_getbalance( $zaddress );
                 };
                 return array_sum( $zbal );
             }
@@ -211,7 +213,7 @@ function verus_chain_tools_go_verus( $coin, $command, $hash, $amt ) {
             $tbal[] = $verus->getbalance();
             $zaddresses = $verus->z_listaddresses();
             foreach ( $zaddresses as $zaddress ) {
-                $tbal[] = $verus->z_POSTbalance( $zaddress );
+                $tbal[] = $verus->z_getbalance( $zaddress );
             };
             $tbal = array_sum( $tbal );
             return $tbal;
@@ -240,7 +242,7 @@ function verus_chain_tools_go_verus( $coin, $command, $hash, $amt ) {
                 $zaddresses = $verus->z_listaddresses();
                 $results = array();
                 foreach ( $zaddresses as $zaddress ) {
-                    $zbal = $verus->z_POSTbalance( $zaddress );
+                    $zbal = $verus->z_getbalance( $zaddress );
                     $zbal = ($zbal - 0.00010000);
                     if ( $zbal > 0.0000001 ) {
                         $zbal = (float)number_format($zbal,8);
@@ -260,6 +262,47 @@ function verus_chain_tools_go_verus( $coin, $command, $hash, $amt ) {
             }
             else {
                 return "No Address Set!";
+            }
+            break;
+        case 'pbaas':
+            if ( ! isset( $hash ) ) {
+                return "Error - Hash Required";
+            }
+            else {
+                $serviceuser = shell_exec('stat -c "%U" /opt/verus');
+                $serviceuser = trim($serviceuser);
+                chdir('/opt/verus');
+                $hash = json_decode($hash,true);
+                //sample: hash={"chain":"WHALE","mine":"0","proc":"0","mint":"0"}
+                //sample: echo $results['chain'];
+                if ( empty( $hash['chain'] ) ) {
+                    $a = 'VRSCTEST';
+                }
+                else {
+                    $a = $hash['chain'];
+                }
+                if ( $hash['mine'] == 1 ) {
+                    $b = ' -gen';
+                    if ( empty( $hash['proc'] ) ) {
+                        $c = ' -genproclimit=1';
+                    }
+                    else {
+                        $c = ' -genproclimit='.$hash['proc'];
+                    }
+                    
+                }
+                else {
+                    $b = '';
+                    $c = '';
+                }
+                if ( $hash['mint'] == 1 ) {
+                    $d = ' -mint';
+                }
+                else {
+                    $d = '';
+                }
+                echo "screen -d -m sudo -u $serviceuser /opt/verus/start.sh -chain=$a$b$c$d";
+                //shell_exec("screen -d -m sudo -u $serviceuser /opt/verus/start.sh -chain=$a$b$c$d");
             }
     }
 }

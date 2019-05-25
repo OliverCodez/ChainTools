@@ -2,7 +2,7 @@
 
  - Contributors: Oliver Westbrook
  - Copyright: Copyright (c) 2019, John Oliver Westbrook 
- - Version: 0.2.8
+ - Stable Version: 0.2.9
 
 ## The MIT License (MIT)
  
