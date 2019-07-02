@@ -65,65 +65,73 @@ if ( file_exists( 'install.php' ) ) {
         die();
     }
 }
-
-// Primary daemon server location (usually on same server, localhost)
-$vct_url = 'localhost';
-include_once( 'verusclass.php' );
-include_once( 'config.php' );
-$vct_config = unserialize($vct_config);
-// This unserialized variable works as follows:
-//
-// access code is found at: $vct_config['code']
-// added chains are in an array under: $vct_config['chain']
-// payout addresses are given the key leading with lowercase chain name, followed by payout type: e.g. $vct_config['vrsc_z'] is VerusCoin Z address
-// unsupported or unentered payout types are just blank entries, tools utilizing this Api should ignore empty payout values
-
-/**
- * 
- * Get php input in json format for handling api calls
- * 
- * */
-if ( ! empty( $_GET['test'] ) ) {
-    echo 'reachable';
-}
-$vct_data = json_decode( file_get_contents( 'php://input' ), true);
-if ( $vct_data['code'] != $vct_config['code'] ) {
-    die( 'access_code_err' ); // Die if no access code
-}
-if ( empty( $vct_data['chain'] ) ) {
-    die( 'chain_missing_err' );
-}
-// TODO: Function to check for chain on local wallet and return result (error out if non-exist or down)
-//
-//
-if ( empty( $vct_data['exec'] ) ) {
-    die( 'exec_missing_err' );
-}
-
-// Build data array for functions with posted chain data
-// TODO: Create more reliable method of finding installed chains: use config after install and if not search and update config if found
-// TODO: add function to allow api call to signal a new chain is being instantiated
-$vct_chain = strtoupper( $vct_data['chain'] );
-if ( $vct_chain == 'PBAAS' ) { // If parent pbaas chain, set director (only necessary if parent has unique location from pbaas chains, specific testing, etc)
-    $vct_dir = '/home/user/.komodo/VRSCTEST'; // temporary method
-    $vct_name = 'VRSCTEST';
+// Check for deprecated version (support ends Sep 1, 2019)
+if ( isset( $_POST['access'] ) ) {
+    $access_pass = $_POST['access'];
+    include_once( 'deprecated-index.php' );
 }
 else {
-    $vct_dir = trim( shell_exec( 'find /opt -type d -name "'.$vct_chain.'"' ) );
-    $vct_name = $vct_chain;
+    // Primary daemon server location (usually on same server, localhost)
+    $vct_url = 'localhost';
+    include_once( 'verusclass.php' );
+    include_once( 'config.php' );
+    $vct_config = unserialize($vct_config);
+    // This unserialized variable works as follows:
+    //
+    // access code is found at: $vct_config['code']
+    // added chains are in an array under: $vct_config['chain']
+    // payout addresses are given the key leading with lowercase chain name, followed by payout type: e.g. $vct_config['vrsc_z'] is VerusCoin Z address
+    // unsupported or unentered payout types are just blank entries, tools utilizing this Api should ignore empty payout values
+
+    /**
+    * 
+    * Get php input in json format for handling api calls
+    * 
+    * */
+    // Simple test function for admins
+    if ( ! empty( $_GET['test'] ) ) {
+        echo 'reachable';
+    }
+    // Main data getter
+    $vct_data = json_decode( file_get_contents( 'php://input' ), true);
+    if ( $vct_data['code'] != $vct_config['code'] ) {
+        die( 'access_code_err' ); // Die if no access code
+    }
+    if ( empty( $vct_data['chain'] ) ) {
+        die( 'chain_missing_err' );
+    }
+    // TODO: Function to check for chain on local wallet and return result (error out if non-exist or down)
+    //
+    //
+    if ( empty( $vct_data['exec'] ) ) {
+        die( 'exec_missing_err' );
+    }
+
+    // Build data array for functions with posted chain data
+    // TODO: Create more reliable method of finding installed chains: use config after install and if not search and update config if found
+    // TODO: add function to allow api call to signal a new chain is being instantiated
+    $vct_chain = strtoupper( $vct_data['chain'] );
+    if ( $vct_chain == 'PBAAS' ) { // If parent pbaas chain, set director (only necessary if parent has unique location from pbaas chains, specific testing, etc)
+        $vct_dir = '/home/user/.komodo/VRSCTEST'; // temporary method
+        $vct_name = 'VRSCTEST';
+    }
+    else {
+        $vct_dir = trim( shell_exec( 'find /opt -type d -name "'.$vct_chain.'"' ) );
+        $vct_name = $vct_chain;
+    }
+    $vct_data = array_merge( $vct_data, array(
+        'vct_proto' => 'http',
+        'vct_url' => $vct_url,
+        'vct_dir' => $vct_dir,
+        'vct_user' => trim( substr( shell_exec( 'cat ' . $vct_dir . '/' . $vct_name . '.conf | grep "rpcuser="' ), strlen( 'rpcuser=' ) ) ),
+        'vct_pass' => trim( substr( shell_exec( 'cat ' . $vct_dir . '/' . $vct_name . '.conf | grep "rpcpassword="' ), strlen( 'rpcpassword=' ) ) ),
+        'vct_port' => trim( substr( shell_exec( 'cat ' . $vct_dir . '/' . $vct_name . '.conf | grep "rpcport="' ), strlen( 'rpcport=' ) ) ),
+    ) );
+    /**
+    *  Execute the function (data points: code, chain, exec, hash, opt)
+    */
+    echo json_encode( array( 'exec' => $vct_data['exec'], 'result' => verigate_go( $vct_data ) ), true );
 }
-$vct_data = array_merge( $vct_data, array(
-    'vct_proto' => 'http',
-    'vct_url' => $vct_url,
-    'vct_dir' => $vct_dir,
-    'vct_user' => trim( substr( shell_exec( 'cat ' . $vct_dir . '/' . $vct_name . '.conf | grep "rpcuser="' ), strlen( 'rpcuser=' ) ) ),
-    'vct_pass' => trim( substr( shell_exec( 'cat ' . $vct_dir . '/' . $vct_name . '.conf | grep "rpcpassword="' ), strlen( 'rpcpassword=' ) ) ),
-    'vct_port' => trim( substr( shell_exec( 'cat ' . $vct_dir . '/' . $vct_name . '.conf | grep "rpcport="' ), strlen( 'rpcport=' ) ) ),
-) );
-/**
- *  Execute the function (data points: code, chain, exec, hash, opt)
- */
-echo json_encode( array( 'exec' => $vct_data['exec'], 'result' => verigate_go( $vct_data ) ), true );
 
 /**
  *  Primary data and exec function

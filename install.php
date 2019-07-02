@@ -1,4 +1,6 @@
 <?php
+// Leading, non-zero number of version - used for compatibility checks in the main scripts
+$_version = '4';
 /**
  * VerusChainTools Installer
  * 
@@ -43,7 +45,8 @@
  * 
  * ====================
  */
-$instString = 'v040' . rand_chars( 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890', 68, TRUE );
+$instString = $_version . rand_chars( 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890', 71, TRUE );
+// TODO: Build function to check for Verus daemon as minimun prerequisite for installation
 function rand_chars($c, $l, $u = FALSE) {
     if ( !$u ) {
         for ($s = '', $i = 0, $z = strlen($c)-1; $i < $l; $x = rand(0,$z), $s .= $c{$x}, $i++);
