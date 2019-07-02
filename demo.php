@@ -59,6 +59,8 @@ error_reporting(E_ALL);
 
 $_exec = null;
 $_chain = null;
+$_hash1_raw = null;
+$_hash2_raw = null;
 $_hash = null;
 $_opt = null;
 $raw_data = null;
@@ -108,12 +110,43 @@ if ( !empty( $_GET['exec'] ) || !empty( $_POST['exec'] ) ) {
     else if ( !empty( $_POST['exec'] ) ) {
         $_exec = $_POST['exec'];
         $_chain = $_POST['chain'];
-        $_hash = json_decode( $_POST['hash'], true );
+        if ( !empty( $_POST['hash1'] ) ) {
+            $_hash1_raw = $_POST['hash1'];
+            $_hash1 = explode( ',', $_hash1_raw );
+            if ( !empty( $_POST['hash2'] ) ) {
+                $_hash2_raw = $_POST['hash2'];
+                preg_match_all('/(.*?):\s?(.*?)(,|$)/', $_hash2_raw, $matches);
+                $_hash2 = array_combine(array_map('trim', $matches[1]), $matches[2]);
+                $_hash = array_merge(
+                    $_hash1,
+                    array(
+                        array(
+                            $_hash2
+                        )
+                    )
+                );
+            }
+            else {
+                $_hash = $_hash1;
+            }
+        }
+        if ( empty( $_POST['hash1'] ) && !empty( $_POST['hash2'] ) ) {
+            $_hash2_raw = $_POST['hash2'];
+            preg_match_all('/(.*?):\s?(.*?)(,|$)/', $_hash2_raw, $matches);
+            $_hash2 = array_combine(array_map('trim', $matches[1]), $matches[2]);
+            $_hash = array(
+                array(
+                    $_hash2
+                )
+                );
+        }
         $_opt = $_POST['opt'];
     }
 
-    // GET chain defaults to PBAAS in this sample, but can be changed to another default
-    if ( empty( $_chain ) ) { $_chain = 'PBAAS'; } else { $_chain = strtoupper( $_chain ); }
+    // GET chain defaults to VRSCTEST in this sample, but can be changed to another default
+    if ( empty( $_chain ) ) { $_chain = 'VRSCTEST'; } else { $_chain = strtoupper( $_chain ); }
+    if ( empty( $_hash ) ) { $_hash = null; } 
+    if ( empty( $_opt ) ) { $_opt = null; }
     $data = array_merge( $data, array(
         'chain' => $_chain,
         'exec'  => $_exec,
@@ -159,25 +192,229 @@ function vg_go( $url, $data ) {
     curl_close($ch);
 }
 ?>
-<html>
+<html lang="en">
 <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.0/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/js/bootstrap.min.js"></script>
+    <title>VerusChainTools Demo-er..er</title>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <style>
+        body {
+            max-width: 1200px;
+            margin: auto;
+            padding: 20px 10px;
+        }
+        h2 {
+            display: block;
+            font-size: 2.4rem;
+            padding: 20px 40px;
+        }
+        header {
+            height: 100px;
+            font-family: arial;
+            font-size: 4rem;
+            line-height: 100px;
+            font-weight: bold;
+            text-align: center;
+            border-bottom: 1px solid #545454;
+            padding: 10px;
+            margin-bottom: 40px;
+        }
+        main {
+            padding: 20px;
+            font-family: arial;
+            font-size: 1.4rem;
+        }
+        .content_top {
+            display: block;
+            float: none;
+            position: relative;
+        }
+        .return_area {
+            display: block;
+            position: relative;
+            word-wrap: anywhere;
+            background: whitesmoke;
+            padding: 40px;
+            border-radius: 10px;
+            font-size:1.6rem;
+            color: #000;
+        }
+        .form_block-outer {
+            border-top: solid 10px #545454;
+            border-bottom: solid 10px #545454;
+            border-radius: 10px;
+            border-left: 1px solid #545454;
+            border-right: 1px solid #545454;
+            margin: 40px auto;
+            margin-top:0;
+            max-width: 1000px;
+            display: block;
+            position: relative;
+            float: none;
+        }
+        .form_block-outer > p:first-child {
+            font-weight: bold;
+            font-size: 2.2rem;
+            text-align: center;
+            display: block;
+            float: none;
+            margin: 0 auto;
+            width: 100%;
+            padding: 5px 0;
+        }
+        #demo {
+            display: block;
+            width: 100%;
+        }
+        .add_chain_container {
+            display: block;
+            float: none;
+            margin: 20px auto;
+            height: 60px;
+            width: 230px;
+        }
+        .submit_container {
+            margin: 30px auto;
+            border-top: solid 1px #545454;
+            padding-top: 40px;
+        }
+        .submit_button {
+            display: block;
+            float: none;
+            width: 180px;
+            background: #FB5656;
+            border:1px solid #FB5656;
+            border-radius:5px;
+            padding: 5px;
+            color: #fff;
+            font-size: 2rem;
+            font-weight: bold;
+            margin: 5px auto;
+            transition:all 0.5s ease;
+        }
+        .submit_button:hover {
+            background:#ffffff;
+            color:#FB5656;
+        }
+         footer {
+            border-top: 1px solid #545454;
+        }
+        #instructions_button {
+            cursor:pointer;
+            font-size: 2rem;
+            text-align: center;
+        }
+        #instructions {
+            height:0;
+            overflow: hidden;
+            transition: all 0.5s ease;
+        }
+        .height_auto {
+            height:100% !important;
+        }
+        input[type=text] {
+            background: none;
+            border: 1px solid #5353;
+            border-radius: 10px;
+            height: 60px;
+            padding: 10px;
+            line-height: 40px;
+            margin: 10px auto;
+            display: block;
+            min-width: 260px;
+            max-width: 600px;
+            width: 100%;
+            font-size: 2rem;
+        }
+        textarea {
+            background: none;
+            border: 1px solid #5353;
+            border-radius: 10px;
+            min-height: 200px;
+            padding: 10px;
+            line-height: 2.5rem;
+            margin: 10px auto;
+            display: block;
+            min-width: 260px;
+            max-width: 600px;
+            width: 100%;
+            font-size: 2rem;
+        }
+        @media (max-width:767px) {
+            header {
+                min-height: 100px;
+                height: auto;
+                font-size: 2.5rem;
+                line-height: 3rem;
+            }
+            main {
+                font-size: 1.6rem;
+                padding: 0 5px;
+            }
+            .form_block-outer {
+                padding: 20px 4px;
+            }
+        }
+    </style>
+
 </head>
-<body style="display:block;max-width:calc(100% * .9);background: #545454;margin:0 auto;padding:40px;color:#fff">
-<div style="display:block;font-size: 1.6rem;padding: 20px 40px;">Test a Function:</div>
-  <div style="display:block;position: relative;word-wrap: anywhere;background: whitesmoke;padding: 40px;border-radius: 10px;color:#000">
-    <form action="" method="post">
-      <input type="text" name="exec" value="" placeholder="Enter the command name here">
-      <input type="text" name="chain" value="" placeholder="Enter the chain name here. For now PBAAS is required">
-      <input type="textarea" name="hash" value="" placeholder="Enter the parameters (if any) here, if the format '[{&quot;paramname&quot;:&quot;paramvalue&quot;}]' is expected, simply wrap it in brackets">
-      <input type="text" name="opt" value="" placeholder="Enter any specific item of returned data you want to see on post, for example if you pass the command 'getinfo' and want to see the block height, you'd enter the word blocks here">
-      <input type="submit" value="Go!">
-    </form>
-  </div>
-    <div style="display:block;font-size: 1.6rem;padding: 20px 40px;">Narrowed Return:</div>
-    <div style="display: block;position: relative;word-wrap: anywhere;background: #aeffaf;padding: 40px;border-radius: 10px;font-size: 1.4rem;color:#000"><?php echo $opt_data;?></div>
-    <div style="display:block;font-size: 1.6rem;padding: 20px 40px;">Raw Return:</div>
-    <div style="display:block;position: relative;word-wrap: anywhere;background: whitesmoke;padding: 40px;border-radius: 10px;color:#000"><?php echo $raw_result;?></div>
-    <div style="display:block;font-size: 1.6rem;padding: 20px 40px;">Original Curl Api Call:</div>
-    <div style="display:block;position: relative;word-wrap: anywhere;background: whitesmoke;padding: 40px;border-radius: 10px;color:#000"><?php echo json_encode( $data );?></div>
+<body>
+    <header>
+        <div>Welcome to the VerusChainTools Demo-erer!</div>
+    </header>
+    <main>
+        <div class="content_top">
+            <p>Thank you for installing VerusChainTools and contributing by doing some demos and testing things out.</p>
+            <p>Please let me know if you run into errors or unexpected behaviors! I'm always improving the script and the entire community benefits when people provide feedback.</p>      
+        </div>
+        <h3 id="instructions_button">Instructions (click to expand)</h3>
+        <div class="content_top" id="instructions">
+            <div class="instructions_inner">
+                <p>Using the form below you can create RPC calls against the daemon of your choice. Simply enter the daemon ticker in the Chain field, and at minimum a command in the Exec field.  If the command has parameters you can enter them in the Params field, each separated with a comma, unless it's a more complex json-format param, in which case you will wrap it in brackets (the square ones []) and then use a colon to separate param and value, and commas to separate sets of param/values. An example is provided in the form field.</p>
+                <p></p>
+                <p>Results are shown in the cells above the form, just below these instructions.  If you are confused hit me up on Discord!  Enjoy :)</p>
+            </div>
+        </div>
+        <h2>Narrowed Return:</h2>
+        <div class="return_area" style="background: #aeffaf;"><?php echo $opt_data;?></div>
+        <h2>Raw Return:</h2>
+        <div class="return_area"><?php echo $raw_result;?></div>
+        <h2>Original Curl Api Call:</h2>
+        <div class="return_area"><?php echo json_encode( $data );?></div>
+        <h2>Build a Valid Daemon RPC Command:</h2>
+        <div class="form_block-outer">
+            <form id="demo" name="demo" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>" method="POST">
+                <input type="text" name="exec" value="<?php echo $_exec; ?>" placeholder="Enter the command name here, e.g. getinfo">
+                <input type="text" name="chain" value="<?php echo $_chain; ?>" placeholder="Enter the chain (VRSCTEST if blank). For now VRSCTEST is required">
+                <p style="font-weight: bold;font-size: 2.2rem;text-align: center;display: block;float: none;margin: 0 auto;width: 100%;padding: 5px 0;margin-top: 20px;">Params and Options:</p>
+                <input type="text" name="hash1" value="<?php echo $_hash1_raw; ?>" placeholder="Enter simple param(s) (if required)">
+                <textarea name="hash2" value="<?php echo $_hash2_raw; ?>" placeholder="Enter json params (if any) here, if any. Use the following format > paramname:paramvalue,paramname2:value2"></textarea>
+                <input type="text" name="opt" value="<?php echo $_opt; ?>" placeholder="Specific returned data you want to see, e.g. blocks">
+                <div class="submit_container">
+                    <input class="submit_button" type="submit" value="Go!">
+                </div>
+            </form>
+        </div>
+    </main>
+    <footer>
+    </footer>
+    <script>
+
+        jQuery('#instructions_button').on('click touchstart', function(){
+            jQuery('#instructions').toggleClass('active');
+            if ( jQuery('#instructions').hasClass('active') ) {
+                var newHeight = jQuery(".instructions_inner").height();
+    	        jQuery('#instructions').animate({height:newHeight});
+            }
+            else {
+                jQuery('#instructions').animate({height:'0'});
+            }
+        });
+
+    </script>
 </body>
 </html>

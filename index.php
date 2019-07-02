@@ -111,7 +111,7 @@ else {
     // TODO: Create more reliable method of finding installed chains: use config after install and if not search and update config if found
     // TODO: add function to allow api call to signal a new chain is being instantiated
     $vct_chain = strtoupper( $vct_data['chain'] );
-    if ( $vct_chain == 'PBAAS' ) { // If parent pbaas chain, set director (only necessary if parent has unique location from pbaas chains, specific testing, etc)
+    if ( $vct_chain == 'VRSCTEST' ) { // If parent pbaas chain, set director (only necessary if parent has unique location from pbaas chains, specific testing, etc)
         $vct_dir = '/home/user/.komodo/VRSCTEST'; // temporary method
         $vct_name = 'VRSCTEST';
     }
