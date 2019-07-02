@@ -384,7 +384,7 @@ function vg_go( $url, $data ) {
         <h3 id="instructions_button">Instructions (click to expand)</h3>
         <div class="content_top" id="instructions">
             <div class="instructions_inner">
-                <p>Using the form below you can create RPC calls against the daemon of your choice. Simply enter the daemon ticker in the Chain field, and at minimum a command in the Exec field.  If the command has parameters you can enter them in the Params field, each separated with a comma, unless it's a more complex json-format param, in which case you will wrap it in brackets (the square ones []) and then use a colon to separate param and value, and commas to separate sets of param/values. An example is provided in the form field.</p>
+                <p>Using the form below you can create RPC calls against the daemon of your choice. Simply enter the daemon ticker in the Chain field, and at minimum a command in the Exec field.  If the command has parameters you can enter them in the "simple param(s)" field and then put any json params in the "json params" text area, use a colon to separate param and value, and commas to separate sets of param/values. An example is provided in the form field.</p>
                 <p></p>
                 <p>Results are shown in the cells above the form, just below these instructions.  If you are confused hit me up on Discord!  Enjoy :)</p>
             </div>
