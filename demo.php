@@ -117,6 +117,11 @@ if ( !empty( $_GET['exec'] ) || !empty( $_POST['exec'] ) ) {
                 $_hash2_raw = $_POST['hash2'];
                 preg_match_all('/(.*?):\s?(.*?)(,|$)/', $_hash2_raw, $matches);
                 $_hash2 = array_combine(array_map('trim', $matches[1]), $matches[2]);
+                foreach( $_hash2 as $key => $value ) {
+                    if ( $key == 'memo' ) {
+                        $_hash2[$key] = bin2hex( $value );
+                    }
+                }
                 $_hash = array_merge(
                     $_hash1,
                     array(
@@ -134,6 +139,11 @@ if ( !empty( $_GET['exec'] ) || !empty( $_POST['exec'] ) ) {
             $_hash2_raw = $_POST['hash2'];
             preg_match_all('/(.*?):\s?(.*?)(,|$)/', $_hash2_raw, $matches);
             $_hash2 = array_combine(array_map('trim', $matches[1]), $matches[2]);
+            foreach( $_hash2 as $key => $value ) {
+                if ( $key == 'memo' ) {
+                    $_hash2[$key] = bin2hex( $value );
+                }
+            }
             $_hash = array(
                 array(
                     $_hash2
