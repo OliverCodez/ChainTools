@@ -85,7 +85,9 @@ if ( !empty( $_GET['exec'] ) ) {
     if ( !empty( $_GET['hash'] ) ) { $hash_array = explode(',',$_GET['hash']); }
     //
     // GET Opt is used for various options
-    if ( !empty( $_GET['opt'] ) ) { // Temp for TESTING ONLY - Add form for testing any function
+    if ( !empty( $_GET['opt'] ) ) {
+        $opt_get = $_GET['opt'];
+        if ( $_GET['opt'] == 'zsendtest' ) {
             $hash_array = array(
                 "zs1vzj3r59cumts5gmyx8tw543zf8qwhe05lu5p89juyfq8w58c9mtnt2r7nu4rx2at8qyvzlj8kg0",
                 array(
