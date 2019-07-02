@@ -1,8 +1,8 @@
-# VerusChainTools - PHP Toolkit for Zcash and BTC blockchains
+# VerusChainTools - PHP Toolkit for Zcash and BTC based blockchains
 
  - Contributors: Oliver Westbrook
  - Copyright: Copyright (c) 2019, John Oliver Westbrook 
- - Stable Version: 0.2.9
+ - Stable Version: 0.4.0-beta
 
 ## The MIT License (MIT)
  
