@@ -57,14 +57,15 @@ ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
-$hash_array = null;
-$opt_get = null;
-$chain_get = null;
+$_exec = null;
+$_chain = null;
+$_hash = null;
+$_opt = null;
 $raw_data = null;
 $raw_result = null;
 $opt_data = null;
 
-if ( !empty( $_GET['exec'] ) ) {
+if ( !empty( $_GET['exec'] ) || !empty( $_POST['exec'] ) ) {
     //
     // GET Hash for testing simple calls only (non-complex/json - in 
     // your code you should always pass hash to the data arraay as an array
@@ -77,36 +78,47 @@ if ( !empty( $_GET['exec'] ) ) {
     // To do something like z_sendmany you would have an array of your json formatted
     // data, like so: array("address"=>"theaddress","amount"=>100)
     //
+    // For Example:
+    //                  $_hash = array(
+    //                      "zs1vzj3r59cumts5gmyx8tw543zf8qwhe05lu5p89juyfq8w58c9mtnt2r7nu4rx2at8qyvzlj8kg0",
+    //                          array(
+    //                              array(
+    //                                  "address" => "RQkGsTA3ANtZDS4Pt1UPA2UntDV3RUp1yq",
+    //                                  "amount" => 100,
+    //                              )
+    //                          )
+    //                  );
+    //
+    //
     // This will result in the VCT function as being converted to the appropriate 
     // option set array or json formatted option set.
     // 
     // Here we have the get function for hash, but to test fully you should
-    // build your test array as $hash_array.
-    if ( !empty( $_GET['hash'] ) ) { $hash_array = explode(',',$_GET['hash']); }
-    //
-    // GET Opt is used for various options
-    if ( !empty( $_GET['opt'] ) ) {
-        $opt_get = $_GET['opt'];
-        if ( $_GET['opt'] == 'zsendtest' ) {
-            $hash_array = array(
-                "zs1vzj3r59cumts5gmyx8tw543zf8qwhe05lu5p89juyfq8w58c9mtnt2r7nu4rx2at8qyvzlj8kg0",
-                array(
-                    array(
-                        "address" => "RQkGsTA3ANtZDS4Pt1UPA2UntDV3RUp1yq",
-                        "amount" => 100,
-                    )
-                )
-            );
+    // build your test array as $_hash.
+
+    // Handle request
+    if ( !empty( $_GET['exec'] ) ) {
+        $_exec = $_GET['exec'];
+        $_chain = $_GET['chain'];
+        if ( !empty( $_GET['hash'] ) ) {
+            $_hash = explode(',',$_GET['hash']);
         }
+        $_opt = $_GET['opt'];
     }
-    //
+    else if ( !empty( $_POST['exec'] ) ) {
+        $_exec = $_POST['exec'];
+        $_chain = $_POST['chain'];
+        $_hash = json_decode( $_POST['hash'], true );
+        $_opt = $_POST['opt'];
+    }
+
     // GET chain defaults to PBAAS in this sample, but can be changed to another default
-    if ( empty( $_GET['chain'] ) ) { $chain_get = 'PBAAS'; } else { $chain_get = strtoupper( $_GET['chain'] ); }
+    if ( empty( $_chain ) ) { $_chain = 'PBAAS'; } else { $_chain = strtoupper( $_chain ); }
     $data = array_merge( $data, array(
-        'chain' => $chain_get,
-        'exec'  => $_GET['exec'],
-        'hash'  => $hash_array,
-        'opt'   => $opt_get,
+        'chain' => $_chain,
+        'exec'  => $_exec,
+        'hash'  => $_hash,
+        'opt'   => $_opt,
     ) );
     $raw_data = json_decode( vg_go( $url, $data ), true );
 
@@ -124,7 +136,7 @@ if ( !empty( $_GET['exec'] ) ) {
     $raw_result = $raw_data['result'];
 }
 else {
-    $opt_data = 'Missing Exec Command - Nothing to do!';
+    $opt_data = 'Hmmph. Nothing to do :(';
 }
 function vg_go( $url, $data ) {
     $ch = curl_init();
