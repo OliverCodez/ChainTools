@@ -114,8 +114,8 @@ class rpcVerus {
             'id'     => $this->vct_id
         ) );
         // TODO : Test area
-        return $vct_req;
-        die();
+        //return $vct_req;
+        //die();
         // END
         $vct_c    = curl_init( "{$this->pr}://{$this->h}:{$this->po}" );
         $vct_opt = array(

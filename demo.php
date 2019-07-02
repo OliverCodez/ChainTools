@@ -163,7 +163,16 @@ function vg_go( $url, $data ) {
 <head>
 </head>
 <body style="display:block;max-width:calc(100% * .9);background: #545454;margin:0 auto;padding:40px;color:#fff">
-
+<div style="display:block;font-size: 1.6rem;padding: 20px 40px;">Test a Function:</div>
+  <div style="display:block;position: relative;word-wrap: anywhere;background: whitesmoke;padding: 40px;border-radius: 10px;color:#000">
+    <form action="" method="post">
+      <input type="text" name="exec" value="" placeholder="Enter the command name here">
+      <input type="text" name="chain" value="" placeholder="Enter the chain name here. For now PBAAS is required">
+      <input type="textarea" name="hash" value="" placeholder="Enter the parameters (if any) here, if the format '[{&quot;paramname&quot;:&quot;paramvalue&quot;}]' is expected, simply wrap it in brackets">
+      <input type="text" name="opt" value="" placeholder="Enter any specific item of returned data you want to see on post, for example if you pass the command 'getinfo' and want to see the block height, you'd enter the word blocks here">
+      <input type="submit" value="Go!">
+    </form>
+  </div>
     <div style="display:block;font-size: 1.6rem;padding: 20px 40px;">Narrowed Return:</div>
     <div style="display: block;position: relative;word-wrap: anywhere;background: #aeffaf;padding: 40px;border-radius: 10px;font-size: 1.4rem;color:#000"><?php echo $opt_data;?></div>
     <div style="display:block;font-size: 1.6rem;padding: 20px 40px;">Raw Return:</div>
