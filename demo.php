@@ -1,7 +1,7 @@
 <?php
 // IMPORTANT
 // Define your VCT installation URL/IP and your Access Code (generated during install) in the following variables
-$url = 'localhost/veruschaintools/index.php';
+$url = 'https://IP_or_URL_of_VerusChainTools_Daemon_server_Here';
 $data = array(
     'code' => 'v040EV4MCOYhoFNYfs9UJncvfVfc3r8Z8qFxvuLgbDEJyOTYrsv3ATwfI1lx8j2PbB6bL9T4',
 );
@@ -397,7 +397,7 @@ function vg_go( $url, $data ) {
         <div class="return_area"><?php echo json_encode( $data );?></div>
         <h2>Build a Valid Daemon RPC Command:</h2>
         <div class="form_block-outer">
-            <form id="demo" name="demo" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>" method="POST">
+            <form id="demo" name="demo" action="" method="POST">
                 <input type="text" name="exec" value="<?php echo $_exec; ?>" placeholder="Enter the command name here, e.g. getinfo">
                 <input type="text" name="chain" value="<?php echo $_chain; ?>" placeholder="Enter the chain (VRSCTEST if blank). For now VRSCTEST is required">
                 <p style="font-weight: bold;font-size: 2.2rem;text-align: center;display: block;float: none;margin: 0 auto;width: 100%;padding: 5px 0;margin-top: 20px;">Params and Options:</p>
