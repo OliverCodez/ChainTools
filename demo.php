@@ -94,6 +94,9 @@ if ( !empty( $_GET['exec'] ) || !empty( $_POST['exec'] ) ) {
     //
     // This will result in the VCT function as being converted to the appropriate 
     // option set array or json formatted option set.
+    //
+    // Note on sending "" for hash: In some cases you need to send "" to the daemon to signify the default account.  
+    // To do so, instead send -- (dash dash) to the API which will be interpreted as "".
     // 
     // Here we have the get function for hash, but to test fully you should
     // build your test array as $_hash.
@@ -200,6 +203,14 @@ function vg_go( $url, $data ) {
         return $re;
     }
     curl_close($ch);
+}
+function filter( $data ) {
+    $data = trim( htmlentities( strip_tags( $data ) ) );
+    if ( get_magic_quotes_gpc() ) {
+        $data = stripslashes( $data );
+    }
+    $data = strtolower( $data );
+    return $data;
 }
 ?>
 <html lang="en">
@@ -401,7 +412,7 @@ function vg_go( $url, $data ) {
                 <input type="text" name="exec" value="<?php echo $_exec; ?>" placeholder="Enter the command name here, e.g. getinfo">
                 <input type="text" name="chain" value="<?php echo $_chain; ?>" placeholder="Enter the chain (VRSCTEST if blank). For now VRSCTEST is required">
                 <p style="font-weight: bold;font-size: 2.2rem;text-align: center;display: block;float: none;margin: 0 auto;width: 100%;padding: 5px 0;margin-top: 20px;">Params and Options:</p>
-                <input type="text" name="hash1" value="<?php echo $_hash1_raw; ?>" placeholder="Enter simple param(s) (if required)">
+                <input type="text" name="hash1" value="<?php echo $_hash1_raw; ?>" placeholder="Enter simple param(s) (if required). Substitute -- for &quot;&quot;">
                 <textarea name="hash2" value="<?php echo $_hash2_raw; ?>" placeholder="Enter json params (if any) here, if any. Use the following format > paramname:paramvalue,paramname2:value2"></textarea>
                 <input type="text" name="opt" value="<?php echo $_opt; ?>" placeholder="Specific returned data you want to see, e.g. blocks">
                 <div class="submit_container">

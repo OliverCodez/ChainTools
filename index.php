@@ -119,6 +119,7 @@ else {
         $vct_dir = trim( shell_exec( 'find /opt -type d -name "'.$vct_chain.'"' ) );
         $vct_name = $vct_chain;
     }
+    $vct_data['exec'] = filter( $vct_data['exec'] );
     $vct_data = array_merge( $vct_data, array(
         'vct_proto' => 'http',
         'vct_url' => $vct_url,
@@ -158,7 +159,7 @@ function verigate_go( $vct_data ) {
             else {
                 return json_encode( $verus->getreceivedbyaddress( $vct_data['hash'], (int)$vct_data['opt'] ), true );
             }
-        break;
+            break;
         case 'tcount': // return count of all t addresses
             return json_encode( count( $verus->getaddressesbyaccount( "" ) ), true );
             break;
@@ -173,11 +174,44 @@ function verigate_go( $vct_data ) {
                 return json_encode( $verus->getreceivedbyaddress( $vct_data['hash'] ), true );
             }
             break;
-        default: // TODO : Allow for passing of any data to the daemon via web portal, and format (format not working currently)
+        case 'bal': // Iterate throught all addresses provided and display balance of each
+            $hash = $vct_data['hash'];
+            if ( empty( $hash ) ) {
+                $hash[0] = '--';
+            }
+            $taddr = $verus->getaddressesbyaccount( $hash );
+            $zaddr = $verus->z_listaddresses();
+            if ( json_encode( $zaddr, true ) == 'false' && json_encode( $taddr, true) == 'false' ) {
+                return null;
+            }
+            else {
+                $tbal = array();
+                $zbal = array();
+                $bal = array();
+                if ( json_encode( $taddr, true ) != 'false' ) {
+                    foreach ( $taddr as $key => $value ) {
+                        $tbal[$value] = $verus->z_getbalance( array($value) );
+                    }
+                }
+                if ( json_encode( $zaddr, true ) != 'false' ) {
+                    foreach ( $zaddr as $key => $value ) {
+                        $zbal[$value] = $verus->z_getbalance( array($value) );
+                    }
+                }
+                $bal = array_merge( $tbal, $zbal );
+                $return = $bal; 
+                if ( is_array( $return ) ) {
+                    return vct_format( $return );
+                }
+                else {
+                    return $return;
+                }
+            }
+            break;
+        default: // TODO : Setup filter for optional usage of some commands
             $exec = $vct_data['exec'];
             $hash = $vct_data['hash'];
             $opt = $vct_data['opt'];
-            
             // TODO: Testing area
             if ( $opt == 'test' ) {
                 return $hash;
@@ -185,12 +219,7 @@ function verigate_go( $vct_data ) {
             }
             // end Testing area
             if ( isset( $hash ) ) {
-                if ( $hash == 'default' ) {
-                    $return = $verus->$exec( "" );
-                }
-                else {
-                    $return = $verus->$exec( $hash );
-                }
+                $return = $verus->$exec( $hash );
             }
             else {
                 $return = $verus->$exec();
@@ -222,4 +251,13 @@ function vct_format( $info_ret ) {
         }
     }
     return json_encode( $info_ret, true );
+}
+
+function filter( $data ) {
+    $data = trim( htmlentities( strip_tags( $data ) ) );
+    if ( get_magic_quotes_gpc() ) {
+        $data = stripslashes( $data );
+    }
+    $data = strtolower( $data );
+    return $data;
 }

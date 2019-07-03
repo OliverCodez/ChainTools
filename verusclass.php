@@ -93,6 +93,7 @@ class rpcVerus {
         $this->vct_re     = null;
         // If params is not empty, filter for bool and integers
         if ( !empty( $vct_params ) ) {
+            // TODO : This is a problem, causing the array to only take the first entry and ignore beyond
             $vct_params = $vct_params[0];
             foreach ( $vct_params as $key => $value ) {
                 if ( is_numeric( $value ) ) {
@@ -103,6 +104,9 @@ class rpcVerus {
                 }
                 else if ( $value === 'false' ) {
                     $vct_params[$key] = false;
+                }
+                else if ( $value === '--' ) {
+                    $vct_params[0] = "";
                 }
             }
         }
