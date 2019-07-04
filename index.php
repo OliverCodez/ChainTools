@@ -161,7 +161,9 @@ function verigate_go( $vct_data ) {
             }
             break;
         case 'tcount': // return count of all t addresses
-            return json_encode( count( $verus->getaddressesbyaccount( "" ) ), true );
+            $hash = array();
+            $hash[0] = '--';
+            return json_encode( count( $verus->getaddressesbyaccount( $hash ) ), true );
             break;
         case 'zcount': // return count of all z addresses
             return json_encode( count( $verus->z_listaddresses() ), true );

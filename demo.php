@@ -381,14 +381,66 @@ function vg_go( $url, $data ) {
         <div>Welcome to the VerusChainTools Demo-erer!</div>
     </header>
     <main>
-        <div class="content_top">
-            <p>Thank you for installing VerusChainTools and contributing by doing some demos and testing things out.</p>
-            <p>Please let me know if you run into errors or unexpected behaviors! I'm always improving the script and the entire community benefits when people provide feedback.</p>      
-        </div>
         <h3 id="instructions_button">Instructions (click to expand)</h3>
         <div class="content_top" id="instructions">
             <div class="instructions_inner">
-                <p>Using the form below you can create RPC calls against the daemon of your choice. Simply enter the daemon ticker in the Chain field, and at minimum a command in the Exec field.  If the command has parameters you can enter them in the "simple param(s)" field and then put any json params in the "json params" text area, use a colon to separate param and value, and commas to separate sets of param/values. An example is provided in the form field.</p>
+                <p>Thank you for installing VerusChainTools and contributing by doing some demos and testing things out.</p>
+                <p>Please let me know if you run into errors or unexpected behaviors! I'm always improving the script and the entire community benefits when people provide feedback.</p> 
+                <p>Using the form below you can interact with the Verus test blockchain, VRSCTEST, using commands you'd normally use from the CLI (command line interface) wallet. The purpose of this demo is primarily to help developers familiarize with how to pass commands and params to the Verus blockchain and see what sort of results/return data occurs.  It's also to help anyone who is interested in learning more about the CLI wallet learn what commands are possible and what they do.</p>
+                <p></p>
+                <p>To use the form below, type a valid CLI command into the Exec field and the blockchain ticker in the chain field.  For now VRSCTEST is the only daemon running on this demo server.  Next, enter any parameters into the simple and multi-line json param fields, as expected by the command you are testing. Some commands take no params, in which case you'll leave the param fields blank.  Lastly, some commands will return a lot of data in json format.  You may want to single out one part of the data, like in the case of the command "getinfo" you may want to just return the block height...so in the option field you'd put the word blocks. You'll notice in json returns there's a data type name/title and the value.  That title is called a "key" in array terms, and the value is just known as the value.  So you can single out a "key" in options and see it's value returned in the top green area, along with info about the chain and the command run.</p>
+                <p></p>
+                <p><strong>Some notes: </strong><br><br><br>
+                <ul>
+                <li>For the exec field, capitalization doesn't matter, everything is stripped and made lowercase before hitting the daemon.</li>
+                <li>For the complex params field, quotations are never required and will break the function for now.</li>
+                <li>If the param is "" as is the case with many wallet commands for transparent addresses, you'll put -- (dash dash) into the Simple params field instead, which will convert to "" in the function.</li>
+                <li>Besides the CLI commands, I've created some helper commands.  They are:<br>bal - Displays the balance of each address in the wallet<br>test - Simply tests connectivity<br>lconf (requires Simple param of the address and Option of the number of confirms to compare against) - Compares the lowest confirm transaction of the given address with the number supplied in Option.<br>tcount and zcount - Return the count of addresses (t or z)<br>recby (requires Simple param to be the address) - Returns total received at the address supplied.
+                </ul></p>
+                <p></p>
+                <h4>Examples</h4>
+                <p><strong>To display t addresses...</strong><br><br>
+                Exec field: getaddressesbyaccount<br>
+                Chain field: VRSCTEST<br>
+                Simple param: --<br>
+                Complex param: blank<br>
+                Option: blank<br>
+                </p>
+                <p><strong>To turn staking on...</strong><br><br>
+                Exec field: setgenerate<br>
+                Chain field: VRSCTEST<br>
+                Simple param: true,0<br>
+                Complex param: blank<br>
+                Option: blank
+                </p>
+                <p><strong>To check staking status...</strong><br><br>
+                Exec field: getgenerate<br>
+                Chain field: VRSCTEST<br>
+                Simple param: blank<br>
+                Complex param: blank<br>
+                Option: staking
+                </p>
+                <p><strong>To get a new sapling address...</strong><br><br>
+                Exec field: z_getnewaddress<br>
+                Chain field: VRSCTEST<br>
+                Simple param: sapling<br>
+                Complex param: blank<br>
+                Option: blank
+                </p>
+                <p><strong>To get a new transparent address...</strong><br><br>
+                Exec field: getnewaddress<br>
+                Chain field: VRSCTEST<br>
+                Simple param: blank<br>
+                Complex param: blank<br>
+                Option: blank
+                </p>
+                <p><strong>To send 100 VRSCTEST from z_address to t_address...</strong><br><br>
+                Exec field: z_sendmany<br>
+                Chain field: VRSCTEST<br>
+                Simple param: z_address (from addr)<br>
+                Complex param: address:t_address,amount:100<br>
+                Option: blank
+                </p>
                 <p></p>
                 <p>Results are shown in the cells above the form, just below these instructions.  If you are confused hit me up on Discord!  Enjoy :)</p>
             </div>
@@ -402,12 +454,12 @@ function vg_go( $url, $data ) {
         <h2>Build a Valid Daemon RPC Command:</h2>
         <div class="form_block-outer">
             <form id="demo" name="demo" action="" method="POST">
-                <input type="text" name="exec" value="<?php echo $_exec; ?>" placeholder="Enter the command name here, e.g. getinfo">
-                <input type="text" name="chain" value="<?php echo $_chain; ?>" placeholder="Enter the chain (VRSCTEST if blank). For now VRSCTEST is required">
+                <input type="text" name="exec" value="<?php echo $_exec; ?>" placeholder="Exec field (the command)">
+                <input type="text" name="chain" value="<?php echo $_chain; ?>" placeholder="Chain field (e.g. VRSCTEST)">
                 <p style="font-weight: bold;font-size: 2.2rem;text-align: center;display: block;float: none;margin: 0 auto;width: 100%;padding: 5px 0;margin-top: 20px;">Params and Options:</p>
-                <input type="text" name="hash1" value="<?php echo $_hash1_raw; ?>" placeholder="Enter simple param(s) (if required). Substitute -- for &quot;&quot;">
-                <textarea name="hash2" value="<?php echo $_hash2_raw; ?>" placeholder="Enter json params (if any) here, if any. Use the following format > paramname:paramvalue,paramname2:value2"></textarea>
-                <input type="text" name="opt" value="<?php echo $_opt; ?>" placeholder="Specific returned data you want to see, e.g. blocks">
+                <input type="text" name="hash1" value="<?php echo $_hash1_raw; ?>" placeholder="Simple param">
+                <textarea name="hash2" value="<?php echo $_hash2_raw; ?>" placeholder="Complex param"></textarea>
+                <input type="text" name="opt" value="<?php echo $_opt; ?>" placeholder="Option">
                 <div class="submit_container">
                     <input class="submit_button" type="submit" value="Go!">
                 </div>
