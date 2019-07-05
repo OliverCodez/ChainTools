@@ -93,8 +93,10 @@ class rpcVerus {
         $this->vct_re     = null;
         // If params is not empty, filter for bool and integers
         if ( !empty( $vct_params ) ) {
-            // TODO : This is a problem, causing the array to only take the first entry and ignore beyond
-            $vct_params = $vct_params[0];
+	    $vct_params = $vct_params[0];
+            if ( $vct_params[0] === '--' ) {
+                $vct_params[0] = "";
+            }
             foreach ( $vct_params as $key => $value ) {
                 if ( is_numeric( $value ) ) {
                     $vct_params[$key] = (int)$value;
@@ -104,9 +106,6 @@ class rpcVerus {
                 }
                 else if ( $value === 'false' ) {
                     $vct_params[$key] = false;
-                }
-                else if ( $value === '--' ) {
-                    $vct_params[0] = "";
                 }
             }
         }
@@ -154,8 +153,11 @@ class rpcVerus {
         }
         if ( $this->vct_re[ 'error' ] ) {
             $this->vct_err = $this->vct_re[ 'error' ][ 'message' ];
-        } elseif ( $this->vct_stat != 200 ) {
+        } elseif ( $this->vct_stat != 404 ) {
             switch ( $this->vct_stat ) {
+		case 0:
+		    $this->vct_err = 'Error 0 - Service Not Running';
+		    break;
                 case 400:
                     $this->vct_err = 'Error 400 - Bad Request';
                     break;
@@ -164,9 +166,6 @@ class rpcVerus {
                     break;
                 case 403:
                     $this->vct_err = 'Error 403 - Forbidden';
-                    break;
-                case 404:
-                    $this->vct_err = 'Error 404 - Not Found';
                     break;
             }
         }

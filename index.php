@@ -142,7 +142,12 @@ function verigate_go( $vct_data ) {
     switch ( $vct_data['exec'] ) {
         case 'test':
             $verus->status();
-            return json_encode( $verus->vct_stat, true );
+	    if ( $verus->vct_stat === 404 ) {
+            return json_encode( array( 'online' => 'true' ), true );
+	    }
+	    else {
+            return json_encode( array( 'online' => 'false' ), true );
+	    }
             break;
         case 'lconf': // return lowest confirm tx
             if ( ! isset( $vct_data['hash'] ) | ! isset( $vct_data['opt'] ) ) {
@@ -191,7 +196,7 @@ function verigate_go( $vct_data ) {
                 $zbal = array();
                 $bal = array();
                 if ( json_encode( $taddr, true ) != 'false' ) {
-                    foreach ( $taddr as $key => $value ) {
+                    foreach ( $taddr as $value ) {
                         $tbal[$value] = $verus->z_getbalance( array($value) );
                     }
                 }
@@ -214,12 +219,6 @@ function verigate_go( $vct_data ) {
             $exec = $vct_data['exec'];
             $hash = $vct_data['hash'];
             $opt = $vct_data['opt'];
-            // TODO: Testing area
-            if ( $opt == 'test' ) {
-                return $hash;
-                die();
-            }
-            // end Testing area
             if ( isset( $hash ) ) {
                 $return = $verus->$exec( $hash );
             }
@@ -239,11 +238,11 @@ function verigate_go( $vct_data ) {
 
 function vct_format( $info_ret ) {
     foreach ( $info_ret as $key => $value ) {
-        if ( is_bool( $value ) ) {
-            $info_ret[$key] = ($value) ? 'true' : 'false';
-        }
-        else if ( $value == '0' ) {
+        if ( $value == '0' ) {
             $info_ret[$key] = '0';
+        }
+	else if ( is_bool( $value ) ) {
+            $info_ret[$key] = ($value) ? 'true' : 'false';
         }
         else if ( is_float( $value) ) {
             $info_ret[$key] = sprintf('%.8f',floatval($value));

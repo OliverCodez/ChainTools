@@ -1,9 +1,9 @@
 <?php
 // IMPORTANT
 // Define your VCT installation URL/IP and your Access Code (generated during install) in the following variables
-$url = 'https://IP_or_URL_of_VerusChainTools_Daemon_server_Here';
+$url = 'localhost/veruschaintools/index.php';
 $data = array(
-    'code' => 'v040EV4MCOYhoFNYfs9UJncvfVfc3r8Z8qFxvuLgbDEJyOTYrsv3ATwfI1lx8j2PbB6bL9T4',
+    'code' => 'accesscodefrominstall_insert_here',
 );
 
 /**
@@ -117,20 +117,23 @@ if ( !empty( $_GET['exec'] ) || !empty( $_POST['exec'] ) ) {
             $_hash1_raw = $_POST['hash1'];
             $_hash1 = explode( ',', $_hash1_raw );
             if ( !empty( $_POST['hash2'] ) ) {
-                $_hash2_raw = $_POST['hash2'];
-                preg_match_all('/(.*?):\s?(.*?)(,|$)/', $_hash2_raw, $matches);
-                $_hash2 = array_combine(array_map('trim', $matches[1]), $matches[2]);
-                foreach( $_hash2 as $key => $value ) {
-                    if ( $key == 'memo' ) {
-                        $_hash2[$key] = bin2hex( $value );
-                    }
-                }
+                $_hash2_raw = explode( ';', $_POST['hash2'] );
+		        $_hash2_new = array();
+		        foreach( $_hash2_raw as $val ) {
+			        $val = (string)$val;
+			        preg_match_all('/(.*?):\s?(.*?)(,|$)/', $val, $matches);
+	                $_hash2 = array_combine(array_map('trim', $matches[1]), $matches[2]);
+        	        foreach( $_hash2 as $key => $value ) {
+        	            if ( $key == 'memo' ) {
+        	                $_hash2[$key] = bin2hex( $value );
+        	            }
+        	        }
+			        $_hash2_new[] = $_hash2;
+		        }
                 $_hash = array_merge(
                     $_hash1,
                     array(
-                        array(
-                            $_hash2
-                        )
+			            $_hash2_new
                     )
                 );
             }
@@ -139,19 +142,20 @@ if ( !empty( $_GET['exec'] ) || !empty( $_POST['exec'] ) ) {
             }
         }
         if ( empty( $_POST['hash1'] ) && !empty( $_POST['hash2'] ) ) {
-            $_hash2_raw = $_POST['hash2'];
-            preg_match_all('/(.*?):\s?(.*?)(,|$)/', $_hash2_raw, $matches);
-            $_hash2 = array_combine(array_map('trim', $matches[1]), $matches[2]);
-            foreach( $_hash2 as $key => $value ) {
-                if ( $key == 'memo' ) {
-                    $_hash2[$key] = bin2hex( $value );
-                }
-            }
-            $_hash = array(
-                array(
-                    $_hash2
-                )
-                );
+            $_hash2_raw = explode( ';', $_POST['hash2'] );
+		    $_hash2_new = array();
+		    foreach( $_hash2_raw as $val ) {
+			    $val = (string)$val;
+			    preg_match_all('/(.*?):\s?(.*?)(,|$)/', $val, $matches);
+	            $_hash2 = array_combine(array_map('trim', $matches[1]), $matches[2]);
+        	    foreach( $_hash2 as $key => $value ) {
+        	        if ( $key == 'memo' ) {
+        	            $_hash2[$key] = bin2hex( $value );
+        	        }
+        	    }
+			    $_hash2_new[] = $_hash2;
+            }    
+            $_hash = $_hash2_new;
         }
         $_opt = $_POST['opt'];
     }
