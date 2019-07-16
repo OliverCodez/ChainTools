@@ -295,63 +295,13 @@ function vg_go( $url, $d ) {
             <div class="instructions_inner">
                 <p>Thank you for installing VerusChainTools and contributing by doing some demos and testing things out.</p>
                 <p>Please let me know if you run into errors or unexpected behaviors! I'm always improving the script and the entire community benefits when people provide feedback.</p> 
-                <p>Using the form below you can interact with the Verus test blockchain, VRSCTEST, using commands you'd normally use from the CLI (command line interface) wallet. The purpose of this demo is primarily to help developers familiarize with how to pass commands and params to the Verus blockchain and see what sort of results/return data occurs.  It's also to help anyone who is interested in learning more about the CLI wallet learn what commands are possible and what they do.</p>
+                <p>Using the form below you can interact with the Verus test blockchain, VRSCTEST, using commands you'd normally use from the CLI (command line interface) wallet. Don't know CLI?  Don't worry! Part of the purpose of this demo is to help developers and anyone else curious become familiar and skilled in the "dark arts" of CLI! :)</p>
                 <p></p>
-                <p>To use the form below, type a valid CLI command into the Exec field and the blockchain ticker in the chain field.  For now VRSCTEST is the only daemon running on this demo server.  Next, enter any parameters into the simple and multi-line json param fields, as expected by the command you are testing. Some commands take no params, in which case you'll leave the param fields blank.  Lastly, some commands will return a lot of data in json format.  You may want to single out one part of the data, like in the case of the command "getinfo" you may want to just return the block height...so in the option field you'd put the word blocks. You'll notice in json returns there's a data type name/title and the value.  That title is called a "key" in array terms, and the value is just known as the value.  So you can single out a "key" in options and see it's value returned in the top green area, along with info about the chain and the command run.</p>
+                <p>To use the form below, begin by simply entering a valid "method" and leave the Chain default at VRSCTEST.  If you know the correct Params for the Method you are running, enter it and click Go.  If you don't know the right Params, it will return telling you an example in the exact format you would enter it.</p>
                 <p></p>
-                <p><strong>Some notes: </strong><br><br><br>
-                <ul>
-                <li>For the exec field, capitalization doesn't matter, everything is stripped and made lowercase before hitting the daemon.</li>
-                <li>For the complex params field, quotations are never required and will break the function for now.</li>
-                <li>If the param is "" as is the case with many wallet commands for transparent addresses, you'll put -- (dash dash) into the Simple params field instead, which will convert to "" in the function.</li>
-                <li>Besides the CLI commands, I've created some helper commands.  They are:<br>bal - Displays the balance of each address in the wallet<br>test - Simply tests connectivity<br>lconf (requires Simple param of the address and Option of the number of confirms to compare against) - Compares the lowest confirm transaction of the given address with the number supplied in Option.<br>tcount and zcount - Return the count of addresses (t or z)<br>recby (requires Simple param to be the address) - Returns total received at the address supplied.
-                </ul></p>
+                <p>Go ahead! Try it out!</p>
                 <p></p>
-                <h4>Examples</h4>
-                <p><strong>To display t addresses...</strong><br><br>
-                Exec field: getaddressesbyaccount<br>
-                Chain field: VRSCTEST<br>
-                Simple param: --<br>
-                Complex param: blank<br>
-                Option: blank<br>
-                </p>
-                <p><strong>To turn staking on...</strong><br><br>
-                Exec field: setgenerate<br>
-                Chain field: VRSCTEST<br>
-                Simple param: true,0<br>
-                Complex param: blank<br>
-                Option: blank
-                </p>
-                <p><strong>To check staking status...</strong><br><br>
-                Exec field: getgenerate<br>
-                Chain field: VRSCTEST<br>
-                Simple param: blank<br>
-                Complex param: blank<br>
-                Option: staking
-                </p>
-                <p><strong>To get a new sapling address...</strong><br><br>
-                Exec field: z_getnewaddress<br>
-                Chain field: VRSCTEST<br>
-                Simple param: sapling<br>
-                Complex param: blank<br>
-                Option: blank
-                </p>
-                <p><strong>To get a new transparent address...</strong><br><br>
-                Exec field: getnewaddress<br>
-                Chain field: VRSCTEST<br>
-                Simple param: blank<br>
-                Complex param: blank<br>
-                Option: blank
-                </p>
-                <p><strong>To send 100 VRSCTEST from z_address to t_address...</strong><br><br>
-                Exec field: z_sendmany<br>
-                Chain field: VRSCTEST<br>
-                Simple param: z_address (from addr)<br>
-                Complex param: address:t_address,amount:100<br>
-                Option: blank
-                </p>
-                <p></p>
-                <p>Results are shown in the cells above the form, just below these instructions.  If you are confused hit me up on Discord!  Enjoy :)</p>
+                <p>Results are shown in the cells above the form, just below these instructions.  The Raw Return can be narrowed down by entering one of the returned value titles in the Options field in the form. If you are confused hit me up on Discord!  Enjoy :)</p>
             </div>
         </div>
 	<h2>Original Curl Api Call:</h2>
