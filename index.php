@@ -169,7 +169,7 @@ function _go( $d ) {
          *  */
         case 'lconf': // return lowest confirm tx
             if ( !isset( $p ) ) {
-                return vct_return_helper( 0, NULL );
+                return vct_return_helper( 1, NULL );
             }
             else if ( substr( $p, 0, 2 ) === 'zs' ) {
                 $r = $verus->z_listreceivedbyaddress( $p );
@@ -185,7 +185,7 @@ function _go( $d ) {
             break;
         case 'tcount': // return count of all t addresses
             if ( !isset( $p ) ) {
-                return vct_return_helper( 0, NULL );
+                return vct_return_helper( 1, NULL );
             }
             else {
                 return json_encode( count( $verus->getaddressesbyaccount( $p ) ), TRUE );
@@ -196,7 +196,7 @@ function _go( $d ) {
             break;
         case 'recby': // return total received by balance
             if ( !isset( $p ) ) {
-                return vct_return_helper( 0, NULL );
+                return vct_return_helper( 1, NULL );
             }
             else {
                 return json_encode( $verus->getreceivedbyaddress( $p ), TRUE );
@@ -204,7 +204,7 @@ function _go( $d ) {
             break;
         case 'bal': // Iterate throught all addresses provided and display balance of each
             if ( !isset( $p ) ) {
-                return vct_return_helper( 0, NULL );
+                return vct_return_helper( 1, NULL );
             }
             else {
                 $t = $verus->getaddressesbyaccount( $p );
@@ -278,7 +278,7 @@ function _go( $d ) {
                     $r = strstr( $r, '"params"' );
                     $r = preg_replace('/"params": /', '', $r);
                     $r = substr( $r, 0, strpos( $r, "}' -H" ) );
-                    return vct_return_helper( 1, $r );
+                    return vct_return_helper( 2, $r );
                 }
                 else {
                     return $r;
@@ -317,10 +317,10 @@ function vct_clean( $d ) {
 
 function vct_return_helper( $t, $d ) {
     switch ( $t ) {
-        case 0:
+        case 1:
             $r = array( 'return' => 'error', 'details' => 'Params are missing or incorrect' );
             break;
-        case 1:
+        case 2:
             $r = array( 'return' => 'error', 'details' => 'Params are missing or incorrect', 'param_example' => $d );
             break;
         default:
