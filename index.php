@@ -71,6 +71,16 @@ if ( isset( $_POST['access'] ) ) {
     include_once( 'deprecated-index.php' );
 }
 else {
+    /**
+    * 
+    * Get php input in json format for handling api calls
+    * 
+    * */
+    // Main data getter
+    $vct_data = json_decode( file_get_contents( 'php://input' ), true);
+    if ( empty( $vct_data ) ) {
+	die('Nothing to do');
+    }
     // Primary daemon server location (usually on same server, localhost)
     $vct_url = 'localhost';
     include_once( 'verusclass.php' );
@@ -82,18 +92,11 @@ else {
     // added chains are in an array under: $vct_config['chain']
     // payout addresses are given the key leading with lowercase chain name, followed by payout type: e.g. $vct_config['vrsc_z'] is VerusCoin Z address
     // unsupported or unentered payout types are just blank entries, tools utilizing this Api should ignore empty payout values
-
-    /**
-    * 
-    * Get php input in json format for handling api calls
-    * 
-    * */
+    
     // Simple test function for admins
     if ( ! empty( $_GET['test'] ) ) {
         echo 'reachable';
     }
-    // Main data getter
-    $vct_data = json_decode( file_get_contents( 'php://input' ), true);
     if ( $vct_data['code'] != $vct_config['code'] ) {
         die( 'access_code_err' ); // Die if no access code
     }
@@ -139,6 +142,10 @@ else {
  */
 function verigate_go( $vct_data ) {
     $verus = new rpcVerus( $vct_data['vct_user'], $vct_data['vct_pass'], $vct_data['vct_url'], $vct_data['vct_port'], $vct_data['vct_proto'] );
+    $exec = $vct_data['exec'];
+    $hash = $vct_data['hash'];
+    $opt = $vct_data['opt'];
+
     switch ( $vct_data['exec'] ) {
         case 'test':
             $verus->status();
@@ -150,21 +157,23 @@ function verigate_go( $vct_data ) {
 	    }
             break;
         case 'lconf': // return lowest confirm tx
-            if ( ! isset( $vct_data['hash'] ) | ! isset( $vct_data['opt'] ) ) {
-                return json_encode( "Error 2 - Hash Function", true );
+            if ( ! isset( $hash ) ) {
+                return json_encode( "Missing hash data", TRUE );
             }
             else if ( substr($vct_data['hash'], 0, 2) === 'zs' ) {
-                $result = $verus->z_listreceivedbyaddress( $vct_data['hash'], (int)$vct_data['opt'] );
+                $result = $verus->z_listreceivedbyaddress( $vct_data['hash'] );
                 $amounts = array();
                 foreach ( $result as $item ) {
                     array_push( $amounts, $item['amount'] );
                 }
-            return json_encode( array_sum( $amounts ), true );
+            return json_encode( array_sum( $amounts ), TRUE );
             }
             else {
-                return json_encode( $verus->getreceivedbyaddress( $vct_data['hash'], (int)$vct_data['opt'] ), true );
+		return json_encode( $verus->getreceivedbyaddress( $hash ), TRUE );
             }
             break;
+
+
         case 'tcount': // return count of all t addresses
             $hash = array();
             $hash[0] = '--';
@@ -184,7 +193,7 @@ function verigate_go( $vct_data ) {
         case 'bal': // Iterate throught all addresses provided and display balance of each
             $hash = $vct_data['hash'];
             if ( empty( $hash ) ) {
-                $hash[0] = '--';
+                $hash = array( '""' );
             }
             $taddr = $verus->getaddressesbyaccount( $hash );
             $zaddr = $verus->z_listaddresses();
@@ -216,9 +225,6 @@ function verigate_go( $vct_data ) {
             }
             break;
         default: // TODO : Setup filter for optional usage of some commands
-            $exec = $vct_data['exec'];
-            $hash = $vct_data['hash'];
-            $opt = $vct_data['opt'];
             if ( isset( $hash ) ) {
                 $return = $verus->$exec( $hash );
             }

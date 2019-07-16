@@ -87,33 +87,24 @@ class rpcVerus {
         $this->c = $vct_cert;
     }
     public function __call( $vct_meth, $vct_params ) {
-        $this->vct_stat       = null;
-        $this->vct_err        = null;
+        $this->vct_stat = null;
+        $this->vct_err = null;
         $this->vct_raw = null;
-        $this->vct_re     = null;
-        // If params is not empty, filter for bool and integers
-        if ( !empty( $vct_params ) ) {
-	    $vct_params = $vct_params[0];
-            if ( $vct_params[0] === '--' ) {
-                $vct_params[0] = "";
-            }
-            foreach ( $vct_params as $key => $value ) {
-                if ( is_numeric( $value ) ) {
-                    $vct_params[$key] = (int)$value;
-                }
-                else if ( $value === 'true' ) {
-                    $vct_params[$key] = true;
-                }
-                else if ( $value === 'false' ) {
-                    $vct_params[$key] = false;
-                }
-            }
+        $this->vct_re = null;
+	$this->vct_param = array();
+	if ( !empty( $vct_params[0] ) ) {
+	    if ( $vct_params[0][0] === '[' ) {
+		$this->vct_param = json_decode( $vct_params[0], TRUE );
+	    }
+	    else {
+		$this->vct_param = array( json_decode( $vct_params[0], TRUE ) );
+	    }
         }
-        $vct_params = array_values( $vct_params );
+	$this->vct_param = array_values( $this->vct_param );
         $this->vct_id++;
         $vct_req = json_encode( array(
             'method' => $vct_meth,
-            'params' => $vct_params,
+            'params' => $this->vct_param,
             'id'     => $this->vct_id
         ) );
         // TODO : Test area
@@ -170,7 +161,7 @@ class rpcVerus {
             }
         }
         if ( $this->vct_err ) {
-            return false;
+            return $this->vct_err;
         }
         return $this->vct_re[ 'result' ];
     }

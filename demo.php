@@ -1,11 +1,10 @@
 <?php
 // IMPORTANT
 // Define your VCT installation URL/IP and your Access Code (generated during install) in the following variables
-$url = 'localhost/veruschaintools/index.php';
+$url = 'location/of/veruschaintools';
 $data = array(
-    'code' => 'accesscodefrominstall_insert_here',
+    'code' => 'thecode',
 );
-
 /**
  * Demo file for VerusChainTools
  * 
@@ -59,15 +58,12 @@ error_reporting(E_ALL);
 
 $_exec = null;
 $_chain = null;
-$_hash1_raw = null;
-$_hash2_raw = null;
 $_hash = null;
 $_opt = null;
 $raw_data = null;
 $raw_result = null;
 $opt_data = null;
 
-if ( !empty( $_GET['exec'] ) || !empty( $_POST['exec'] ) ) {
     //
     // GET Hash for testing simple calls only (non-complex/json - in 
     // your code you should always pass hash to the data arraay as an array
@@ -102,92 +98,42 @@ if ( !empty( $_GET['exec'] ) || !empty( $_POST['exec'] ) ) {
     // build your test array as $_hash.
 
     // Handle request
-    if ( !empty( $_GET['exec'] ) ) {
-        $_exec = $_GET['exec'];
-        $_chain = $_GET['chain'];
-        if ( !empty( $_GET['hash'] ) ) {
-            $_hash = explode(',',$_GET['hash']);
-        }
-        $_opt = $_GET['opt'];
-    }
-    else if ( !empty( $_POST['exec'] ) ) {
-        $_exec = $_POST['exec'];
-        $_chain = $_POST['chain'];
-        if ( !empty( $_POST['hash1'] ) ) {
-            $_hash1_raw = $_POST['hash1'];
-            $_hash1 = explode( ',', $_hash1_raw );
-            if ( !empty( $_POST['hash2'] ) ) {
-                $_hash2_raw = explode( ';', $_POST['hash2'] );
-		        $_hash2_new = array();
-		        foreach( $_hash2_raw as $val ) {
-			        $val = (string)$val;
-			        preg_match_all('/(.*?):\s?(.*?)(,|$)/', $val, $matches);
-	                $_hash2 = array_combine(array_map('trim', $matches[1]), $matches[2]);
-        	        foreach( $_hash2 as $key => $value ) {
-        	            if ( $key == 'memo' ) {
-        	                $_hash2[$key] = bin2hex( $value );
-        	            }
-        	        }
-			        $_hash2_new[] = $_hash2;
-		        }
-                $_hash = array_merge(
-                    $_hash1,
-                    array(
-			            $_hash2_new
-                    )
-                );
-            }
-            else {
-                $_hash = $_hash1;
-            }
-        }
-        if ( empty( $_POST['hash1'] ) && !empty( $_POST['hash2'] ) ) {
-            $_hash2_raw = explode( ';', $_POST['hash2'] );
-		    $_hash2_new = array();
-		    foreach( $_hash2_raw as $val ) {
-			    $val = (string)$val;
-			    preg_match_all('/(.*?):\s?(.*?)(,|$)/', $val, $matches);
-	            $_hash2 = array_combine(array_map('trim', $matches[1]), $matches[2]);
-        	    foreach( $_hash2 as $key => $value ) {
-        	        if ( $key == 'memo' ) {
-        	            $_hash2[$key] = bin2hex( $value );
-        	        }
-        	    }
-			    $_hash2_new[] = $_hash2;
-            }    
-            $_hash = $_hash2_new;
-        }
-        $_opt = $_POST['opt'];
-    }
-
-    // GET chain defaults to VRSCTEST in this sample, but can be changed to another default
-    if ( empty( $_chain ) ) { $_chain = 'VRSCTEST'; } else { $_chain = strtoupper( $_chain ); }
-    if ( empty( $_hash ) ) { $_hash = null; } 
-    if ( empty( $_opt ) ) { $_opt = null; }
-    $data = array_merge( $data, array(
-        'chain' => $_chain,
-        'exec'  => $_exec,
-        'hash'  => $_hash,
-        'opt'   => $_opt,
-    ) );
-    $raw_data = json_decode( vg_go( $url, $data ), true );
-
-    if ( $data['opt'] != null ) {
-        $opt_data = json_decode( $raw_data['result'], true);
-        if ( isset( $opt_data[$data['opt']] ) ) {
-            $opt_data = $data['chain'] . '/' . $data['exec'] . ' - ' . $data['opt'] . ': ' . $opt_data[$data['opt']];
-        }
-        else {
-            $opt_data = null;
-        }
-    }
-    if ( $opt_data == null ) { $opt_data = $data['chain'] . ' - Hash or Opt not set!'; }
-    
-    $raw_result = $raw_data['result'];
+if ( !empty( $_POST['exec'] ) ) {
+    $_exec = $_POST['exec'];
+    $_chain = $_POST['chain'];
+    $_hash = $_POST['hash'];
+    $_opt = $_POST['opt'];
 }
 else {
     $opt_data = 'Hmmph. Nothing to do :(';
 }
+    // GET chain defaults to VRSCTEST in this sample, but can be changed to another default
+if ( empty( $_chain ) ) { $_chain = 'VRSCTEST'; } else { $_chain = strtoupper( $_chain ); }
+if ( empty( $_hash ) ) { $_hash = null; } 
+if ( empty( $_opt ) ) { $_opt = null; }
+$data = array_merge( $data, array(
+    'chain' => $_chain,
+    'exec'  => $_exec,
+    'hash'  => $_hash,
+    'opt'   => $_opt,
+    ) 
+);
+
+$raw_data = json_decode( vg_go( $url, $data ), true );
+if ( $data['opt'] != null ) {
+    $opt_data = json_decode( $raw_data['result'], true);
+    if ( isset( $opt_data[$data['opt']] ) ) {
+        $opt_data = $data['chain'] . '/' . $data['exec'] . ' - ' . $data['opt'] . ': ' . $opt_data[$data['opt']];
+    }
+    else {
+        $opt_data = null;
+    }
+}
+if ( $opt_data == null ) { $opt_data = $data['chain'] . ' - Hash or Opt not set!'; }
+
+$raw_result = $raw_data['result'];
+
+
 function vg_go( $url, $data ) {
     $ch = curl_init();
     $data = json_encode( $data );
@@ -208,7 +154,6 @@ function vg_go( $url, $data ) {
     }
     curl_close($ch);
 }
-
 ?>
 <html lang="en">
 <head>
@@ -223,12 +168,12 @@ function vg_go( $url, $data ) {
         body {
             max-width: 1200px;
             margin: auto;
-            padding: 20px 10px;
+            padding: 20px 10px 10px 10px;
         }
         h2 {
             display: block;
             font-size: 2.4rem;
-            padding: 20px 40px;
+            padding: 20px 40px 0 40px;
         }
         header {
             height: 100px;
@@ -242,7 +187,7 @@ function vg_go( $url, $data ) {
             margin-bottom: 40px;
         }
         main {
-            padding: 20px;
+            padding: 20px 20px 0 20px;
             font-family: arial;
             font-size: 1.4rem;
         }
@@ -267,8 +212,8 @@ function vg_go( $url, $data ) {
             border-radius: 10px;
             border-left: 1px solid #545454;
             border-right: 1px solid #545454;
-            margin: 40px auto;
-            margin-top:0;
+            margin: 10px auto;
+	    margin-bottom:10px
             max-width: 1000px;
             display: block;
             position: relative;
@@ -284,6 +229,13 @@ function vg_go( $url, $data ) {
             width: 100%;
             padding: 5px 0;
         }
+	.link_title {
+	    display:block;
+	    float:none;
+	    width:220px;
+	    margin: 5px auto;
+	    text-align:center;
+	}
         #demo {
             display: block;
             width: 100%;
@@ -319,7 +271,7 @@ function vg_go( $url, $data ) {
             color:#FB5656;
         }
          footer {
-            border-top: 1px solid #545454;
+            //border-top: 1px solid #545454;
         }
         #instructions_button {
             cursor:pointer;
@@ -341,20 +293,6 @@ function vg_go( $url, $data ) {
             height: 60px;
             padding: 10px;
             line-height: 40px;
-            margin: 10px auto;
-            display: block;
-            min-width: 260px;
-            max-width: 600px;
-            width: 100%;
-            font-size: 2rem;
-        }
-        textarea {
-            background: none;
-            border: 1px solid #5353;
-            border-radius: 10px;
-            min-height: 200px;
-            padding: 10px;
-            line-height: 2.5rem;
             margin: 10px auto;
             display: block;
             min-width: 260px;
@@ -385,6 +323,7 @@ function vg_go( $url, $data ) {
         <div>Welcome to the VerusChainTools Demo-erer!</div>
     </header>
     <main>
+	<h3 class="link_title"><a href="#demo">Jump to Form</a></h3>
         <h3 id="instructions_button">Instructions (click to expand)</h3>
         <div class="content_top" id="instructions">
             <div class="instructions_inner">
@@ -449,21 +388,19 @@ function vg_go( $url, $data ) {
                 <p>Results are shown in the cells above the form, just below these instructions.  If you are confused hit me up on Discord!  Enjoy :)</p>
             </div>
         </div>
+	<h2>Original Curl Api Call:</h2>
+        <div class="return_area"><?php echo json_encode( $data );?></div>
         <h2>Narrowed Return:</h2>
         <div class="return_area" style="background: #aeffaf;"><?php echo $opt_data;?></div>
-        <h2>Raw Return:</h2>
+	<h2 id="raw">Raw Return:</h2>
         <div class="return_area"><?php echo $raw_result;?></div>
-        <h2>Original Curl Api Call:</h2>
-        <div class="return_area"><?php echo json_encode( $data );?></div>
-        <h2>Build a Valid Daemon RPC Command:</h2>
         <div class="form_block-outer">
             <form id="demo" name="demo" action="" method="POST">
-                <input type="text" name="exec" value="<?php echo $_exec; ?>" placeholder="Exec field (the command)">
-                <input type="text" name="chain" value="<?php echo $_chain; ?>" placeholder="Chain field (e.g. VRSCTEST)">
-                <p style="font-weight: bold;font-size: 2.2rem;text-align: center;display: block;float: none;margin: 0 auto;width: 100%;padding: 5px 0;margin-top: 20px;">Params and Options:</p>
-                <input type="text" name="hash1" value="<?php echo $_hash1_raw; ?>" placeholder="Simple param">
-                <textarea name="hash2" value="<?php echo $_hash2_raw; ?>" placeholder="Complex param"></textarea>
-                <input type="text" name="opt" value="<?php echo $_opt; ?>" placeholder="Option">
+                <input type="text" name="exec" value='<?php echo $_exec; ?>' placeholder="Exec field (the command)">
+                <input type="text" name="chain" value='<?php echo $_chain; ?>' placeholder="Chain field (e.g. VRSCTEST)">
+                <!-- <input type="text" name="hash1" value="<?php echo $_hash1_raw; ?>" placeholder="Simple param"> -->
+                <input type="text" name="hash" value='<?php echo $_hash; ?>' placeholder="Complex param">
+                <input type="text" name="opt" value='<?php echo $_opt; ?>' placeholder="Option">
                 <div class="submit_container">
                     <input class="submit_button" type="submit" value="Go!">
                 </div>
