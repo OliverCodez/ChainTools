@@ -55,7 +55,7 @@ error_reporting(E_ALL);
 if ( file_exists( 'install.php' ) ) {
     if ( ! empty( $_POST['save'] ) ) {
         // Create the config file and remove the install script
-        file_put_contents( 'config.php','<?php $vct_config = \''.serialize($_POST).'\'; ?>' );
+        file_put_contents( 'config.php','<?php $c = \''.serialize($_POST).'\'; ?>' );
         unlink('install.php');
         die();
     }
@@ -77,194 +77,246 @@ else {
     * 
     * */
     // Main data getter
-    $vct_data = json_decode( file_get_contents( 'php://input' ), true);
-    if ( empty( $vct_data ) ) {
-	die('Nothing to do');
+    $i = json_decode( file_get_contents( 'php://input' ), TRUE);
+    if ( empty( $i ) ) {
+	    die('Nothing to do');
     }
-    // Primary daemon server location (usually on same server, localhost)
-    $vct_url = 'localhost';
+    // Primary default daemon server location (usually on same server, localhost)
+    $_url = 'localhost';
     include_once( 'verusclass.php' );
     include_once( 'config.php' );
-    $vct_config = unserialize($vct_config);
+    $c = unserialize($c);
     // This unserialized variable works as follows:
     //
-    // access code is found at: $vct_config['code']
-    // added chains are in an array under: $vct_config['chain']
-    // payout addresses are given the key leading with lowercase chain name, followed by payout type: e.g. $vct_config['vrsc_z'] is VerusCoin Z address
+    // access code is found at: $c['acc']
+    // added chains are in an array under: $c['chn']
+    // payout addresses are given the key leading with lowercase chain name, followed by payout type: e.g. $c['vrsc_z'] is VerusCoin Z address
     // unsupported or unentered payout types are just blank entries, tools utilizing this Api should ignore empty payout values
     
     // Simple test function for admins
     if ( ! empty( $_GET['test'] ) ) {
         echo 'reachable';
     }
-    if ( $vct_data['code'] != $vct_config['code'] ) {
-        die( 'access_code_err' ); // Die if no access code
+    if ( $i['acc'] != $c['acc'] ) {
+        die( 'err_access_code' ); // Die if no access code
     }
-    if ( empty( $vct_data['chain'] ) ) {
-        die( 'chain_missing_err' );
+    if ( empty( $i['chn'] ) ) {
+        die( 'err_chain_missing' );
     }
     // TODO: Function to check for chain on local wallet and return result (error out if non-exist or down)
     //
     //
-    if ( empty( $vct_data['exec'] ) ) {
-        die( 'exec_missing_err' );
+    if ( empty( $i['exc'] ) ) {
+        die( 'err_command_missing' );
     }
 
     // Build data array for functions with posted chain data
     // TODO: Create more reliable method of finding installed chains: use config after install and if not search and update config if found
     // TODO: add function to allow api call to signal a new chain is being instantiated
-    $vct_chain = strtoupper( $vct_data['chain'] );
-    if ( $vct_chain == 'VRSCTEST' ) { // If parent pbaas chain, set director (only necessary if parent has unique location from pbaas chains, specific testing, etc)
-        $vct_dir = '/home/user/.komodo/VRSCTEST'; // temporary method
-        $vct_name = 'VRSCTEST';
+    $_chn = strtoupper( $i['chn'] );
+    if ( $_chn == 'VRSCTEST' ) { // If parent pbaas chain, set director (only necessary if parent has unique location from pbaas chains, specific testing, etc)
+        $_dir = '/home/user/.komodo/VRSCTEST'; // temporary method
     }
     else {
-        $vct_dir = trim( shell_exec( 'find /opt -type d -name "'.$vct_chain.'"' ) );
-        $vct_name = $vct_chain;
+        $_dir = trim( shell_exec( 'find /opt -type d -name "'.$_chn.'"' ) );
     }
-    $vct_data['exec'] = filter( $vct_data['exec'] );
-    $vct_data = array_merge( $vct_data, array(
-        'vct_proto' => 'http',
-        'vct_url' => $vct_url,
-        'vct_dir' => $vct_dir,
-        'vct_user' => trim( substr( shell_exec( 'cat ' . $vct_dir . '/' . $vct_name . '.conf | grep "rpcuser="' ), strlen( 'rpcuser=' ) ) ),
-        'vct_pass' => trim( substr( shell_exec( 'cat ' . $vct_dir . '/' . $vct_name . '.conf | grep "rpcpassword="' ), strlen( 'rpcpassword=' ) ) ),
-        'vct_port' => trim( substr( shell_exec( 'cat ' . $vct_dir . '/' . $vct_name . '.conf | grep "rpcport="' ), strlen( 'rpcport=' ) ) ),
+    $i['exc'] = vct_clean( $i['exc'] );
+    $i = array_merge( $i, array(
+        'pro' => 'http',
+        'url' => $_url,
+        'dir' => $_dir,
+        'usr' => trim( substr( shell_exec( 'cat ' . $_dir . '/' . $_chn . '.conf | grep "rpcuser="' ), strlen( 'rpcuser=' ) ) ),
+        'pas' => trim( substr( shell_exec( 'cat ' . $_dir . '/' . $_chn . '.conf | grep "rpcpassword="' ), strlen( 'rpcpassword=' ) ) ),
+        'prt' => trim( substr( shell_exec( 'cat ' . $_dir . '/' . $_chn . '.conf | grep "rpcport="' ), strlen( 'rpcport=' ) ) ),
     ) );
     /**
-    *  Execute the function (data points: code, chain, exec, hash, opt)
+    *  Execute the function (data points: code, chain, exc, par, opt)
     */
-    echo json_encode( array( 'exec' => $vct_data['exec'], 'result' => verigate_go( $vct_data ) ), true );
+    echo json_encode( array( 'command' => $i['exc'], 'result' => _go( $i ) ), TRUE );
 }
 
 /**
  *  Primary data and exec function
  */
-function verigate_go( $vct_data ) {
-    $verus = new rpcVerus( $vct_data['vct_user'], $vct_data['vct_pass'], $vct_data['vct_url'], $vct_data['vct_port'], $vct_data['vct_proto'] );
-    $exec = $vct_data['exec'];
-    $hash = $vct_data['hash'];
-    $opt = $vct_data['opt'];
-
-    switch ( $vct_data['exec'] ) {
+function _go( $d ) {
+    $verus = new Verus( $d['usr'], $d['pas'], $d['url'], $d['prt'], $d['pro'] );
+    $e = $d['exc'];
+    $p = $d['par'];
+    $o = $d['opt'];
+    switch ( $e ) {
+        /**
+         * Tests
+         * 
+         * For testing status of daemon(s)
+         * 
+         */
         case 'test':
             $verus->status();
-	    if ( $verus->vct_stat === 404 ) {
-            return json_encode( array( 'online' => 'true' ), true );
-	    }
-	    else {
-            return json_encode( array( 'online' => 'false' ), true );
-	    }
+	        if ( $verus->sts === 404 ) {
+                return vct_custom_return( 'status', 'online' );
+	        }
+	        else {
+                return vct_custom_return( 'status', 'offline' );
+	        }
             break;
+        /**
+         * VerusPay
+         * 
+         * Custom section with cases built for use with VerusPay
+         * 
+         *  */
         case 'lconf': // return lowest confirm tx
-            if ( ! isset( $hash ) ) {
-                return json_encode( "Missing hash data", TRUE );
+            if ( !isset( $p ) ) {
+                return vct_custom_return( 'error', '100' );
             }
-            else if ( substr($vct_data['hash'], 0, 2) === 'zs' ) {
-                $result = $verus->z_listreceivedbyaddress( $vct_data['hash'] );
-                $amounts = array();
-                foreach ( $result as $item ) {
-                    array_push( $amounts, $item['amount'] );
+            else if ( substr( $p, 0, 2 ) === 'zs' ) {
+                $r = $verus->z_listreceivedbyaddress( $p );
+                $a = array();
+                foreach ( $r as $v ) {
+                    array_push( $a, $v['amount'] );
                 }
-            return json_encode( array_sum( $amounts ), TRUE );
+            return json_encode( array_sum( $a ), TRUE );
             }
             else {
-		return json_encode( $verus->getreceivedbyaddress( $hash ), TRUE );
+		        return json_encode( $verus->getreceivedbyaddress( $p ), TRUE );
             }
             break;
-
-
         case 'tcount': // return count of all t addresses
-            $hash = array();
-            $hash[0] = '--';
-            return json_encode( count( $verus->getaddressesbyaccount( $hash ) ), true );
+            if ( !isset( $p ) ) {
+                return vct_custom_return( 'error', '100' );
+            }
+            else {
+                return json_encode( count( $verus->getaddressesbyaccount( $p ) ), TRUE );
+            }
             break;
         case 'zcount': // return count of all z addresses
-            return json_encode( count( $verus->z_listaddresses() ), true );
+            return json_encode( count( $verus->z_listaddresses() ), TRUE );
             break;
         case 'recby': // return total received by balance
-            if ( ! isset( $vct_data['hash'] ) ) {
-                return json_encode( "Error 2 - Hash", true );
+            if ( !isset( $p ) ) {
+                return vct_custom_return( 'error', '100' );
             }
             else {
-                return json_encode( $verus->getreceivedbyaddress( $vct_data['hash'] ), true );
+                return json_encode( $verus->getreceivedbyaddress( $p ), TRUE );
             }
             break;
         case 'bal': // Iterate throught all addresses provided and display balance of each
-            $hash = $vct_data['hash'];
-            if ( empty( $hash ) ) {
-                $hash = array( '""' );
-            }
-            $taddr = $verus->getaddressesbyaccount( $hash );
-            $zaddr = $verus->z_listaddresses();
-            if ( json_encode( $zaddr, true ) == 'false' && json_encode( $taddr, true) == 'false' ) {
-                return null;
+            if ( !isset( $p ) ) {
+                return vct_custom_return( 'error', '100' );
             }
             else {
-                $tbal = array();
-                $zbal = array();
-                $bal = array();
-                if ( json_encode( $taddr, true ) != 'false' ) {
-                    foreach ( $taddr as $value ) {
-                        $tbal[$value] = $verus->z_getbalance( array($value) );
-                    }
-                }
-                if ( json_encode( $zaddr, true ) != 'false' ) {
-                    foreach ( $zaddr as $key => $value ) {
-                        $zbal[$value] = $verus->z_getbalance( array($value) );
-                    }
-                }
-                $bal = array_merge( $tbal, $zbal );
-                $return = $bal; 
-                if ( is_array( $return ) ) {
-                    return vct_format( $return );
+                $t = $verus->getaddressesbyaccount( $p );
+                $z = $verus->z_listaddresses();
+                if ( json_encode( $z, TRUE ) == 'false' && json_encode( $t, TRUE) == 'false' ) {
+                    return null;
                 }
                 else {
-                    return $return;
+                    $tb = array();
+                    $ttb = array();
+                    $zb = array();
+                    $ztb = array();
+                    $b = array();
+                    $bt = array();
+                    if ( json_encode( $t, TRUE ) != 'false' ) {
+                        foreach ( $t as $v ) {
+                            $tb[$v] = $verus->z_getbalance( json_encode( $v, TRUE ) );
+                        }
+                        foreach ( $tb as $v ) {
+                            $ttb[] = $v;
+                        }
+                        $ttb = array(
+                            'total_t_balance' => array_sum( $ttb )
+                        );
+                    }
+                    if ( json_encode( $z, TRUE ) != 'false' ) {
+                        foreach ( $z as $v ) {
+                            $zb[$v] = $verus->z_getbalance( json_encode( $v, TRUE ) );
+                        }
+                        foreach ( $zb as $v ) {
+                            $ztb[] = $v;
+                        }
+                        $ztb = array(
+                            'total_z_balance' => array_sum( $ztb )
+                        );
+                    }
+                    $bt = array(
+                        'total_balance' => array_sum( array( $ttb['total_t_balance'], $ztb['total_z_balance'] ) )
+                    );
+                    $b = array_merge( $tb, $zb, $ttb, $ztb, $bt );
+                    $r = $b;
+                    if ( is_array( $r ) ) {
+                        return vct_format( $r );
+                    }
+                    else {
+                        return $r;
+                    }
                 }
             }
             break;
+        /**
+         * Default
+         * 
+         * Pass any/all unfiltered requests through to the daemon
+         * 
+         */
         default: // TODO : Setup filter for optional usage of some commands
-            if ( isset( $hash ) ) {
-                $return = $verus->$exec( $hash );
+            // Filter specific commands here
+            //vct_filter( $e );
+            if ( isset( $p ) ) {
+                $r = $verus->$e( $p );
             }
             else {
-                $return = $verus->$exec();
+                $r = $verus->$e();
             }
-            if ( is_array( $return ) ) {
-                return vct_format( $return );
+            if ( is_array( $r ) ) {
+                return vct_format( $r );
             }
             else {
-                return $return;
+                return $r;
             }
             break;
     }
-
 }
 
-function vct_format( $info_ret ) {
-    foreach ( $info_ret as $key => $value ) {
-        if ( $value == '0' ) {
-            $info_ret[$key] = '0';
+function vct_format( $d ) {
+    foreach ( $d as $k => $v ) {
+        if ( $v == '0' ) {
+            $d[$k] = '0';
         }
-	else if ( is_bool( $value ) ) {
-            $info_ret[$key] = ($value) ? 'true' : 'false';
+	    else if ( is_bool( $v ) ) {
+            $d[$k] = ( $v ) ? 'true' : 'false';
         }
-        else if ( is_float( $value) ) {
-            $info_ret[$key] = sprintf('%.8f',floatval($value));
+        else if ( is_float( $v) ) {
+            $d[$k] = sprintf( '%.8f', floatval( $v ) );
         }
-        else if ( is_integer( $value ) ) {
-            $info_ret[$key] = (string)$value;
+        else if ( is_integer( $v ) ) {
+            $d[$k] = (string)$v;
         }
     }
-    return json_encode( $info_ret, true );
+    return json_encode( $d, TRUE );
 }
 
-function filter( $data ) {
-    $data = trim( htmlentities( strip_tags( $data ) ) );
+function vct_clean( $d ) {
+    $d = trim( htmlentities( strip_tags( $d ) ) );
     if ( get_magic_quotes_gpc() ) {
-        $data = stripslashes( $data );
+        $d = stripslashes( $d );
     }
-    $data = strtolower( $data );
-    return $data;
+    $d = strtolower( $d );
+    return $d;
+}
+
+function vct_custom_return( $t, $d ) {
+    if ( $t === 'error' ) {
+        switch ( $d ) {
+            case '100':
+                $r = array( $t => $d, 'message' => 'Param missing or malformed' );
+                break;
+            case '101':
+                $r = array( $t => $d, 'message' => 'Unknown' );
+        }
+    }
+    else {
+        $r = array( $t => $d );
+    }
+    return json_encode( $r, TRUE );
 }

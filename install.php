@@ -328,7 +328,7 @@ function rand_chars($c, $l, $u = FALSE) {
             </div>
             <form id="config" name="config" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>" method="POST">
                 <input type="hidden" name="save" value="1">
-                <input type="hidden" name="code" value="<?php echo $instString; ?>">
+                <input type="hidden" name="acc" value="<?php echo $instString; ?>">
                 <div id="addr_block_location"></div>
                 <p style="font-weight: bold;font-size: 2.2rem;text-align: center;display: block;float: none;margin: 0 auto;width: 100%;padding: 5px 0;margin-top: 20px;">Add Your Chains:</p>
                 <span style="font-size: 16px;padding: 0 0 20px;display: block;">Add the chains/coins by entering the chain symbol and clicking the Add Chain button.  Add chains this wallet server will access, one at a time and enter the appropriate Payout address (if desired/compatible) for each chain added.  Only add chains for which you have the daemon installed and running on this wallet server.</span>
@@ -359,12 +359,12 @@ function rand_chars($c, $l, $u = FALSE) {
 
         jQuery('#add_new').on('click touchstart', function(){
             var newAddr = jQuery('.addr_block_template').clone();
-            var chain = jQuery('#chain_name').val().toLowerCase();
+            var chn = jQuery('#chain_name').val().toLowerCase();
                 jQuery(newAddr).insertBefore('#addr_block_location');
-                jQuery(newAddr).children('.addr').text(chain.toUpperCase());
-                jQuery(newAddr).children('.taddr').attr('name',chain+'_t');
-                jQuery(newAddr).children('.zaddr').attr('name',chain+'_z');
-                jQuery(newAddr).children('.addr_name').val(chain);
+                jQuery(newAddr).children('.addr').text(chn.toUpperCase());
+                jQuery(newAddr).children('.taddr').attr('name',chn+'_t');
+                jQuery(newAddr).children('.zaddr').attr('name',chn+'_z');
+                jQuery(newAddr).children('.addr_name').val(chn);
                 jQuery(newAddr).removeClass('addr_block_template');
                 jQuery('#chain_name').val('');
         });
@@ -379,7 +379,7 @@ function rand_chars($c, $l, $u = FALSE) {
     </script>
 <div class="addr_block_template addr_block">
     <span class="addr"></span> Payout Addresses
-    <input class="addr_name" type="hidden" value="" name="chain[]">
+    <input class="addr_name" type="hidden" value="" name="chn[]">
     <input class="addr_text taddr" placeholder="Transparent Payout Address (leave empty if unsupported or not desired)" type="text" value="" name="">
     <input class="addr_text zaddr" placeholder="Private (Sapling) Payout Address (leave empty if unsupported or not desired)" type="text" value="" name="">
 </div>

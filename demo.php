@@ -1,9 +1,9 @@
 <?php
 // IMPORTANT
 // Define your VCT installation URL/IP and your Access Code (generated during install) in the following variables
-$url = 'location/of/veruschaintools';
-$data = array(
-    'code' => 'thecode',
+$url = 'location/or/url/of/vct';
+$d = array(
+    'acc' => 'thecode',
 );
 /**
  * Demo file for VerusChainTools
@@ -56,93 +56,60 @@ ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
-$_exec = null;
-$_chain = null;
-$_hash = null;
+$_exc = null;
+$_chn = null;
+$_par = null;
 $_opt = null;
-$raw_data = null;
-$raw_result = null;
-$opt_data = null;
+$raw_d = null;
+$raw_r = null;
+$opt_d = null;
 
-    //
-    // GET Hash for testing simple calls only (non-complex/json - in 
-    // your code you should always pass hash to the data arraay as an array
-    // of your resultant hash options.
-    // 
-    // For example, to pass a command like 'setgenerate' you need two options,
-    // true/false and the number of threads.  You would pass hash into the call
-    // as an array of ["false","0"] for example.
-    // 
-    // To do something like z_sendmany you would have an array of your json formatted
-    // data, like so: array("address"=>"theaddress","amount"=>100)
-    //
-    // For Example:
-    //                  $_hash = array(
-    //                      "zs1vzj3r59cumts5gmyx8tw543zf8qwhe05lu5p89juyfq8w58c9mtnt2r7nu4rx2at8qyvzlj8kg0",
-    //                          array(
-    //                              array(
-    //                                  "address" => "RQkGsTA3ANtZDS4Pt1UPA2UntDV3RUp1yq",
-    //                                  "amount" => 100,
-    //                              )
-    //                          )
-    //                  );
-    //
-    //
-    // This will result in the VCT function as being converted to the appropriate 
-    // option set array or json formatted option set.
-    //
-    // Note on sending "" for hash: In some cases you need to send "" to the daemon to signify the default account.  
-    // To do so, instead send -- (dash dash) to the API which will be interpreted as "".
-    // 
-    // Here we have the get function for hash, but to test fully you should
-    // build your test array as $_hash.
-
-    // Handle request
-if ( !empty( $_POST['exec'] ) ) {
-    $_exec = $_POST['exec'];
-    $_chain = $_POST['chain'];
-    $_hash = $_POST['hash'];
+// Handle request
+if ( !empty( $_POST['exc'] ) ) {
+    $_exc = $_POST['exc'];
+    $_chn = $_POST['chn'];
+    $_par = $_POST['par'];
     $_opt = $_POST['opt'];
 }
 else {
-    $opt_data = 'Hmmph. Nothing to do :(';
+    $opt_d = 'Hmmph. Nothing to do :(';
 }
     // GET chain defaults to VRSCTEST in this sample, but can be changed to another default
-if ( empty( $_chain ) ) { $_chain = 'VRSCTEST'; } else { $_chain = strtoupper( $_chain ); }
-if ( empty( $_hash ) ) { $_hash = null; } 
+if ( empty( $_chn ) ) { $_chn = 'VRSCTEST'; } else { $_chn = strtoupper( $_chn ); }
+if ( empty( $_par ) ) { $_par = null; } 
 if ( empty( $_opt ) ) { $_opt = null; }
-$data = array_merge( $data, array(
-    'chain' => $_chain,
-    'exec'  => $_exec,
-    'hash'  => $_hash,
+$d = array_merge( $d, array(
+    'chn' => $_chn,
+    'exc'  => $_exc,
+    'par'  => $_par,
     'opt'   => $_opt,
     ) 
 );
 
-$raw_data = json_decode( vg_go( $url, $data ), true );
-if ( $data['opt'] != null ) {
-    $opt_data = json_decode( $raw_data['result'], true);
-    if ( isset( $opt_data[$data['opt']] ) ) {
-        $opt_data = $data['chain'] . '/' . $data['exec'] . ' - ' . $data['opt'] . ': ' . $opt_data[$data['opt']];
+$raw_d = json_decode( vg_go( $url, $d ), true );
+if ( $d['opt'] != null ) {
+    $opt_d = json_decode( $raw_d['result'], true);
+    if ( isset( $opt_d[$d['opt']] ) ) {
+        $opt_d = $d['chn'] . '/' . $d['exc'] . ' - ' . $d['opt'] . ': ' . $opt_d[$d['opt']];
     }
     else {
-        $opt_data = null;
+        $opt_d = null;
     }
 }
-if ( $opt_data == null ) { $opt_data = $data['chain'] . ' - Hash or Opt not set!'; }
+if ( $opt_d == null ) { $opt_d = $d['chn'] . ' - Hash or Opt not set!'; }
 
-$raw_result = $raw_data['result'];
+$raw_r = $raw_d['result'];
 
 
-function vg_go( $url, $data ) {
+function vg_go( $url, $d ) {
     $ch = curl_init();
-    $data = json_encode( $data );
+    $d = json_encode( $d );
     curl_setopt( $ch, CURLOPT_SSL_VERIFYPEER, false );
     curl_setopt( $ch, CURLOPT_URL, $url );
     curl_setopt( $ch, CURLOPT_USERAGENT, 'VerusChainTools' );
     curl_setopt( $ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json','Accept: application/json') );
     curl_setopt( $ch, CURLOPT_POST, 1);
-    curl_setopt( $ch, CURLOPT_POSTFIELDS, $data );
+    curl_setopt( $ch, CURLOPT_POSTFIELDS, $d );
     curl_setopt( $ch, CURLOPT_RETURNTRANSFER, true );
     $re  = curl_exec( $ch );
     
@@ -389,17 +356,16 @@ function vg_go( $url, $data ) {
             </div>
         </div>
 	<h2>Original Curl Api Call:</h2>
-        <div class="return_area"><?php echo json_encode( $data );?></div>
+        <div class="return_area"><?php echo json_encode( $d );?></div>
         <h2>Narrowed Return:</h2>
-        <div class="return_area" style="background: #aeffaf;"><?php echo $opt_data;?></div>
+        <div class="return_area" style="background: #aeffaf;"><?php echo $opt_d;?></div>
 	<h2 id="raw">Raw Return:</h2>
-        <div class="return_area"><?php echo $raw_result;?></div>
+        <div class="return_area"><?php echo $raw_r;?></div>
         <div class="form_block-outer">
             <form id="demo" name="demo" action="" method="POST">
-                <input type="text" name="exec" value='<?php echo $_exec; ?>' placeholder="Exec field (the command)">
-                <input type="text" name="chain" value='<?php echo $_chain; ?>' placeholder="Chain field (e.g. VRSCTEST)">
-                <!-- <input type="text" name="hash1" value="<?php echo $_hash1_raw; ?>" placeholder="Simple param"> -->
-                <input type="text" name="hash" value='<?php echo $_hash; ?>' placeholder="Complex param">
+                <input type="text" name="exc" value='<?php echo $_exc; ?>' placeholder="Exec field (the command)">
+                <input type="text" name="chn" value='<?php echo $_chn; ?>' placeholder="Chain field (e.g. VRSCTEST)">
+                <input type="text" name="par" value='<?php echo $_par; ?>' placeholder="Complex param">
                 <input type="text" name="opt" value='<?php echo $_opt; ?>' placeholder="Option">
                 <div class="submit_container">
                     <input class="submit_button" type="submit" value="Go!">

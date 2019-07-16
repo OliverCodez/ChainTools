@@ -49,7 +49,7 @@
  * 
  */
 // Begin Class Code
-class rpcVerus {
+class Verus {
     private $u;
     private $p;
     private $pr;
@@ -58,11 +58,11 @@ class rpcVerus {
     private $c;
 
     // Information and debugging
-    public $vct_stat;
-    public $vct_err;
-    public $vct_raw;
-    public $vct_re;
-    private $vct_id = 0;
+    public $sts;
+    public $err;
+    public $raw;
+    public $ret;
+    private $id = 0;
     /**
      * @param string $u
      * @param string $p
@@ -80,39 +80,39 @@ class rpcVerus {
         $this->c    = null;
     }
     /**
-     * @param string|null $vct_cert
+     * @param string|null $cer
      */
-    public function setSSL( $vct_cert = null ) {
+    public function setSSL( $cer = null ) {
         $this->pr         = 'https';
-        $this->c = $vct_cert;
+        $this->c = $cer;
     }
-    public function __call( $vct_meth, $vct_params ) {
-        $this->vct_stat = null;
-        $this->vct_err = null;
-        $this->vct_raw = null;
-        $this->vct_re = null;
-	$this->vct_param = array();
-	if ( !empty( $vct_params[0] ) ) {
-	    if ( $vct_params[0][0] === '[' ) {
-		$this->vct_param = json_decode( $vct_params[0], TRUE );
-	    }
-	    else {
-		$this->vct_param = array( json_decode( $vct_params[0], TRUE ) );
-	    }
+    public function __call( $mth, $par ) {
+        $this->sts = null;
+        $this->err = null;
+        $this->raw = null;
+        $this->ret = null;
+	    $this->par = array();
+	    if ( !empty( $par[0] ) ) {
+	        if ( $par[0][0] === '[' ) {
+		        $this->par = json_decode( $par[0], TRUE );
+	        }
+	        else {
+		        $this->par = array( json_decode( $par[0], TRUE ) );
+	        }
         }
-	$this->vct_param = array_values( $this->vct_param );
-        $this->vct_id++;
-        $vct_req = json_encode( array(
-            'method' => $vct_meth,
-            'params' => $this->vct_param,
-            'id'     => $this->vct_id
+	    $this->par = array_values( $this->par );
+        $this->id++;
+        $req = json_encode( array(
+            'method' => $mth,
+            'params' => $this->par,
+            'id'     => $this->id
         ) );
         // TODO : Test area
-        //return $vct_req;
+        //return $req;
         //die();
         // END
-        $vct_c    = curl_init( "{$this->pr}://{$this->h}:{$this->po}" );
-        $vct_opt = array(
+        $cur    = curl_init( "{$this->pr}://{$this->h}:{$this->po}" );
+        $opt = array(
             CURLOPT_HTTPAUTH       => CURLAUTH_BASIC,
             CURLOPT_USERPWD        => $this->u . ':' . $this->p,
             CURLOPT_RETURNTRANSFER => true,
@@ -120,49 +120,49 @@ class rpcVerus {
             CURLOPT_MAXREDIRS      => 10,
             CURLOPT_HTTPHEADER     => array( 'Content-type: application/json' ),
             CURLOPT_POST           => true,
-            CURLOPT_POSTFIELDS     => $vct_req
+            CURLOPT_POSTFIELDS     => $req
         );
         if ( ini_get( 'open_basedir' ) ) {
-            unset( $vct_opt[CURLOPT_FOLLOWLOCATION] );
+            unset( $opt[CURLOPT_FOLLOWLOCATION] );
         }
         if ( $this->pr == 'https' ) {
             if ( ! empty( $this->c ) ) {
-                $vct_opt[CURLOPT_CAINFO] = $this->c;
-                $vct_opt[CURLOPT_CAPATH] = DIRNAME( $this->c );
+                $opt[CURLOPT_CAINFO] = $this->c;
+                $opt[CURLOPT_CAPATH] = DIRNAME( $this->c );
             } else {
-                $vct_opt[CURLOPT_SSL_VERIFYPEER] = false;
+                $opt[CURLOPT_SSL_VERIFYPEER] = false;
             }
         }
-        curl_setopt_array( $vct_c, $vct_opt );
-        $this->vct_raw = curl_exec( $vct_c );
-        $this->vct_re = json_decode( $this->vct_raw, true );
-        $this->vct_stat = curl_getinfo( $vct_c, CURLINFO_HTTP_CODE );
-        $vct_c_error = curl_error( $vct_c );
-        curl_close( $vct_c );
-        if ( ! empty( $vct_c_error ) ) {
-            $this->vct_err = $vct_c_error;
+        curl_setopt_array( $cur, $opt );
+        $this->raw = curl_exec( $cur );
+        $this->ret = json_decode( $this->raw, true );
+        $this->sts = curl_getinfo( $cur, CURLINFO_HTTP_CODE );
+        $cre = curl_error( $cur );
+        curl_close( $cur );
+        if ( ! empty( $cre ) ) {
+            $this->err = $cre;
         }
-        if ( $this->vct_re[ 'error' ] ) {
-            $this->vct_err = $this->vct_re[ 'error' ][ 'message' ];
-        } elseif ( $this->vct_stat != 404 ) {
-            switch ( $this->vct_stat ) {
+        if ( $this->ret['error'] ) {
+            $this->err = $this->ret['error']['message'];
+        } elseif ( $this->sts != 404 ) {
+            switch ( $this->sts ) {
 		case 0:
-		    $this->vct_err = 'Error 0 - Service Not Running';
+		    $this->err = 'Offline';
 		    break;
                 case 400:
-                    $this->vct_err = 'Error 400 - Bad Request';
+                    $this->err = '400';
                     break;
                 case 401:
-                    $this->vct_err = 'Error 401 - Unauthorized';
+                    $this->err = '401';
                     break;
                 case 403:
-                    $this->vct_err = 'Error 403 - Forbidden';
+                    $this->err = '403';
                     break;
             }
         }
-        if ( $this->vct_err ) {
-            return $this->vct_err;
+        if ( $this->err ) {
+            return $this->err;
         }
-        return $this->vct_re[ 'result' ];
+        return $this->ret['result'];
     }
 }
