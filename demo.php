@@ -1,9 +1,9 @@
 <?php
 // IMPORTANT
 // Define your VCT installation URL/IP and your Access Code (generated during install) in the following variables
-$url = 'location/or/url/of/vct';
+$url = 'location/or/url/of/vct/main';
 $d = array(
-    'acc' => 'thecode',
+    'a' => 'accesscodefrominstall',
 );
 /**
  * Demo file for VerusChainTools
@@ -56,7 +56,7 @@ ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
-$_exc = null;
+$_mth = null;
 $_chn = null;
 $_par = null;
 $_opt = null;
@@ -65,11 +65,11 @@ $raw_r = null;
 $opt_d = null;
 
 // Handle request
-if ( !empty( $_POST['exc'] ) ) {
-    $_exc = $_POST['exc'];
-    $_chn = $_POST['chn'];
-    $_par = $_POST['par'];
-    $_opt = $_POST['opt'];
+if ( !empty( $_POST['method'] ) ) {
+    $_mth = $_POST['method'];
+    $_chn = $_POST['chain'];
+    $_par = $_POST['params'];
+    $_opt = $_POST['option'];
 }
 else {
     $opt_d = 'Hmmph. Nothing to do :(';
@@ -79,24 +79,24 @@ if ( empty( $_chn ) ) { $_chn = 'VRSCTEST'; } else { $_chn = strtoupper( $_chn )
 if ( empty( $_par ) ) { $_par = null; } 
 if ( empty( $_opt ) ) { $_opt = null; }
 $d = array_merge( $d, array(
-    'chn' => $_chn,
-    'exc'  => $_exc,
-    'par'  => $_par,
-    'opt'   => $_opt,
+    'c' => $_chn,
+    'm'  => $_mth,
+    'p'  => $_par,
+    'o'   => $_opt,
     ) 
 );
 
 $raw_d = json_decode( vg_go( $url, $d ), true );
-if ( $d['opt'] != null ) {
+if ( $d['o'] != null ) {
     $opt_d = json_decode( $raw_d['result'], true);
-    if ( isset( $opt_d[$d['opt']] ) ) {
-        $opt_d = $d['chn'] . '/' . $d['exc'] . ' - ' . $d['opt'] . ': ' . $opt_d[$d['opt']];
+    if ( isset( $opt_d[$d['o']] ) ) {
+        $opt_d = $d['c'] . '/' . $d['m'] . ' - ' . $d['o'] . ': ' . $opt_d[$d['o']];
     }
     else {
         $opt_d = null;
     }
 }
-if ( $opt_d == null ) { $opt_d = $d['chn'] . ' - Hash or Opt not set!'; }
+if ( $opt_d == null ) { $opt_d = $d['c'] . ' - Hash or Opt not set!'; }
 
 $raw_r = $raw_d['result'];
 
@@ -363,10 +363,10 @@ function vg_go( $url, $d ) {
         <div class="return_area"><?php echo $raw_r;?></div>
         <div class="form_block-outer">
             <form id="demo" name="demo" action="" method="POST">
-                <input type="text" name="exc" value='<?php echo $_exc; ?>' placeholder="Exec field (the command)">
-                <input type="text" name="chn" value='<?php echo $_chn; ?>' placeholder="Chain field (e.g. VRSCTEST)">
-                <input type="text" name="par" value='<?php echo $_par; ?>' placeholder="Complex param">
-                <input type="text" name="opt" value='<?php echo $_opt; ?>' placeholder="Option">
+                <input type="text" name="method" value='<?php echo $_mth; ?>' placeholder="Method (the command)">
+                <input type="text" name="chain" value='<?php echo $_chn; ?>' placeholder="Chain (e.g. VRSCTEST)">
+                <input type="text" name="params" value='<?php echo $_par; ?>' placeholder="Params JSON">
+                <input type="text" name="option" value='<?php echo $_opt; ?>' placeholder="Option">
                 <div class="submit_container">
                     <input class="submit_button" type="submit" value="Go!">
                 </div>

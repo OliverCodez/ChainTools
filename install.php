@@ -327,8 +327,8 @@ function rand_chars($c, $l, $u = FALSE) {
                 </div>
             </div>
             <form id="config" name="config" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>" method="POST">
-                <input type="hidden" name="save" value="1">
-                <input type="hidden" name="acc" value="<?php echo $instString; ?>">
+                <input type="hidden" name="s" value="s">
+                <input type="hidden" name="a" value="<?php echo $instString; ?>">
                 <div id="addr_block_location"></div>
                 <p style="font-weight: bold;font-size: 2.2rem;text-align: center;display: block;float: none;margin: 0 auto;width: 100%;padding: 5px 0;margin-top: 20px;">Add Your Chains:</p>
                 <span style="font-size: 16px;padding: 0 0 20px;display: block;">Add the chains/coins by entering the chain symbol and clicking the Add Chain button.  Add chains this wallet server will access, one at a time and enter the appropriate Payout address (if desired/compatible) for each chain added.  Only add chains for which you have the daemon installed and running on this wallet server.</span>
@@ -379,7 +379,7 @@ function rand_chars($c, $l, $u = FALSE) {
     </script>
 <div class="addr_block_template addr_block">
     <span class="addr"></span> Payout Addresses
-    <input class="addr_name" type="hidden" value="" name="chn[]">
+    <input class="addr_name" type="hidden" value="" name="c[]">
     <input class="addr_text taddr" placeholder="Transparent Payout Address (leave empty if unsupported or not desired)" type="text" value="" name="">
     <input class="addr_text zaddr" placeholder="Private (Sapling) Payout Address (leave empty if unsupported or not desired)" type="text" value="" name="">
 </div>

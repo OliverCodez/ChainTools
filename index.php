@@ -53,10 +53,12 @@ ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 // Check if first run / install
 if ( file_exists( 'install.php' ) ) {
-    if ( ! empty( $_POST['save'] ) ) {
+    if ( ! empty( $_POST['s'] ) ) {
         // Create the config file and remove the install script
         file_put_contents( 'config.php','<?php $c = \''.serialize($_POST).'\'; ?>' );
-        unlink('install.php');
+        if ( $_POST['s'] === 's' ) {
+            unlink('install.php');
+        }
         die();
     }
     else {
@@ -97,30 +99,30 @@ else {
     if ( ! empty( $_GET['test'] ) ) {
         echo 'reachable';
     }
-    if ( $i['acc'] != $c['acc'] ) {
+    if ( $i['a'] != $c['a'] ) {
         die( 'err_access_code' ); // Die if no access code
     }
-    if ( empty( $i['chn'] ) ) {
+    if ( empty( $i['c'] ) ) {
         die( 'err_chain_missing' );
     }
     // TODO: Function to check for chain on local wallet and return result (error out if non-exist or down)
     //
     //
-    if ( empty( $i['exc'] ) ) {
+    if ( empty( $i['m'] ) ) {
         die( 'err_command_missing' );
     }
 
     // Build data array for functions with posted chain data
     // TODO: Create more reliable method of finding installed chains: use config after install and if not search and update config if found
     // TODO: add function to allow api call to signal a new chain is being instantiated
-    $_chn = strtoupper( $i['chn'] );
+    $_chn = strtoupper( $i['c'] );
     if ( $_chn == 'VRSCTEST' ) { // If parent pbaas chain, set director (only necessary if parent has unique location from pbaas chains, specific testing, etc)
         $_dir = '/home/user/.komodo/VRSCTEST'; // temporary method
     }
     else {
         $_dir = trim( shell_exec( 'find /opt -type d -name "'.$_chn.'"' ) );
     }
-    $i['exc'] = vct_clean( $i['exc'] );
+    $i['m'] = vct_clean( $i['m'] );
     $i = array_merge( $i, array(
         'pro' => 'http',
         'url' => $_url,
@@ -132,7 +134,7 @@ else {
     /**
     *  Execute the function (data points: code, chain, exc, par, opt)
     */
-    echo json_encode( array( 'command' => $i['exc'], 'result' => _go( $i ) ), TRUE );
+    echo json_encode( array( 'command' => $i['m'], 'result' => _go( $i ) ), TRUE );
 }
 
 /**
@@ -140,9 +142,9 @@ else {
  */
 function _go( $d ) {
     $verus = new Verus( $d['usr'], $d['pas'], $d['url'], $d['prt'], $d['pro'] );
-    $e = $d['exc'];
-    $p = $d['par'];
-    $o = $d['opt'];
+    $e = $d['m'];
+    $p = $d['p'];
+    $o = $d['o'];
     switch ( $e ) {
         /**
          * Tests
