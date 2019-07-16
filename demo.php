@@ -1,7 +1,7 @@
 <?php
 // IMPORTANT
 // Define your VCT installation URL/IP and your Access Code (generated during install) in the following variables
-$url = 'location/or/url/of/vct/main';
+$url = 'location/url/of/your/vct/script';
 $d = array(
     'a' => 'accesscodefrominstall',
 );
@@ -23,7 +23,7 @@ $d = array(
  * @author   Oliver Westbrook <johnwestbrook@pm.me>
  * @copyright Copyright (c) 2019, John Oliver Westbrook
  * @link     https://github.com/joliverwestbrook/VerusChainTools
- * @version 0.4.0-beta
+ * @version 0.4.0-rc
  * 
  * ====================
  * 
@@ -97,7 +97,6 @@ if ( $d['o'] != null ) {
     }
 }
 if ( $opt_d == null ) { $opt_d = $d['c'] . ' - Hash or Opt not set!'; }
-
 $raw_r = $raw_d['result'];
 
 

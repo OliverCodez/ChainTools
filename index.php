@@ -19,7 +19,7 @@
  * @author   Oliver Westbrook <johnwestbrook@pm.me>
  * @copyright Copyright (c) 2019, John Oliver Westbrook
  * @link     https://github.com/joliverwestbrook/VerusChainTools
- * @version 0.4.0-beta
+ * @version 0.4.0-rc
  * 
  * ====================
  * 
@@ -109,7 +109,7 @@ else {
     //
     //
     if ( empty( $i['m'] ) ) {
-        die( 'err_command_missing' );
+        die( 'err_method_missing' );
     }
 
     // Build data array for functions with posted chain data
@@ -132,7 +132,7 @@ else {
         'prt' => trim( substr( shell_exec( 'cat ' . $_dir . '/' . $_chn . '.conf | grep "rpcport="' ), strlen( 'rpcport=' ) ) ),
     ) );
     /**
-    *  Execute the function (data points: code, chain, exc, par, opt)
+    *  Execute the function
     */
     echo json_encode( array( 'command' => $i['m'], 'result' => _go( $i ) ), TRUE );
 }
@@ -155,10 +155,10 @@ function _go( $d ) {
         case 'test':
             $verus->status();
 	        if ( $verus->sts === 404 ) {
-                return vct_custom_return( 'status', 'online' );
+                return vct_return_helper( 'status', 'online' );
 	        }
 	        else {
-                return vct_custom_return( 'status', 'offline' );
+                return vct_return_helper( 'status', 'offline' );
 	        }
             break;
         /**
@@ -169,7 +169,7 @@ function _go( $d ) {
          *  */
         case 'lconf': // return lowest confirm tx
             if ( !isset( $p ) ) {
-                return vct_custom_return( 'error', '100' );
+                return vct_return_helper( 0, NULL );
             }
             else if ( substr( $p, 0, 2 ) === 'zs' ) {
                 $r = $verus->z_listreceivedbyaddress( $p );
@@ -185,7 +185,7 @@ function _go( $d ) {
             break;
         case 'tcount': // return count of all t addresses
             if ( !isset( $p ) ) {
-                return vct_custom_return( 'error', '100' );
+                return vct_return_helper( 0, NULL );
             }
             else {
                 return json_encode( count( $verus->getaddressesbyaccount( $p ) ), TRUE );
@@ -196,7 +196,7 @@ function _go( $d ) {
             break;
         case 'recby': // return total received by balance
             if ( !isset( $p ) ) {
-                return vct_custom_return( 'error', '100' );
+                return vct_return_helper( 0, NULL );
             }
             else {
                 return json_encode( $verus->getreceivedbyaddress( $p ), TRUE );
@@ -204,7 +204,7 @@ function _go( $d ) {
             break;
         case 'bal': // Iterate throught all addresses provided and display balance of each
             if ( !isset( $p ) ) {
-                return vct_custom_return( 'error', '100' );
+                return vct_return_helper( 0, NULL );
             }
             else {
                 $t = $verus->getaddressesbyaccount( $p );
@@ -274,7 +274,15 @@ function _go( $d ) {
                 return vct_format( $r );
             }
             else {
-                return $r;
+                if ( strpos( $r, 'curltest') !== FALSE ) {
+                    $r = strstr( $r, '"params"' );
+                    $r = preg_replace('/"params": /', '', $r);
+                    $r = substr( $r, 0, strpos( $r, "}' -H" ) );
+                    return vct_return_helper( 1, $r );
+                }
+                else {
+                    return $r;
+                }
             }
             break;
     }
@@ -307,18 +315,17 @@ function vct_clean( $d ) {
     return $d;
 }
 
-function vct_custom_return( $t, $d ) {
-    if ( $t === 'error' ) {
-        switch ( $d ) {
-            case '100':
-                $r = array( $t => $d, 'message' => 'Param missing or malformed' );
-                break;
-            case '101':
-                $r = array( $t => $d, 'message' => 'Unknown' );
+function vct_return_helper( $t, $d ) {
+    switch ( $t ) {
+        case 0:
+            $r = array( 'return' => 'error', 'details' => 'Params are missing or incorrect' );
+            break;
+        case 1:
+            $r = array( 'return' => 'error', 'details' => 'Params are missing or incorrect', 'param_example' => $d );
+            break;
+        default:
+            $r = array( 'return' => $t, 'details' => $d );
+            break;
         }
-    }
-    else {
-        $r = array( $t => $d );
-    }
-    return json_encode( $r, TRUE );
+    return str_replace('\"', '"', json_encode( $r, TRUE ) );
 }
