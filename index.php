@@ -55,6 +55,8 @@ error_reporting(E_ALL);
 if ( file_exists( 'install.php' ) ) {
     if ( ! empty( $_POST['s'] ) ) {
         // Create the config file and remove the install script
+        $s_array = $_POST;
+        $s_array['f'] = explode( ',', $s_array['f'] );
         file_put_contents( 'config.php','<?php $c = \''.serialize($_POST).'\'; ?>' );
         if ( $_POST['s'] === 's' ) {
             unlink('install.php');

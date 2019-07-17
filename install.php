@@ -9,6 +9,7 @@ $_version = '4';
  * Included files:
  *      index.php
  *      verusclass.php
+ *      lang.php
  *      install.php (this file)
  *      demo.php
  *
@@ -329,6 +330,19 @@ function rand_chars($c, $l, $u = FALSE) {
             <form id="config" name="config" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>" method="POST">
                 <input type="hidden" name="s" value="s">
                 <input type="hidden" name="a" value="<?php echo $instString; ?>">
+                <p style="font-weight: bold;font-size: 2.2rem;text-align: center;display: block;float: none;margin: 0 auto;width: 100%;padding: 5px 0;margin-top: 20px;">Choose VerusChainTools Mode and Language:</p>
+                <span style="font-size: 16px;padding: 0 0 20px;display: block;">Choose how you intend to use VerusChainTools and your preferred language.</span>
+                <div class="add_chain_container">
+                    <select name="m" id="vct_mode">
+                        <option value="_vp_" selected>VerusPay WordPress Mode</option>
+                        <option value="_bg_">Full Bridge Mode</option>
+                        <option value="_lt_">Limited Mode</option>
+                    </select>
+                    <input name="f" id="vct_limits" placeholder="Enter allowed/whitelisted valid method names seperated by a comma">
+                    <select name="l" id="vct_lang">
+                        <option value="eng" selected>English</option>
+                    </select>
+                </div>
                 <div id="addr_block_location"></div>
                 <p style="font-weight: bold;font-size: 2.2rem;text-align: center;display: block;float: none;margin: 0 auto;width: 100%;padding: 5px 0;margin-top: 20px;">Add Your Chains:</p>
                 <span style="font-size: 16px;padding: 0 0 20px;display: block;">Add the chains/coins by entering the chain symbol and clicking the Add Chain button.  Add chains this wallet server will access, one at a time and enter the appropriate Payout address (if desired/compatible) for each chain added.  Only add chains for which you have the daemon installed and running on this wallet server.</span>
