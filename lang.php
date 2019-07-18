@@ -1,8 +1,8 @@
 <?php
 $lng = array(
     'eng' => array(
-        'Nothing to do.',
-        'Reachable',
+        'Unknown Error',
+        'Nothing to do! Is direct access allowed? Ensure this script is running behind a firewall and only your front-end or plugin (such as VerusPay) has access.',
         'Err: Access Code Missing. Check config!',
         'Err: Chain Info Missing. Check config!',
         'Err: Method Missing. Check config!',

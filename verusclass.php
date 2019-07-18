@@ -11,6 +11,7 @@
  * Included files:
  *      index.php
  *      verusclass.php (this file)
+ *      lang.php
  *      install.php (temporary installer)
  *      demo.php
  *
@@ -91,9 +92,13 @@ class Verus {
         $this->err = null;
         $this->raw = null;
         $this->ret = null;
-	    $this->par = array();
+        $this->frm = FALSE;
+        $this->par = array();
+        if ( $mth === 'help' ) {
+            $this->frm = TRUE;
+        }
 	    if ( !empty( $par[0] ) ) {
-	        if ( $par[0][0] === '[' ) {
+            if ( $par[0][0] === '[' ) {
 		        $this->par = json_decode( $par[0], TRUE );
 	        }
 	        else {
@@ -107,10 +112,6 @@ class Verus {
             'params' => $this->par,
             'id'     => $this->id
         ) );
-        // TODO : Test area
-        //return $req;
-        //die();
-        // END
         $cur    = curl_init( "{$this->pr}://{$this->h}:{$this->po}" );
         $opt = array(
             CURLOPT_HTTPAUTH       => CURLAUTH_BASIC,
@@ -163,6 +164,11 @@ class Verus {
         if ( $this->err ) {
             return $this->err;
         }
-        return $this->ret['result'];
+        else if ( $this->frm ) {
+            return json_decode( str_replace( '\n', '<br>', json_encode( $this->ret['result'] ) ), TRUE );
+        }
+        else {
+            return $this->ret['result'];
+        }
     }
 }

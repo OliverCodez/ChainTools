@@ -197,15 +197,21 @@ function rand_chars($c, $l, $u = FALSE) {
             display: block;
             width: 100%;
         }
+        .easytitle {
+            font-size: 2.6rem;
+            color: #3f79a2;
+        }
         .addr_block {
             padding: 5px;
             border: solid 1px #cfcfcf;
             display: block;
             opacity: 1;
+            height:auto;
             float: none;
             width: 100%;
             margin: 10px auto;
             margin-bottom: 30px;
+            font-weight:bold;
             transition:all 0.5s ease;
         }
         .addr_text {
@@ -273,7 +279,7 @@ function rand_chars($c, $l, $u = FALSE) {
             color:#FB5656;
         }
         .addr_block_template {
-            display:none;
+            height:0;
             opacity:0;
         }
          footer {
@@ -329,18 +335,19 @@ function rand_chars($c, $l, $u = FALSE) {
             </div>
             <form id="config" name="config" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>" method="POST">
                 <input type="hidden" name="s" value="s">
+                <input type="hidden" name="d" value="<?php echo date( 'Y-m-d H:i:s', time() ); ?>">
                 <input type="hidden" name="a" value="<?php echo $instString; ?>">
-                <p style="font-weight: bold;font-size: 2.2rem;text-align: center;display: block;float: none;margin: 0 auto;width: 100%;padding: 5px 0;margin-top: 20px;">Choose VerusChainTools Mode and Language:</p>
-                <span style="font-size: 16px;padding: 0 0 20px;display: block;">Choose how you intend to use VerusChainTools and your preferred language.</span>
-                <div class="add_chain_container">
-                    <select name="m" id="vct_mode">
-                        <option value="_vp_" selected>VerusPay WordPress Mode</option>
+                <div class="main_container" style="display: block;float: left;width: 100%;padding: 0 0 20px 0;margin: 10px auto;">
+    <p style="font-weight: bold;font-size: 2.2rem;text-align: center;display: block;float: none;margin: 0 auto;width: 100%;padding: 5px 0;margin-top: 20px;">Choose VerusChainTools Mode and Language:</p>
+    <span style="font-size: 16px;padding: 0 0 20px;display: block;">Choose how you intend to use VerusChainTools and your preferred language.</span>
+                    <select name="m" id="vct_mode" style="display: block;width: 100%;margin: 10px 40px;max-width: 300px;">
+                        <option value="_vp_" selected="">VerusPay WordPress Mode</option>
                         <option value="_bg_">Full Bridge Mode</option>
                         <option value="_lt_">Limited Mode</option>
                     </select>
-                    <input name="f" id="vct_limits" placeholder="Enter allowed/whitelisted valid method names seperated by a comma">
-                    <select name="l" id="vct_lang">
-                        <option value="eng" selected>English</option>
+                    <input name="f" id="vct_limits" placeholder="Enter allowed/whitelisted valid method names seperated by a comma" style="display: none;width: 80%;margin: 10px 40px;" value="setgenerate,getgenerate,getnewaddress,z_getnewaddress,z_getbalance,getunconfirmedbalance,getaddressesbyaccount,z_listaddresses,getreceivedbyaddress">
+                    <select name="l" id="vct_lang" style="display: block;margin: 10px 40px;width: 300px;">
+                        <option value="eng" selected="">English</option>
                     </select>
                 </div>
                 <div id="addr_block_location"></div>
@@ -359,40 +366,81 @@ function rand_chars($c, $l, $u = FALSE) {
     <footer>
     </footer>
     <script>
-        jQuery('#copy_code').on('click touchstart', function(){
-            var $temp = jQuery("<input>");
-            var $addr = jQuery('#access_code').text();
-            jQuery("body").append($temp);
-            $temp.val(jQuery('#access_code').text()).select();
+    jQuery( function( $ ) {
+        $('select[name="m"]').change(function(){
+            if($(this).val() == "_lt_"){
+                $('#vct_limits').val('').attr('name','f').fadeIn();
+            }
+            if($(this).val() == "_bg_"){
+                $('#vct_limits').val('').attr('name','').fadeOut();
+            }
+            if($(this).val() == "_vp_"){
+                $('#vct_limits').fadeOut().val('setgenerate,getgenerate,getnewaddress,z_getnewaddress,z_getbalance,getunconfirmedbalance,getaddressesbyaccount,z_listaddresses,getreceivedbyaddress').attr('name','f');
+            }
+        });
+        $(document).on('change', '.chain_capabilities', function(){
+            var chn = $(this).attr('data-chain');
+            if($(this).val() == "0"){
+                $('#'+chn+'_t').fadeIn().attr('name',chn+'_t');
+                $('#'+chn+'_z').fadeIn().attr('name',chn+'_z');
+            }
+            if($(this).val() == "1"){
+                $('#'+chn+'_t').fadeIn().attr('name',chn+'_t');
+                $('#'+chn+'_z').fadeOut().attr('name','');
+            }
+            if($(this).val() == "2"){
+                $('#'+chn+'_t').fadeOut().attr('name','');
+                $('#'+chn+'_z').fadeIn().attr('name',chn+'_z');
+            }
+        });
+        $('#copy_code').on('click touchstart', function(){
+            var $temp = $("<input>");
+            var $addr = $('#access_code').text();
+            $("body").append($temp);
+            $temp.val($('#access_code').text()).select();
             document.execCommand('copy');
             $temp.remove();
-            jQuery('#success_div').fadeIn('slow', function () {
-                jQuery(this).delay(1000).fadeOut('slow');
+            $('#success_div').fadeIn('slow', function () {
+                $(this).delay(1000).fadeOut('slow');
             });
         });
 
-        jQuery('#add_new').on('click touchstart', function(){
-            var newAddr = jQuery('.addr_block_template').clone();
-            var chn = jQuery('#chain_name').val().toLowerCase();
-                jQuery(newAddr).insertBefore('#addr_block_location');
-                jQuery(newAddr).children('.addr').text(chn.toUpperCase());
-                jQuery(newAddr).children('.taddr').attr('name',chn+'_t');
-                jQuery(newAddr).children('.zaddr').attr('name',chn+'_z');
-                jQuery(newAddr).children('.addr_name').val(chn);
-                jQuery(newAddr).removeClass('addr_block_template');
-                jQuery('#chain_name').val('');
+        $('#add_new').on('click touchstart', function(){
+            var newAddr = $('.addr_block_template').clone();
+            var chn = $('#chain_name').val().toLowerCase();
+                $(newAddr).addClass(chn+'_container');
+                $(newAddr).insertBefore('#addr_block_location');
+                $(newAddr).children('.easytitle').children('.addr').text(chn.toUpperCase());
+                $(newAddr).children('.taddr').attr('name',chn+'_t').attr('id',chn+'_t');
+                $(newAddr).children('.zaddr').attr('name',chn+'_z').attr('id',chn+'_z');
+                $(newAddr).children('.dropdown_label').children('.dropdown').attr('name',chn+'_txtype');
+                $(newAddr).children('.dropdown_label').children('.dropdown').attr('data-chain',chn);
+                $(newAddr).children('.addr_name').val(chn);
+                $(newAddr).removeClass('addr_block_template');
+                $('#chain_name').val('');
         });
 
-        jQuery( '#chain_name' ).keypress(function (e) {
+        $( '#chain_name' ).keypress(function (e) {
             var key = e.which;
             if ( key == 13 ) {
-                jQuery( '#add_new' ).click();
+                $( '#add_new' ).click();
                 return false;
             }
         });
+    });
     </script>
 <div class="addr_block_template addr_block">
-    <span class="addr"></span> Payout Addresses
+    <span class="easytitle">
+        <span class="addr"></span> Chain Settings
+    </span>
+    <label class="dropdown_label" style="display: block;font-weight:normal;"> TX Capabilities:
+        <select class="dropdown chain_capabilities" data-chain="" name="" style="min-width: 300px;">
+            <option value="0">Transparent and Private</option>
+            <option value="1">Transparent Only</option>
+            <option value="2">Private zs Only</option>
+        </select>
+    </label>
+    <span class="easytitle">Payout Addresses</span>
     <input class="addr_name" type="hidden" value="" name="c[]">
     <input class="addr_text taddr" placeholder="Transparent Payout Address (leave empty if unsupported or not desired)" type="text" value="" name="">
     <input class="addr_text zaddr" placeholder="Private (Sapling) Payout Address (leave empty if unsupported or not desired)" type="text" value="" name="">

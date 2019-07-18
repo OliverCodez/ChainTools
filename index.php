@@ -1,4 +1,9 @@
 <?php
+// TODO: Remove following before production
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
+
 /**
  * VerusChainTools
  * 
@@ -11,6 +16,7 @@
  * Included files:
  *      index.php (this file)
  *      verusclass.php
+ *      lang.php
  *      install.php (temporary installer)
  *      demo.php
  *
@@ -47,21 +53,40 @@
  * 
  * ====================
  */
-// TODO: Remove following before production
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
-error_reporting(E_ALL);
-// Check if first run / install
+
+/**
+ * First-time Install
+ * 
+ * Check if first run / install and either run install or process results
+ */
 if ( file_exists( 'install.php' ) ) {
     if ( ! empty( $_POST['s'] ) ) {
         // Create the config file and remove the install script
-        $s_array = $_POST;
-        $s_array['f'] = explode( ',', $s_array['f'] );
-        file_put_contents( 'config.php','<?php $c = \''.serialize($_POST).'\'; ?>' );
-        if ( $_POST['s'] === 's' ) {
-            unlink('install.php');
+        $s_a = $_POST;
+        if ( isset( $s_a['c'] ) ) {
+            foreach ( $s_a['c'] as $k => $v ) {
+                $s_a['c'][$v] = array();
+                $s_a['c'][$v]['d'] = date( 'Y-m-d H:i:s', time() );
+                $s_a['c'][$v]['tx'] = $s_a[$v.'_txtype'];
+                unset( $s_a[$v.'_txtype'] );
+                if ( isset( $s_a[$v.'_t'] ) ) {
+                    $s_a['c'][$v]['t'] = $s_a[$v.'_t'];
+                    unset( $s_a[$v.'_t'] );
+                }
+                if ( isset( $s_a[$v.'_z'] ) ) {
+                    $s_a['c'][$v]['z'] = $s_a[$v.'_z'];
+                    unset( $s_a[$v.'_z'] );
+                }
+                unset( $s_a['c'][$k] );
+            }
         }
-        die();
+        $s_a['f'] = explode( ',', $s_a['f'] );
+        foreach( $s_a['f'] as $k => $v ) {
+            $s_a['f'][$k] = vct_clean( $v );
+        }
+        file_put_contents( 'config.php','<?php $c = \''.serialize($s_a).'\'; ?>' );
+        unlink( 'install.php' );
+        die( '<h2><center>Successfully Installed!</center></h2>' );
     }
     else {
         // If first run, do install
@@ -69,49 +94,58 @@ if ( file_exists( 'install.php' ) ) {
         die();
     }
 }
-// Check for deprecated version (support ends Sep 1, 2019)
+/**
+ * Backwards Compatibility
+ * 
+ * Support for deprecated versions (support ends Sep 1, 2019)
+ */
 if ( isset( $_POST['access'] ) ) {
     $access_pass = $_POST['access'];
     include_once( 'deprecated-index.php' );
 }
+/**
+ * Main Script
+ */
 else {
+    
     /**
-    * 
-    * Get php input in json format for handling api calls
-    * 
-    * */
-    // Main data getter
-    $i = json_decode( file_get_contents( 'php://input' ), TRUE);
-    if ( empty( $i ) ) {
-	    die('Nothing to do');
-    }
-    // Primary default daemon server location (usually on same server, localhost)
+     * Get Data and Setup Vars
+     *
+     * Get php input in json format for handling api calls
+     */
     $_url = 'localhost';
     include_once( 'verusclass.php' );
     include_once( 'config.php' );
+    include_once( 'lang.php' );
+    // Set config settings to array
     $c = unserialize($c);
-    // This unserialized variable works as follows:
-    //
-    // access code is found at: $c['acc']
-    // added chains are in an array under: $c['chn']
-    // payout addresses are given the key leading with lowercase chain name, followed by payout type: e.g. $c['vrsc_z'] is VerusCoin Z address
-    // unsupported or unentered payout types are just blank entries, tools utilizing this Api should ignore empty payout values
-    
-    // Simple test function for admins
-    if ( ! empty( $_GET['test'] ) ) {
-        echo 'reachable';
+    $c['lng'] = $lng[$c['l']];
+    if ( !isset( $c['f'] ) ) {
+        $c['f'] = array();
     }
+    $i = json_decode( file_get_contents( 'php://input' ), TRUE);
+    // If no input, die
+    if ( empty( $i ) ) {
+	    die($c['lng'][1]);
+    }
+    /**
+     * Check Things
+     * 
+     * Check access code, chain, and method
+     */
+    // Compare access code provided with set in config
     if ( $i['a'] != $c['a'] ) {
-        die( 'err_access_code' ); // Die if no access code
+        die( $c['lng'][2] );
     }
+    // Check that chain is set
     if ( empty( $i['c'] ) ) {
-        die( 'err_chain_missing' );
+        die( $c['lng'][3] );
     }
     // TODO: Function to check for chain on local wallet and return result (error out if non-exist or down)
     //
-    //
+    // Check that method is set
     if ( empty( $i['m'] ) ) {
-        die( 'err_method_missing' );
+        die( $c['lng'][4] );
     }
 
     // Build data array for functions with posted chain data
@@ -124,6 +158,11 @@ else {
     else {
         $_dir = trim( shell_exec( 'find /opt -type d -name "'.$_chn.'"' ) );
     }
+    /**
+     * Input Array
+     * 
+     * Finish setting up input data array before processing
+     */
     $i['m'] = vct_clean( $i['m'] );
     $i = array_merge( $i, array(
         'pro' => 'http',
@@ -134,48 +173,61 @@ else {
         'prt' => trim( substr( shell_exec( 'cat ' . $_dir . '/' . $_chn . '.conf | grep "rpcport="' ), strlen( 'rpcport=' ) ) ),
     ) );
     /**
-    *  Execute the function
-    */
+     * Go!
+     * 
+     * Run the _go function to process the provided method and related data
+     */
     echo json_encode( array( 'command' => $i['m'], 'result' => _go( $i ) ), TRUE );
 }
 
 /**
- *  Primary data and exec function
+ * Go Process Request
+ * 
+ * Main data processor using verusclass to communicate with compatible RPC daemons
  */
 function _go( $d ) {
+    // Include config array
+    global $c;
+    // New Verus class for interacting with daemon
     $verus = new Verus( $d['usr'], $d['pas'], $d['url'], $d['prt'], $d['pro'] );
     $e = $d['m'];
     $p = $d['p'];
     $o = $d['o'];
-    $help_text = '== Addressindex ==<br>getaddressbalance<br>getaddressdeltas<br>getaddressmempool<br>getaddresstxids<br>getaddressutxos<br>getsnapshot<br><br>== Blockchain ==<br>coinsupply <height><br>getbestblockhash<br>getblock "hash|height" ( verbosity )<br>getblockchaininfo<br>getblockcount<br><br>getblockhash index<br>getblockhashes timestamp<br>getblockheader "hash" ( verbose )<br>getchaintips<br>getdifficulty<br>getmempoolinfo<br>getrawmempool ( verbose )<br>getspentinfo<br>gettxout "txid" n ( includemempool )<br>gettxoutproof ["txid",...] ( blockhash )<br>gettxoutsetinfo<br>kvsearch key<br>kvupdate key "value" days passphrase<br>minerids needs height<br>notaries height timestamp<br>verifychain ( checklevel numblocks )<br>verifytxoutproof "proof"<br><br>== Control ==<br>getinfo<br>help ( "command" )<br>stop<br><br>== Crosschain ==<br>MoMoMdata symbol kmdheight ccid<br>assetchainproof needs a txid<br>calc_MoM height MoMdepth<br>getNotarisationsForBlock blockHash<br>height_MoM height<br>migrate_completeimporttransaction importTx<br>migrate_converttoexport rawTx dest_symbol export_amount<br>migrate_createimporttransaction burnTx payouts<br>scanNotarisationsDB blockHeight symbol [blocksLimit=1440]<br><br>== Disclosure ==<br>z_getpaymentdisclosure "txid" "js_index" "output_index" ("message") <br>z_validatepaymentdisclosure "paymentdisclosure"<br><br>== Generating ==<br>generate numblocks<br>getgenerate<br>setgenerate generate ( genproclimit )<br><br>== Mining ==<br>getblocksubsidy height<br>getblocktemplate ( "jsonrequestobject" )<br>getlocalsolps<br>getmininginfo<br>getnetworkhashps ( blocks height )<br>getnetworksolps ( blocks height )<br>prioritisetransaction <txid> <priority delta> <fee delta><br>submitblock "hexdata" ( "jsonparametersobject" )<br><br>== Network ==<br>addnode "node" "add|remove|onetry"<br>clearbanned<br>disconnectnode "node" <br>getaddednodeinfo dns ( "node" )<br>getconnectioncount<br>getdeprecationinfo<br>getnettotals<br>getnetworkinfo<br>getpeerinfo<br>listbanned<br>ping<br>setban "ip(/netmask)" "add|remove" (bantime) (absolute)<br><br>== Pbaas ==<br>addmergedblock "hexdata" ( "jsonparametersobject" )<br>definechain {"name": "BAAS", ... }<br>getchaindefinition "chainname"<br>getcrossnotarization "chainid" ["notarizationtxid1", "notarizationtxid2", ...]<br>getdefinedchains (includeexpired)<br>getblocktemplate ( "jsonrequestobject" )<br>getnotarizationdata "chainid" accepted<br>submitacceptednotarization "hextx"<br>submitnotarizationpayment "chainid" "amount" "billingperiod"<br><br>== Rawtransactions ==<br>createrawtransaction [{"txid":"id","vout":n},...] {"address":amount,...} ( locktime ) ( expiryheight )<br>decoderawtransaction "hexstring"<br>decodescript "hex"<br>fundrawtransaction "hexstring"<br>getrawtransaction "txid" ( verbose )<br>sendrawtransaction "hexstring" ( allowhighfees )<br>signrawtransaction "hexstring" ( [{"txid":"id","vout":n,"scriptPubKey":"hex","redeemScript":"hex"},...] ["privatekey1",...] sighashtype )<br><br>== Util ==<br>createmultisig nrequired ["key",...]<br>estimatefee nblocks<br>estimatepriority nblocks<br>invalidateblock "hash"<br>jumblr_deposit "depositaddress"<br>jumblr_pause<br>jumblr_resume<br>jumblr_secret "secretaddress"<br>reconsiderblock "hash"<br>validateaddress "komodoaddress"<br>verifymessage "komodoaddress" "signature" "message"<br>z_validateaddress "zaddr"<br><br>== Wallet ==<br>addmultisigaddress nrequired ["key",...] ( "account" )<br>backupwallet "destination"<br>dumpprivkey "t-addr"<br>dumpwallet "filename"<br>encryptwallet "passphrase"<br>getaccount "VRSCTEST_address"<br>getaccountaddress "account"<br>getaddressesbyaccount "account"<br>getbalance ( "account" minconf includeWatchonly )<br>getnewaddress ( "account" )<br>getrawchangeaddress<br>getreceivedbyaccount "account" ( minconf )<br>getreceivedbyaddress "VRSCTEST_address" ( minconf )<br>gettransaction "txid" ( includeWatchonly )<br>getunconfirmedbalance<br>getwalletinfo<br>importaddress "address" ( "label" rescan )<br>importprivkey "komodoprivkey" ( "label" rescan )<br>importwallet "filename"<br>keypoolrefill ( newsize )<br>listaccounts ( minconf includeWatchonly)<br>listaddressgroupings<br>listlockunspent<br>listreceivedbyaccount ( minconf includeempty includeWatchonly)<br>listreceivedbyaddress ( minconf includeempty includeWatchonly)<br>listsinceblock ( "blockhash" target-confirmations includeWatchonly)<br>listtransactions ( "account" count from includeWatchonly)<br>listunspent ( minconf maxconf  ["address",...] )<br>lockunspent unlock [{"txid":"txid","vout":n},...]<br>move "fromaccount" "toaccount" amount ( minconf "comment" )<br>resendwallettransactions<br>sendfrom "fromaccount" "toVRSCTESTaddress" amount ( minconf "comment" "comment-to" )<br>sendmany "fromaccount" {"address":amount,...} ( minconf "comment" ["address",...] )<br>sendtoaddress "VRSCTEST_address" amount ( "comment" "comment-to" subtractfeefromamount )<br>setaccount "VRSCTEST_address" "account"<br>settxfee amount<br>signmessage "t-addr" "message"<br>z_exportkey "zaddr"<br>z_exportviewingkey "zaddr"<br>z_exportwallet "filename"<br>z_getbalance "address" ( minconf )<br>z_getnewaddress ( type )<br>z_getoperationresult (["operationid", ... ]) <br>z_getoperationstatus (["operationid", ... ]) <br>z_gettotalbalance ( minconf includeWatchonly )<br>z_importkey "zkey" ( rescan startHeight )<br>z_importviewingkey "vkey" ( rescan startHeight )<br>z_importwallet "filename"<br>z_listaddresses ( includeWatchonly )<br>z_listoperationids<br>z_listreceivedbyaddress "address" ( minconf )<br>z_listunspent ( minconf maxconf includeWatchonly ["zaddr",...] )<br>z_mergetoaddress ["fromaddress", ... ] "toaddress" ( fee ) ( transparent_limit ) ( shielded_limit ) ( memo )<br>z_sendmany "fromaddress" [{"address":... ,"amount":...},...] ( minconf ) ( fee )<br>z_shieldcoinbase "fromaddress" "tozaddress" ( fee ) ( limit )<br>zcbenchmark benchmarktype samplecount<br>zcrawjoinsplit rawtx inputs outputs vpub_old vpub_new<br>zcrawkeygen<br>zcrawreceive zcsecretkey encryptednote<br>zcsamplejoinsplit';
     switch ( $e ) {
+
         /**
-         * Tests
+         * Testing
          * 
          * For testing status of daemon(s)
-         * 
          */
+
         case 'test':
             $verus->status();
 	        if ( $verus->sts === 404 ) {
-                return vct_return_helper( 'status', 'online' );
+                return vct_return_helper( $c['lng'][5], $c['lng'][6] );
+                break;
 	        }
 	        else {
-                return vct_return_helper( 'status', 'offline' );
+                return vct_return_helper( $c['lng'][5], $c['lng'][7] );
+                break;
 	        }
             break;
-        case 'help':
-            return $help_text;
-            break;
+
         /**
-         * VerusPay
+         * Helpful Tools
          * 
-         * Custom section with cases built for use with VerusPay
-         * 
+         * Custom section with some helper commands for ease-of-use and integration. Have a suggestion? Create an issue in https://github.com/joliverwestbrook/VerusChainTools/issues
          *  */
-        case 'lconf': // return lowest confirm tx
+
+        // Return the current daemon version
+        case 'version':
+            return $verus->getinfo()['version'];
+            break;
+        // Return the lowest confirm TX
+        case 'lowest':
             if ( !isset( $p ) ) {
                 return vct_return_helper( 1, NULL );
+                break;
             }
             else if ( substr( $p, 0, 2 ) === 'zs' ) {
                 $r = $verus->z_listreceivedbyaddress( $p );
@@ -184,116 +236,258 @@ function _go( $d ) {
                     array_push( $a, $v['amount'] );
                 }
             return json_encode( array_sum( $a ), TRUE );
-            }
-            else {
-		        return json_encode( $verus->getreceivedbyaddress( $p ), TRUE );
-            }
             break;
-        case 'tcount': // return count of all t addresses
-            if ( !isset( $p ) ) {
-                return vct_return_helper( 1, NULL );
-            }
-            else {
-                return json_encode( count( $verus->getaddressesbyaccount( $p ) ), TRUE );
-            }
-            break;
-        case 'zcount': // return count of all z addresses
-            return json_encode( count( $verus->z_listaddresses() ), TRUE );
-            break;
-        case 'recby': // return total received by balance
-            if ( !isset( $p ) ) {
-                return vct_return_helper( 1, NULL );
             }
             else {
                 return json_encode( $verus->getreceivedbyaddress( $p ), TRUE );
+                break;
             }
             break;
-        case 'bal': // Iterate throught all addresses provided and display balance of each
+        // Return a count of all T (transparent) addresses
+        case 't_count':
             if ( !isset( $p ) ) {
                 return vct_return_helper( 1, NULL );
+                break;
+            }
+            else {
+                return json_encode( count( $verus->getaddressesbyaccount( $p ) ), TRUE );
+                break;
+            }
+            break;
+        // Return a count of all Z (private) addresses
+        case 'z_count':
+            return json_encode( count( $verus->z_listaddresses() ), TRUE );
+            break;
+        // Iterate all T and Z addresses and return balance of each and totals
+        case 'bal':
+            if ( !isset( $p ) ) {
+                return vct_return_helper( 1, NULL );
+                break;
             }
             else {
                 $t = $verus->getaddressesbyaccount( $p );
                 $z = $verus->z_listaddresses();
                 if ( json_encode( $z, TRUE ) == 'false' && json_encode( $t, TRUE) == 'false' ) {
                     return null;
+                    break;
                 }
                 else {
                     $tb = array();
-                    $ttb = array();
                     $zb = array();
-                    $ztb = array();
-                    $b = array();
-                    $bt = array();
                     if ( json_encode( $t, TRUE ) != 'false' ) {
                         foreach ( $t as $v ) {
                             $tb[$v] = $verus->z_getbalance( json_encode( $v, TRUE ) );
                         }
-                        foreach ( $tb as $v ) {
-                            $ttb[] = $v;
-                        }
-                        $ttb = array(
-                            'total_t_balance' => array_sum( $ttb )
-                        );
                     }
                     if ( json_encode( $z, TRUE ) != 'false' ) {
                         foreach ( $z as $v ) {
                             $zb[$v] = $verus->z_getbalance( json_encode( $v, TRUE ) );
                         }
-                        foreach ( $zb as $v ) {
-                            $ztb[] = $v;
-                        }
-                        $ztb = array(
-                            'total_z_balance' => array_sum( $ztb )
-                        );
                     }
-                    $bt = array(
-                        'total_balance' => array_sum( array( $ttb['total_t_balance'], $ztb['total_z_balance'] ) )
-                    );
-                    $b = array_merge( $tb, $zb, $ttb, $ztb, $bt );
-                    $r = $b;
+                    $r = array_merge( $tb, $zb, $verus->z_gettotalbalance() );
                     if ( is_array( $r ) ) {
                         return vct_format( $r );
+                        break;
                     }
                     else {
                         return $r;
+                        break;
                     }
                 }
             }
             break;
+
         /**
-         * Default
+         * Main Section
          * 
-         * Pass any/all unfiltered requests through to the daemon
-         * 
+         * All other methods passed will attempt to pass through the default case
          */
-        default: // TODO : Setup filter for optional usage of some commands
-            // Filter specific commands here
-            //vct_filter( $e );
-            if ( isset( $p ) ) {
-                $r = $verus->$e( $p );
+
+        // Pass all other methods and evaluate for filtering (VerusPay, Limited, or full Bridge)
+        default:
+            /**
+             * VerusPay Mode
+             * 
+             * Specific to use with VerusPay Plugin with custom whitelist in config file, set at install, and custom methods defined below
+             */
+            if ( $c['m'] === '_vp_' ) {
+                switch ( $e ) {
+                    /**
+                     * VerusPay-specific Custom Methods
+                     *  */
+                    // Show the configured T-Cashout address where relevant
+                    case 'show_taddr':
+                        return $installed_wallets[$coin][ 'taddr' ];
+                        break;
+                    // Show the configured Z-Cashout address where relevant
+                    case 'show_zaddr':
+                        return $installed_wallets[$coin][ 'zaddr' ];
+                        break;
+                    // Perform a cashout to the configured T address where relevant
+                    case 'cashout_t':
+                        if ( strtolower($coin) == 'arrr' ) { // TODO: config file to track chains and capabilities etc
+                            return "Transparent TXs Not Supported"; // Msg that T is not supported - TODO: Based on chain won't even use this.
+                            break;
+                        }
+                        else if ( strlen($installed_wallets[$coin][ 'taddr' ]) > 10 ) {
+                            return $verus->sendtoaddress( $installed_wallets[$coin][ 'taddr' ],$verus->getbalance(),"Cashout_" . time() . "","VerusPay",true );
+                            break;
+                        }
+                        else {
+                            // If address not set, error
+                            return $c['lng'][11];
+                            break;
+                        }
+                        break;
+                    // Perform a cashout to the configured Z address where relevant
+                    case 'cashout_z':
+                        if ( strlen($installed_wallets[$coin][ 'zaddr' ]) > 10 ) {
+                            $zaddresses = $verus->z_listaddresses();
+                            $results = array();
+                            foreach ( $zaddresses as $zaddress ) {
+                                $zbal = $verus->z_getbalance( $zaddress );
+                                $zbal = ($zbal - 0.00010000);
+                                if ( $zbal > 0.0000001 ) {
+                                    $zbal = (float)number_format($zbal,8);
+                                    $txdata = array(
+                                        array(
+                                            'address' => $installed_wallets[$coin][ 'zaddr' ],
+                                            'amount' => $zbal,
+                                        )
+                                    );
+                                    $results[$zaddress] = array(
+                                        'cashout_address' => $installed_wallets[$coin][ 'zaddr' ],
+                                        'amount' => $zbal,
+                                        'opid' => $verus->z_sendmany($zaddress, $txdata),
+                                    );
+                                }
+                            }
+                            return json_encode( $results, true );
+                            break;
+                        }
+                        else {
+                            // If address not set, error
+                            return $c['lng'][11];
+                            break;
+                        }
+                        break;
+                    // All other methods, filtered by whitelist preconfigured during install
+                    default:
+                        // If whitelisted, continue
+                        if ( in_array( $e, $c['f'], TRUE ) ) {
+                            if ( isset( $p ) ) {
+                                $r = $verus->$e( $p );
+                            }
+                            else {
+                                $r = $verus->$e();
+                            }
+                            if ( is_array( $r ) ) {
+                                return vct_format( $r );
+                                break;
+                            }
+                            else {
+                                if ( strpos( $r, 'curltest') !== FALSE ) {
+                                    $r = strstr( $r, '"params"' );
+                                    $r = preg_replace('/"params": /', '', $r);
+                                    $r = substr( $r, 0, strpos( $r, "}' -H" ) );
+                                    return vct_return_helper( 2, $r );
+                                    break;
+                                }
+                                else {
+                                    return $r;
+                                    break;
+                                }
+                            }
+                        }
+                        else {
+                            // If method not whitelisted, error
+                            return $c['lng'][10];
+                            break;
+                        }
+                        break;
+                }
             }
-            else {
-                $r = $verus->$e();
-            }
-            if ( is_array( $r ) ) {
-                return vct_format( $r );
-            }
-            else {
-                if ( strpos( $r, 'curltest') !== FALSE ) {
-                    $r = strstr( $r, '"params"' );
-                    $r = preg_replace('/"params": /', '', $r);
-                    $r = substr( $r, 0, strpos( $r, "}' -H" ) );
-                    return vct_return_helper( 2, $r );
+            /**
+             * Limited Mode
+             * 
+             * Limited access to daemon methods using whitelist configured at install
+             */
+            else if ( $c['m'] === '_lt_' ) {
+                // If whitelisted, continue
+                if ( in_array( $e, $c['f'], TRUE ) ) {
+                    if ( isset( $p ) ) {
+                        $r = $verus->$e( $p );
+                    }
+                    else {
+                        $r = $verus->$e();
+                    }
+                    if ( is_array( $r ) ) {
+                        return vct_format( $r );
+                        break;
+                    }
+                    else {
+                        if ( strpos( $r, 'curltest') !== FALSE ) {
+                            $r = strstr( $r, '"params"' );
+                            $r = preg_replace('/"params": /', '', $r);
+                            $r = substr( $r, 0, strpos( $r, "}' -H" ) );
+                            return vct_return_helper( 2, $r );
+                            break;
+                        }
+                        else {
+                            return $r;
+                            break;
+                        }
+                    }
                 }
                 else {
-                    return $r;
+                    // If method not whitelisted, error
+                    return $c['lng'][10];
+                    break;
                 }
+            }
+            /**
+             * Bridge Mode
+             * 
+             * Full access to daemon (no whitelist)
+             */
+            else if ( $c['m'] === '_bg_' ) {
+                if ( isset( $p ) ) {
+                    $r = $verus->$e( $p );
+                }
+                else {
+                    $r = $verus->$e();
+                }
+                if ( is_array( $r ) ) {
+                    return vct_format( $r );
+                    break;
+                }
+                else {
+                    if ( strpos( $r, 'curltest') !== FALSE ) {
+                        $r = strstr( $r, '"params"' );
+                        $r = preg_replace('/"params": /', '', $r);
+                        $r = substr( $r, 0, strpos( $r, "}' -H" ) );
+                        return vct_return_helper( 2, $r );
+                        break;
+                    }
+                    else {
+                        return $r;
+                        break;
+                    }
+                }
+            }
+            else {
+                // If method not found, error
+                die( $c['lng'][10] );
             }
             break;
     }
 }
 
+/**
+ * Format
+ * 
+ * Formats the values of provided array to return human-readable and accurate representation of data points
+ */
 function vct_format( $d ) {
     foreach ( $d as $k => $v ) {
         if ( $v == '0' ) {
@@ -312,22 +506,35 @@ function vct_format( $d ) {
     return json_encode( $d, TRUE );
 }
 
+/**
+ * Clean
+ * 
+ * Cleans up data provided, removing whitespace, ensuring lowercase, etc
+ */
 function vct_clean( $d ) {
     $d = trim( htmlentities( strip_tags( $d ) ) );
     if ( get_magic_quotes_gpc() ) {
         $d = stripslashes( $d );
     }
+    // Replace all non-alpha characters or spaces with underscore
+    $d = preg_replace( '/\s+|[^\da-z]/i', '_', $d );
     $d = strtolower( $d );
     return $d;
 }
 
+/**
+ * Return Helper
+ * 
+ * For errors, params missing, or similar to provide a clean json compatible output
+ */
 function vct_return_helper( $t, $d ) {
+    global $c;
     switch ( $t ) {
         case 1:
-            $r = array( 'return' => 'error', 'details' => 'Params are missing or incorrect' );
+            $r = array( 'return' => $c['lng'][8], 'details' => $c['lng'][9] );
             break;
         case 2:
-            $r = array( 'return' => 'error', 'details' => 'Params are missing or incorrect', 'param_example' => $d );
+            $r = array( 'return' => $c['lng'][8], 'details' => $c['lng'][9], 'param_example' => $d );
             break;
         default:
             $r = array( 'return' => $t, 'details' => $d );
