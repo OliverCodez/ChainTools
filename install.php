@@ -10,6 +10,7 @@ $_version = '4';
  *      index.php
  *      verusclass.php
  *      lang.php
+ *      update.php
  *      install.php (this file)
  *      demo.php
  *
@@ -46,7 +47,8 @@ $_version = '4';
  * 
  * ====================
  */
-$instString = $_version . rand_chars( 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890', 71, TRUE );
+$accessCode = $_version . rand_chars( 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890', 71, TRUE );
+$updateCode = 'U' . $_version . rand_chars( 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890', 70, TRUE );
 // TODO: Build function to check for Verus daemon as minimun prerequisite for installation
 function rand_chars($c, $l, $u = FALSE) {
     if ( !$u ) {
@@ -87,7 +89,7 @@ function rand_chars($c, $l, $u = FALSE) {
         main {
             padding: 20px;
             font-family: arial;
-            font-size: 2rem;
+            font-size: 1.6rem;
         }
         .content_top {
             display: block;
@@ -107,7 +109,7 @@ function rand_chars($c, $l, $u = FALSE) {
             position: relative;
             float: none;
         }
-        .code_block-outer > p:first-child {
+        .code_block-outer > p {
             font-weight: bold;
             font-size: 2.2rem;
             text-align: center;
@@ -125,7 +127,7 @@ function rand_chars($c, $l, $u = FALSE) {
             padding: 5px 0;
             height: 60px;
         }
-        #copy_code {
+        #copy_code, #copy_ucode {
             height: 50px;
             max-width: 40px;
             display: block;
@@ -161,7 +163,7 @@ function rand_chars($c, $l, $u = FALSE) {
             cursor:pointer;
             color: #FB5656;
         }
-        #access_code-container {
+        #access_code-container, #update_code-container {
             width: 90%;
             display: block;
             line-height: 50px;
@@ -173,13 +175,13 @@ function rand_chars($c, $l, $u = FALSE) {
             border: 1px dotted #FB5656;
             margin: 0 10px;
         }
-        #access_code {
+        #access_code, #update_code {
             text-align: center;
             color: #FB5656;
             font-weight: bold;
             font-size: 1.6rem;
         }
-        #success_div {
+        #success_div, #usuccess_div {
             display:none;
             top: 0;
             left: 0;
@@ -299,11 +301,11 @@ function rand_chars($c, $l, $u = FALSE) {
             .code_block-outer {
                 padding: 20px 4px;
             }
-            #copy_code {
+            #copy_code, #copy_ucode {
                 min-width: 40px;
                 width: calc(100% * 1/8);
             }
-            #access_code-container {
+            #access_code-container, #update_code-container {
                 width: calc(100% * 6/8);
             }
         }
@@ -316,10 +318,10 @@ function rand_chars($c, $l, $u = FALSE) {
     </header>
     <main>
         <div class="content_top">
-            <p>Thank you for installing VerusChainTools! Below is your unique Access Code and a section to add your installed daemons.  Please verify the leading 4 characters of the Access Code match the version number of VerusChainTools which you're installing.  For example "v040" for version 0.4.0.</p>
+            <p>Thank you for installing VerusChainTools! Below is your unique Access Code and Update Code. Keep your Update Code in a secure location for future use, if you ever need to add more blockchain daemons or update any of your config settings. Your Access Code is for use with either VerusPay or the web tool you are using with the VerusChainTools API. Please verify the first number of your Access Code matches the first non-zero version number of this VerusChainTools API which you're installing.  For example, "4" would match with VerusChainTools version 0.4.2.  If it does not match, abandon this install and contact the developer.</p>
             <p></p>
             <p></p>
-            <p>Please copy your access code for use with your web server.  After adding your chains and any payout addresses, click Save and your config file will be created locally on this server and this installation script will be removed.</p>
+            <p>After adding your chains and any payout addresses (for VerusPay users), click Save and your config file will be created locally on this server and this installation script will be removed.  If you need to change something or update these settings in the future, visit this same script and append the following to the URL: ?update=YOUR_PRIVATE_UPDATE_CODE ( e.g. https://127.127.27.27/?update=YourPrivateUpdateCode )</p>
             <p></p>
         </div>
         <div class="code_block-outer">
@@ -329,14 +331,25 @@ function rand_chars($c, $l, $u = FALSE) {
                     <span class="copy_symbol"></span>
                 </div>
                 <div id="access_code-container">
-                    <p id="access_code"><?php echo $instString; ?></p>
-                    <p id="success_div">Access Code Copied</p>
+                    <p id="access_code"><?php echo $accessCode; ?></p>
+                    <p id="success_div" style="z-index:999">Access Code Copied</p>
+                </div>
+            </div>
+            <p>Your Private Update Code:</p>
+            <div class="code_block-inner">
+                <div id="copy_ucode">
+                    <span class="copy_symbol"></span>
+                </div>
+                <div id="update_code-container">
+                    <p id="update_code"><?php echo $updateCode; ?></p>
+                    <p id="usuccess_div">Update Code Copied</p>
                 </div>
             </div>
             <form id="config" name="config" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>" method="POST">
-                <input type="hidden" name="s" value="s">
-                <input type="hidden" name="d" value="<?php echo date( 'Y-m-d H:i:s', time() ); ?>">
-                <input type="hidden" name="a" value="<?php echo $instString; ?>">
+                <input type="hidden" name="S" value="s">
+                <input type="hidden" name="D" value="<?php echo date( 'Y-m-d H:i:s', time() ); ?>">
+                <input type="hidden" name="A" value="<?php echo $accessCode; ?>">
+                <input type="hidden" name="U" value="<?php echo $updateCode; ?>">
                 <div class="main_container" style="display: block;float: left;width: 100%;padding: 0 0 20px 0;margin: 10px auto;">
     <p style="font-weight: bold;font-size: 2.2rem;text-align: center;display: block;float: none;margin: 0 auto;width: 100%;padding: 5px 0;margin-top: 20px;">Choose VerusChainTools Mode and Language:</p>
     <span style="font-size: 16px;padding: 0 0 20px;display: block;">Choose how you intend to use VerusChainTools and your preferred language.</span>
@@ -401,6 +414,17 @@ function rand_chars($c, $l, $u = FALSE) {
             document.execCommand('copy');
             $temp.remove();
             $('#success_div').fadeIn('slow', function () {
+                $(this).delay(1000).fadeOut('slow');
+            });
+        });
+        $('#copy_ucode').on('click touchstart', function(){
+            var $temp = $("<input>");
+            var $addr = $('#update_code').text();
+            $("body").append($temp);
+            $temp.val($('#update_code').text()).select();
+            document.execCommand('copy');
+            $temp.remove();
+            $('#usuccess_div').fadeIn('slow', function () {
                 $(this).delay(1000).fadeOut('slow');
             });
         });

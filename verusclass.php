@@ -12,6 +12,7 @@
  *      index.php
  *      verusclass.php (this file)
  *      lang.php
+ *      update.php
  *      install.php (temporary installer)
  *      demo.php
  *

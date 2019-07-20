@@ -20,6 +20,7 @@ $d = array(
  *      index.php
  *      verusclass.php
  *      lang.php
+ *      update.php
  *      install.php (temporary installer)
  *      demo.php (this file)
  *

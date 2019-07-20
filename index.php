@@ -17,6 +17,7 @@ error_reporting(E_ALL);
  *      index.php (this file)
  *      verusclass.php
  *      lang.php
+ *      update.php
  *      install.php (temporary installer)
  *      demo.php
  *
