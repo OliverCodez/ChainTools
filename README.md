@@ -1,4 +1,4 @@
-# VerusChainTools - PHP Web Interface Toolkit for Zcash and BTC based blockchains
+# VerusChainTools - PHP Web Interface Toolkit for Verus, Verus PBaaS, Zcash and Bitcoin based blockchains
 
  - Contributors: John Oliver Westbrook
  - Copyright: Copyright (c) 2019, John Oliver Westbrook 
@@ -27,7 +27,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 
 ## Description
-Verus Chain Tools is a PHP API toolkit for Zcash or Bitcoin compatible blockchain integration, for bridging PHP applications to interact with an rpc daemon.
+Verus Chain Tools is a PHP API toolkit for Verus, Verus PBaaS, Zcash or Bitcoin compatible blockchain integration, for bridging PHP applications to interact with the rpc daemon.  This API can be implemented as a backend for virtually any web wallet, web application, gui, etc providing easy installation, implementation and bridging between applications and a blockchain.
+
+No PHP dependencies or frameworks are used in this project.  All code is open source and included in this repository.
 
 Before use, you must run the Install by simply visiting your main script api URL, after you've placed it on your VerusChainTools (VCT) server. Your VCT API server must be the same server running the daemon or daemons with which you'll interact, unless you have a strong understanding of routing RPC traffic to the VCT API server.  
 
