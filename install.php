@@ -371,7 +371,7 @@ function rand_chars($c, $l, $u = FALSE) {
                         <option value="_bg_">Full Bridge Mode</option>
                         <option value="_lt_">Limited Mode</option>
                     </select>
-                    <input name="f" id="vct_limits" placeholder="Enter allowed/whitelisted valid method names seperated by a comma" style="display: none;width: 80%;margin: 10px 40px;" value="setgenerate,getgenerate,getnewaddress,z_getnewaddress,z_getbalance,getunconfirmedbalance,getaddressesbyaccount,z_listaddresses,getreceivedbyaddress">
+                    <input name="f" id="vct_limits" placeholder="Enter allowed/whitelisted valid method names seperated by a comma" style="display: none;width: 80%;margin: 10px 40px;" value="setgenerate,getgenerate,getnewaddress,z_getnewaddress,z_getbalance,getunconfirmedbalance,getaddressesbyaccount,z_listaddresses,getreceivedbyaddress,definechain,getchaindefinition,getdefinedchains">
                     <select name="l" id="vct_lang" style="display: block;margin: 10px 40px;width: 300px;">
                         <option value="eng" selected="">English</option>
                     </select>
@@ -401,7 +401,7 @@ function rand_chars($c, $l, $u = FALSE) {
                 $('#vct_limits').val('').attr('name','').fadeOut();
             }
             if($(this).val() == "_vp_"){
-                $('#vct_limits').fadeOut().val('setgenerate,getgenerate,getnewaddress,z_getnewaddress,z_getbalance,getunconfirmedbalance,getaddressesbyaccount,z_listaddresses,getreceivedbyaddress').attr('name','f');
+                $('#vct_limits').fadeOut().val('setgenerate,getgenerate,getnewaddress,z_getnewaddress,z_getbalance,getunconfirmedbalance,getaddressesbyaccount,z_listaddresses,getreceivedbyaddress,definechain,getchaindefinition,getdefinedchains').attr('name','f');
             }
         });
         $(document).on('change', '.chain_capabilities', function(){

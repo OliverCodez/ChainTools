@@ -591,15 +591,20 @@ function _format( $d ) {
  * 
  * Cleans up data provided, removing whitespace, ensuring lowercase, etc
  */
-function _filter( $d ) {
-    $d = trim( htmlentities( strip_tags( $d ) ) );
-    if ( get_magic_quotes_gpc() ) {
-        $d = stripslashes( $d );
+function _filter( $d, $p = FALSE ) {
+    if ( $p === FALSE ) {
+        $d = trim( htmlentities( strip_tags( $d ) ) );
+        if ( get_magic_quotes_gpc() ) {
+            $d = stripslashes( $d );
+        }
+        // Replace all non-alpha characters or spaces with underscore
+        $d = preg_replace( '/\s+|[^\da-z]/i', '_', $d );
+        $r = strtolower( $d );
     }
-    // Replace all non-alpha characters or spaces with underscore
-    $d = preg_replace( '/\s+|[^\da-z]/i', '_', $d );
-    $d = strtolower( $d );
-    return $d;
+    if ( $p === TRUE ) {
+        // TODO: Create filter for params data
+    }
+    return $r;
 }
 
 /**
