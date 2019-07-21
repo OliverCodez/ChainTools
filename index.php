@@ -1,15 +1,27 @@
 <?php
-global $version;
-$version = '0.2.9';
 /**
- * Verus Chain Tools
+ * VerusChainTools
+ * 
+ * Description: A toolkit for interacting with Verus and Verus PBaaS blockchains, 
+ * allowing websites to access the daemon RPC via PHP for a more secure and 
+ * flexible integration. VerusChainTools works with VerusCoin, PBaaS by Verus 
+ * chains, Komodo and Komodo asset chains, and any Verus, Komodo, Zcash, or 
+ * Bitcoin fork with minimal adaptation.
+ * 
+ * Included files:
+ *      index.php (this file)
+ *      verusclass.php
+ *      lang.php
+ *      update.php
+ *      install.php (temporary installer)
+ *      demo.php
  *
  * @category Cryptocurrency
  * @package  VerusChainTools
  * @author   Oliver Westbrook <johnwestbrook@pm.me>
  * @copyright Copyright (c) 2019, John Oliver Westbrook
- * @link     https://github.com/joliverwestbrook/VerusPHPTools
- * @version 0.2.9
+ * @link     https://github.com/joliverwestbrook/VerusChainTools
+ * @version 0.4.0
  * 
  * ====================
  * 
@@ -37,272 +49,572 @@ $version = '0.2.9';
  * 
  * ====================
  */
+
+/**
+ * First-time Install
+ * 
+ * Check if first run / install and either run install or process results
+ */
+if ( file_exists( 'install.php' ) ) {
+    if ( ! empty( $_POST['S'] ) ) {
+        // Create the config file and remove the install script
+        $posted = array_change_key_case( $_POST, CASE_UPPER );
+        $daemon = _get_daemon( $posted );
+        file_put_contents( 'config.php','<?php $c = \''.serialize( $daemon ).'\'; ?>' );
+        unlink( 'install.php' );
+        die( '<h2><center>Successfully Installed!</center></h2>' );
+    }
+    else {
+        include_once( 'install.php' );
+        die();
+    }
+}
+
+/**
+ * Backwards Compatibility
+ * 
+ * Support for deprecated versions (support ends Sep 1, 2019)
+ */
 if ( isset( $_POST['access'] ) ) {
     $access_pass = $_POST['access'];
+    include_once( 'deprecated-index.php' );
 }
+/**
+ * Main Script
+ */
 else {
-    $access_pass = null;
-}
-global $installed_wallets;
-require_once 'easybitcoin.php';
-// Config is created during installation script.
-$installed_wallets = ltrim(file_get_contents('veruschaintools_config.php'), '<?php ');
-$installed_wallets = unserialize( $installed_wallets );
-// TEST //
-//if ( $installed_wallets['access']['pass'] != $access_pass ) {
-//    die();
-//}
-// - //
-if ( isset( $_POST['coin'] ) ){
-    $coin = $_POST['coin'];
-}
-else {
-    // Set default coin to Verus Coin VRSC
-    $coin = 'vrsc';
-}
-if ( isset( $_POST['exec'] ) ) {
-    $exec = $_POST['exec'];
-}
-else {
-    $exec = null;
-}
-if ( isset( $_POST['hash'] ) ) {
-    $hash = $_POST['hash'];
-}
-else {
-    $hash = null;
-}
-if ( isset( $_POST['amt'] ) ) {
-    $amt = $_POST['amt'];
-}
-else {
-    $amt = null;
-}
+    
+    /**
+     * Includes and Config
+     */
+    $_url = 'localhost';
+    include_once( 'verusclass.php' );
+    if ( file_exists( 'config.php' ) ) {
+        include_once( 'config.php' );
+    }
+    else {
+        echo _output( 'Config file missing or corrupt', FALSE );
+        die();
+    }
+    // Set config settings to array
+    $c = unserialize($c);
+    include_once( 'lang.php' );
+    $lng = $lng[$c['L']];
+    /**
+     * Manual Update
+     * 
+     * Check if an update is being performed
+     */
+    if ( isset( $_REQUEST['update'] ) ) {
+        if ( $_SERVER['REQUEST_METHOD'] === 'GET' && $_REQUEST['update'] === $c['U'] && file_exists( 'update.php' ) ) {
+            include_once( 'update.php' );
+            die();
+        }
+        else if ( $_SERVER['REQUEST_METHOD'] === 'POST' && $_REQUEST['update'] === $c['U'] ) {
+            $posted = array_change_key_case( $_POST, CASE_UPPER );
+            $posted['DYN'] = FALSE;
+            $c['S'] = $posted['S'];
+            $posted = _get_daemon( $posted );
+            unset( $posted['UPDATE'], $posted['S'], $posted['D'], $c['C'] );
+            $daemon = array_merge( $c, $posted );
+            file_put_contents( 'config.php','<?php $c = \''.serialize( $daemon ).'\'; ?>' );
+            die( $lng[18] );
+        }
+        else {
+            die();
+        }
+    }
+    // Check for function whitelist, blank array if none
+    if ( !isset( $c['F'] ) ) {
+        $c['F'] = array();
+    }
+    /**
+     * Get Input
+     */
+    $i = json_decode( file_get_contents( 'php://input' ), TRUE);
+    if ( empty( $i ) ) {
+        die('<h2>'.$lng[1].'</h2>');
+    }
+    /**
+     * Check Things
+     * 
+     * Check access code, chain, and method
+     */
+    // Compare access code provided with set in config
+    if ( $i['a'] != $c['A'] ) {
+        echo _output( $lng[2], FALSE );
+        die();
+    }
+    // Check that chain is set
+    if ( empty( $i['c'] ) ) {
+        echo _output( $lng[3], FALSE );
+        die();
+    }
+    // Check that method is set
+    if ( empty( $i['m'] ) ) {
+        echo _output( $lng[4], FALSE );
+        die();
+    }
 
-if ($exec == 'test'){
-    echo verus_chain_tools_conn_stat( $coin );
-}
-else { 
-    echo verus_chain_tools_go_verus( $coin, $exec, $hash, $amt ); 
+    /**
+     * Check Chain & Finalize Settings
+     * 
+     * Check for chain daemon info in config, if not found, check server and if found update config
+     */
+    $_chn = strtoupper( $i['c'] );
+    if ( !isset( $c['C'][$_chn] ) || !isset( $c['C'][$_chn]['L'] ) || !isset( $c['C'][$_chn]['U'] ) || !isset( $c['C'][$_chn]['P'] ) || !isset( $c['C'][$_chn]['N'] ) ) {
+        $data = array(
+            'DYN' => TRUE,
+            'S' => 'u',
+            $_chn.'_TXTYPE' => '0',
+            'C' => array(
+                $_chn,
+            ),
+            $_chn.'_T' => $lng[17],
+            $_chn.'_Z' => $lng[17],
+        );
+        $data = _get_daemon( $data );
+        if ( $data === FALSE ) {
+            echo _output( $_chn.$lng[16], FALSE );
+            die();
+        }
+        $c['S'] = $data['S'];
+        $c['C'] = array_merge( $c['C'], $data['C'] );
+        file_put_contents( 'config.php','<?php $c = \''.serialize( $c ).'\'; ?>' );
+        $daemon = $c['C'][$_chn];
+    }
+    else {
+        $daemon = $c['C'][$_chn];
+    }
+    $i['m'] = _filter( $i['m'] );
+    $i = array_merge( $i, array(
+        'pro' => 'http',
+        'url' => $_url,
+        'dir' => $daemon['L'],
+        'usr' => $daemon['U'],
+        'pas' => $daemon['P'],
+        'prt' => $daemon['N'],
+        )
+    );
+
+    /**
+     * Go VerusClass!
+     * 
+     * Run the _go function to process the provided method and related data
+     */
+    echo _go( $i );
 }
 
 /**
- * Test RPC connection - Return status, 0 means not running, anything else is running even if errors occur.
+ * Go Process Request
+ * 
+ * Main data processor using verusclass to communicate with compatible RPC daemons
  */
-function verus_chain_tools_conn_stat( $coin ) {
-    global $installed_wallets;
-    // Create new RPC connection to Verus Daemon
-    $verus = new Bitcoin( $installed_wallets[$coin]['rpc_user'], $installed_wallets[$coin]['rpc_pass'], 'localhost', $installed_wallets[$coin]['port'] );
-    $verus->status();
-    return $verus->status;
-}
-/**
- * Primary data and exec function
- */
-function verus_chain_tools_go_verus( $coin, $command, $hash, $amt ) {
-    global $installed_wallets;
-    global $version;
-    $verus = new Bitcoin( $installed_wallets[$coin][ 'rpc_user' ], $installed_wallets[$coin][ 'rpc_pass' ], 'localhost', $installed_wallets[$coin]['port'] );
-    // Execute commands availabel for to interact with Verus Daemon
-    switch ( $command ) {
-        case 'ver':
-            return $version;
+function _go( $d ) {
+    // Include config array
+    global $c;
+    global $lng;
+    // New Verus class for interacting with daemon
+    $verus = new Verus( $d['usr'], $d['pas'], $d['url'], $d['prt'], $d['pro'], $lng );
+    $s = $verus->status();
+    if ( $s === $lng[19] ) {
+        return _output( $s, FALSE );
+        die();
+    }
+    $chn = $d['c'];
+    $tx = $c['C'][$chn]['TX'];
+    $_ts = TRUE;
+    $_zs = TRUE;
+    if ( isset( $c['C'][$chn]['T'] ) ) {
+        if ( $c['C'][$chn]['T'] == $lng[17] || strlen( $c['C'][$chn]['T'] ) < 10 ) {
+            $_ts = FALSE;
+            $_t = $lng[17];
+        }
+        else {
+            $_t = $c['C'][$chn]['T'];
+        }
+    }
+    else {
+        $_ts = FALSE;
+        $_t = $lng[13];
+    }
+    if ( isset( $c['C'][$chn]['Z'] ) ) {
+        if ( $c['C'][$chn]['Z'] == $lng[17] || strlen( $c['C'][$chn]['Z'] ) < 78 ) {
+            $_zs = FALSE;
+        }
+        else {
+            $_z = $c['C'][$chn]['Z'];
+        }
+    }
+    else {
+        $_zs = FALSE;
+    }
+    $e = $d['m'];
+    $p = $d['p'];
+    $o = $d['o'];
+
+    switch ( $e ) {
+        /**
+         * Testing
+         * 
+         * For testing status of daemon(s)
+         */
+        case 'test':
+            return _output( $s );
             break;
-        case 'generate':
-            if ( $hash == 'false' ) {
-                $verus->setgenerate( false, (int)$amt );
-            }
-            if ( $hash == 'true' ) {
-                $verus->setgenerate( true, (int)$amt );
-            }
+        /**
+         * Helpful Tools
+         * 
+         * Custom section with some helper commands for ease-of-use and integration. 
+         * Have a suggestion? 
+         * Create an issue in https://github.com/joliverwestbrook/VerusChainTools/issues
+         *  */
+
+        // Return the current daemon version
+        case 'version':
+            return _output( $verus->getinfo()['version'] );
             break;
-        case 'generatestat':
-            $genstat = $verus->getgenerate();
-            if ( $genstat['staking'] == 'true' ) {
-                $stake = 1;
+        // Return the lowest confirm TX
+        case 'lowest':
+            if ( !isset( $p ) ) {
+                return _output( $lng[9], FALSE );
+                break;
             }
-            else {
-                $stake = 0;
-            }
-            if ( $genstat['generate'] == 'true' ) {
-                $mine = 1;
-                $threads = $genstat['numthreads'];
-            }
-            else {
-                $mine = 0;
-                $threads = 0;
-            }
-            return $stake.':'.$mine.':'.$threads;
-            break;
-        case 'getnewaddress':
-            return $verus->getnewaddress();
-            break;
-        case 'getnewsapling':
-            return $verus->z_getnewaddress( 'sapling' );
-            break;
-        case 'getbalance':
-            if ( ! isset( $hash ) ) {
-                return "Error 2 - Hash Function";
-            }
-            else {
-                return $verus->z_getbalance( $hash );
-            }
-        break;
-        case 'lowestconfirm':
-            if ( ! isset( $hash ) | ! isset( $amt ) ) {
-                return "Error 2 - Hash Function";
-            }
-            else if ( substr($hash, 0, 2) === 'zs' ) {
-                $data = $verus->z_listreceivedbyaddress( $hash, (int)$amt );
-                $amounts = array();
-                foreach ( $data as $item ) {
-                    array_push($amounts,$item['amount']);
+            else if ( substr( $p, 1, 2 ) === 'zs' ) {
+                $r = $verus->z_listreceivedbyaddress( $p );
+                $a = array();
+                foreach ( $r as $v ) {
+                    array_push( $a, $v['amount'] );
                 }
-            return array_sum($amounts);
+                return _output( array_sum( $a ) );
+                break;
             }
             else {
-                return $verus->getreceivedbyaddress( $hash, (int)$amt );
+                return _output( $verus->getreceivedbyaddress( $p ) );
+                break;
             }
-        break;
-        case 'getblockcount':
-            return $verus->getblockcount();
-        break;
-        case 'countaddresses':
-            return count( $verus->getaddressesbyaccount( "" ) );
             break;
-        case 'countzaddresses':
-            return count( $verus->z_listaddresses() );
-            break;
-        case 'listaddresses':
-            $taddrlist = json_encode( $verus->getaddressesbyaccount( "" ), true );
-            return $taddrlist;
-            break;
-        case 'listzaddresses':
-            $zaddrlist = json_encode( $verus->z_listaddresses(), true );
-            return $zaddrlist;
-            break;
-        case 'totalreceivedby':
-            if ( ! isset( $hash ) ) {
-                return "Error 2 - Hash";
+        // Return a count of all T (transparent) addresses
+        case 't_count':
+            if ( !isset( $p ) ) {
+                return _output( $lng[9], FALSE );
+                break;
             }
             else {
-                return $verus->getreceivedbyaddress( $hash );
+                return _output( count( $verus->getaddressesbyaccount( $p ) ) );
+                break;
             }
             break;
-        case 'getttotalbalance':
-            return $verus->getbalance();
+        // Return a count of all Z (private) addresses
+        case 'z_count':
+            return _output( count( $verus->z_listaddresses() ) );
             break;
-        case 'getunconfirmedbalance':
-            return $verus->getunconfirmedbalance();
-            break;
-        case 'getztotalbalance':
-            $zaddresses = $verus->z_listaddresses();
-            if ( json_encode( $zaddresses, true ) == 'false' ) {
-                return null;
+        // Iterate all T and Z addresses and return balance of each and totals
+        case 'bal':
+            if ( !isset( $p ) ) {
+                return _output( $lng[9], FALSE );
+                break;
             }
             else {
-                $zbal = array();
-                foreach ( $zaddresses as $zaddress ) {
-                    $zbal[] = $verus->z_getbalance( $zaddress );
-                };
-                return array_sum( $zbal );
-            }
-            break;
-        case 'gettotalbalance':
-            $tbal = array();
-            $tbal[] = $verus->getbalance();
-            $zaddresses = $verus->z_listaddresses();
-            foreach ( $zaddresses as $zaddress ) {
-                $tbal[] = $verus->z_getbalance( $zaddress );
-            };
-            $tbal = array_sum( $tbal );
-            return $tbal;
-            break;
-        case 'show_taddr':
-            // Return the transparent address set
-            return $installed_wallets[$coin][ 'taddr' ];
-        case 'show_zaddr':
-            // Return the private address set
-            return $installed_wallets[$coin][ 'zaddr' ];
-        case 'cashout_t':
-            // Run transparent withdraw command and return the conf
-            if ( strtolower($coin) == 'arrr' ) {
-                return "Transparent TXs Not Supported";
-            }
-            else if ( strlen($installed_wallets[$coin][ 'taddr' ]) > 10 ) {
-                return $verus->sendtoaddress($installed_wallets[$coin][ 'taddr' ],$verus->getbalance(),"Cashout_" . time() . "","VerusPay",true);
-            }
-            else {
-                return "No Address Set!";
-            }
-            break;
-        case 'cashout_z':
-            // Run private withdraw command and return the conf
-            if ( strlen($installed_wallets[$coin][ 'zaddr' ]) > 10 ) {
-                $zaddresses = $verus->z_listaddresses();
-                $results = array();
-                foreach ( $zaddresses as $zaddress ) {
-                    $zbal = $verus->z_getbalance( $zaddress );
-                    $zbal = ($zbal - 0.00010000);
-                    if ( $zbal > 0.0000001 ) {
-                        $zbal = (float)number_format($zbal,8);
-                        $txdata = array(
-                            array(
-                            'address' => $installed_wallets[$coin][ 'zaddr' ],
-                            'amount' => $zbal)
-                        );
-                        $results[$zaddress] = array(
-                            'cashout_address' => $installed_wallets[$coin][ 'zaddr' ],
-                            'amount' => $zbal,
-                            'opid' => $verus->z_sendmany($zaddress, $txdata),
-                        );
-                    }
-                };
-                return json_encode( $results, true );
-            }
-            else {
-                return "No Address Set!";
-            }
-            break;
-        case 'pbaas':
-            if ( ! isset( $hash ) ) {
-                return "Error - Hash Required";
-            }
-            else {
-                $serviceuser = shell_exec('stat -c "%U" /opt/verus');
-                $serviceuser = trim($serviceuser);
-                chdir('/opt/verus');
-                $hash = json_decode($hash,true);
-                //sample: hash={"chain":"WHALE","mine":"0","proc":"0","mint":"0"}
-                //sample: echo $results['chain'];
-                if ( empty( $hash['chain'] ) ) {
-                    $a = 'VRSCTEST';
+                $t = $verus->getaddressesbyaccount( $p );
+                $z = $verus->z_listaddresses();
+                if ( json_encode( $z, TRUE ) == 'false' && json_encode( $t, TRUE) == 'false' ) {
+                    return null;
+                    break;
                 }
                 else {
-                    $a = $hash['chain'];
-                }
-                if ( $hash['mine'] == 1 ) {
-                    $b = ' -gen';
-                    if ( empty( $hash['proc'] ) ) {
-                        $c = ' -genproclimit=1';
+                    $tb = array();
+                    $zb = array();
+                    if ( json_encode( $t, TRUE ) != 'false' ) {
+                        foreach ( $t as $v ) {
+                            $tb[$v] = $verus->z_getbalance( json_encode( $v, TRUE ) );
+                        }
+                    }
+                    if ( json_encode( $z, TRUE ) != 'false' ) {
+                        foreach ( $z as $v ) {
+                            $zb[$v] = $verus->z_getbalance( json_encode( $v, TRUE ) );
+                        }
+                    }
+                    $r = array_merge( $tb, $zb, $verus->z_gettotalbalance() );
+                    if ( is_array( $r ) ) {
+                        return _output( _format( $r ) );
+                        break;
                     }
                     else {
-                        $c = ' -genproclimit='.$hash['proc'];
+                        return _output( $r );
+                        break;
                     }
-                    
                 }
-                else {
-                    $b = '';
-                    $c = '';
-                }
-                if ( $hash['mint'] == 1 ) {
-                    $d = ' -mint';
-                }
-                else {
-                    $d = '';
-                }
-                echo "screen -d -m sudo -u $serviceuser /opt/verus/start.sh -chain=$a$b$c$d";
-                //shell_exec("screen -d -m sudo -u $serviceuser /opt/verus/start.sh -chain=$a$b$c$d");
             }
+            break;
+
+        /**
+         * Main Section
+         * 
+         * All other methods passed will attempt to pass through the default case
+         */
+
+        // Pass all other methods and evaluate for filtering (VerusPay, Limited, or full Bridge)
+        default:
+            /**
+             * VerusPay Mode
+             * 
+             * Specific to use with VerusPay Plugin with custom whitelist in config file, set at install, and custom methods defined below
+             */
+            if ( $c['M'] === '_vp_' ) {
+                switch ( $e ) {
+                    /**
+                     * VerusPay-specific Custom Methods
+                     *  */
+                    // Show the configured T-Cashout address where relevant
+                    case 'show_taddr':
+                        if ( $tx == 0 || $tx == 1 ) {
+                            return _output( $c['C'][$chn]['T'] );
+                        }
+                        else {
+                            return _output( $lng[13], FALSE );
+                        }
+                        break;
+                    // Show the configured Z-Cashout address where relevant
+                    case 'show_zaddr':
+                        if ( $tx == 0 || $tx == 2 ) {
+                            return _output( $c['C'][$chn]['Z'] );
+                        }
+                        else {
+                            return _output( $lng[13], FALSE );
+                        }
+                        break;
+                    // Perform a cashout to the configured T address where relevant
+                    case 'cashout_t':
+                        if ( $tx == 0 || $tx == 1 ) {
+                            if ( $_ts === FALSE ) {
+                                return _output( $_t, FALSE );
+                                break;
+                            }
+                            $total = $verus->getbalance();
+                            $param = json_encode( array( $_t, $total, 'Cashout_'.time(), 'VerusPay', TRUE ), TRUE );
+                            return _go_any( $verus, 'sendtoaddress', $param );
+                            break;
+                        }
+                        else {
+                            return _output( $lng[13], FALSE );
+                            break;
+                        }
+                        break;
+                    // Perform a cashout to the configured Z address where relevant
+                    case 'cashout_z':
+                        if ( $tx == 0 || $tx == 2 ) { // If zs tx supported
+                            if ( $_zs === FALSE ) {
+                                return _output( $_z, FALSE );
+                                break;
+                            }
+                            // Do cashout
+                            $zaddlist = $verus->z_listaddresses();
+                            $result = array();
+                            foreach ( $zaddlist as $zadd ) {
+                                $zbal = ( $verus->z_getbalance( json_encode( array( $zadd ), TRUE ) ) - 0.00010000 );
+                                if ( $zbal > 0.0000001 ) {
+                                    $zbal = (float)number_format( $zbal, 8 );
+                                    $param = array( $zadd, array( array( 'address' => $_z, 'amount' => $zbal ) ) );
+                                    $result[$zadd] = array(
+                                        'cashout_address' => $_z,
+                                        'amount' => $zbal,
+                                        'opid' => $verus->z_sendmany( json_encode( $param, TRUE ) )
+                                    );
+                                }
+                            }
+                            return _output( $result );
+                            break;
+                        }
+                        else { // If zs tx NOT supported return error
+                            return _output( $lng[13], FALSE );
+                            break;
+                        }
+                        break;
+                    // All other methods, filtered by whitelist preconfigured during install
+                    default:
+                        // If whitelisted, continue
+                        if ( in_array( $e, $c['F'], TRUE ) ) {
+                            return _go_any( $verus, $e, $p );
+                        }
+                        else {
+                            // If method not whitelisted, error
+                            return _output( $lng[10], FALSE );
+                            die();
+                            break;
+                        }
+                        break;
+                }
+            }
+            /**
+             * Limited Mode
+             * 
+             * Limited access to daemon methods using whitelist configured at install
+             */
+            else if ( $c['M'] === '_lt_' ) {
+                // If whitelisted, continue
+                if ( in_array( $e, $c['F'], TRUE ) ) {
+                    return _go_any( $verus, $e, $p );
+                }
+                else {
+                    // If method not whitelisted, error
+                    return _output( $lng[10], FALSE );
+                    die();
+                    break;
+                }
+            }
+            /**
+             * Bridge Mode
+             * 
+             * Full access to daemon (no whitelist)
+             */
+            else if ( $c['M'] === '_bg_' ) {
+                return _go_any( $verus, $e, $p );
+            }
+            else {
+                // If method not found, error
+                return _output( $lng[10], FALSE );
+                die();
+                break;
+            }
+            break;
     }
+}
+
+/**
+ * Go Do Any Method
+ * 
+ * Function to handle default cases for _go function
+ */
+function _go_any( $verus, $e, $p ) {
+    global $lng;
+    if ( isset( $p ) ) {
+        $r = $verus->$e( $p );
+    }
+    else {
+        $r = $verus->$e();
+    }
+    if ( is_array( $r ) ) {
+        return _output( _format( $r ) );
+    }
+    else {
+        if ( strpos( $r, 'curltest') !== FALSE ) {
+            $r = strstr( $r, '"params"' );
+            $r = preg_replace('/"params": /', '', $r);
+            $r = substr( $r, 0, strpos( $r, "}' -H" ) );
+            return _output( $lng[15].$r, FALSE );
+        }
+        else {
+            return _output( $r );
+        }
+    }
+}
+/**
+ * Get Daemon
+ * 
+ * Pass API chain ticker to search for chain daemon on server and optionally run update config if found ($u = true to update config)
+ */
+function _get_daemon( $data ) {
+    global $lng;
+    foreach ( $data['C'] as $k => $v ) {
+        $v = strtoupper( $v );
+        $dir = trim( shell_exec( 'find /opt /home -type d -name "'.$v.'" 2>&1 | grep -v "Permission denied"' ) );
+        if ( !isset( $dir ) || empty( $dir ) || !strstr( $dir, $v ) ) { // Not Found on Server
+            if ( file_exists( 'config.php' ) && $data['S'] != 'u' ) {
+                unlink( 'config.php' );
+            }
+            if ( $data['DYN'] === TRUE ) {
+                return FALSE;
+                die();
+            }
+            die( $v.$lng[14] );
+        }
+        else {
+            if ( isset( $data['DYN'] ) ) {
+                unset( $data['DYN'] );
+            }
+            if ( !isset( $data['C'][$v] ) ) {
+                $data['C'][$v] = array();
+            }
+            $data['C'][$v]['D'] = date( 'Y-m-d H:i:s', time() );
+            $data['C'][$v]['TX'] = $data[$v.'_TXTYPE'];
+            unset( $data[$v.'_TXTYPE'] );
+            if ( isset( $data[$v.'_T'] ) ) {
+                $data['C'][$v]['T'] = $data[$v.'_T'];
+                unset( $data[$v.'_T'] );
+            }
+            if ( isset( $data[$v.'_Z'] ) ) {
+                $data['C'][$v]['Z'] = $data[$v.'_Z'];
+                unset( $data[$v.'_Z'] );
+            }
+            $data['C'][$v]['L'] = $dir;
+            $data['C'][$v]['U'] = trim( substr( shell_exec( 'cat ' . $dir . '/' . $v . '.conf | grep "rpcuser="' ), strlen( 'rpcuser=' ) ) );
+            $data['C'][$v]['P'] = trim( substr( shell_exec( 'cat ' . $dir . '/' . $v . '.conf | grep "rpcpassword="' ), strlen( 'rpcpassword=' ) ) );
+            $data['C'][$v]['N'] = trim( substr( shell_exec( 'cat ' . $dir . '/' . $v . '.conf | grep "rpcport="' ), strlen( 'rpcport=' ) ) );
+            unset( $data['C'][$k] );
+        }
+    }
+    if ( $data['S'] != 'u' ) {
+        $data['F'] = explode( ',', $data['F'] );
+        foreach( $data['F'] as $k => $v ) {
+            $data['F'][$k] = _filter( $v );
+        }
+    }
+    return $data;
+}
+
+/**
+ * Format
+ * 
+ * Formats the values of provided array to return human-readable and accurate representation of data points
+ */
+function _format( $d ) {
+    foreach ( $d as $k => $v ) {
+        if ( $v == '0' ) {
+            $d[$k] = '0';
+        }
+	    else if ( is_bool( $v ) ) {
+            $d[$k] = ( $v ) ? 'true' : 'false';
+        }
+        else if ( is_float( $v) ) {
+            $d[$k] = sprintf( '%.8f', floatval( $v ) );
+        }
+        else if ( is_integer( $v ) ) {
+            $d[$k] = (string)$v;
+        }
+    }
+    return json_encode( $d, TRUE );
+}
+
+/**
+ * Filter
+ * 
+ * Cleans up data provided, removing whitespace, ensuring lowercase, etc
+ */
+function _filter( $d ) {
+    $d = trim( htmlentities( strip_tags( $d ) ) );
+    if ( get_magic_quotes_gpc() ) {
+        $d = stripslashes( $d );
+    }
+    // Replace all non-alpha characters or spaces with underscore
+    $d = preg_replace( '/\s+|[^\da-z]/i', '_', $d );
+    $d = strtolower( $d );
+    return $d;
+}
+
+/**
+ * Output Helper
+ * 
+ * For errors, params missing, or similar to provide a clean json compatible output
+ */
+function _output( $d, $t = TRUE ) {
+    global $lng;
+    if ( $t === TRUE ) {
+        $t = $lng[5];
+    }
+    else {
+        $t = $lng[8];
+    }
+    $r = array( 'result' => $t, 'return' => $d );
+    return json_encode( str_replace('\"', '"', json_encode( $r, TRUE ) ), TRUE );
 }
