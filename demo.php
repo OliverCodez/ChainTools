@@ -94,7 +94,7 @@ if ( $d['o'] != null ) {
         $opt_d = null;
     }
 }
-if ( $opt_d == null ) { $opt_d = $d['c'] . ' - Hash or Opt not set!'; }
+if ( $opt_d == null ) { $opt_d = $d['c'] . ' - Params or Opt not set!'; }
 $raw_r = $raw_d;
 
 function vg_go( $url, $d ) {
