@@ -1,6 +1,6 @@
 <?php
 /**
- * VerusChainTools Installer
+ * VerusChainTools Updater
  * 
  * Description: This file is the updater for VerusChainTools
  * 

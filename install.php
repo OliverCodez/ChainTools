@@ -1,5 +1,4 @@
 <?php
-//TODO: Test all install functionality again
 // Leading, non-zero number of version - used for compatibility checks in the main scripts
 $_version = '4';
 /**

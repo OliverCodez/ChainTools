@@ -73,12 +73,13 @@ class Verus {
      * @param string $pr
      * @param string $u
      */
-    public function __construct( $u, $p, $h, $po, $pr ) {
+    public function __construct( $u, $p, $h, $po, $pr, $lng ) {
         $this->u    = $u;
         $this->p    = $p;
         $this->h    = $h;
         $this->po   = $po;
         $this->pr   = $pr;
+        $this->lng  = $lng;
         $this->c    = null;
     }
     /**
@@ -141,11 +142,11 @@ class Verus {
         $this->sts = curl_getinfo( $cur, CURLINFO_HTTP_CODE);
         if ( $mth === 'status' ) {
             if ( $this->sts != 404 ) {
-                return 'daemon offline';
+                return $this->lng[19];
                 die();
             }
             else {
-                return 'daemon online';
+                return $this->lng[20];
                 die();
             }
         }
@@ -160,7 +161,7 @@ class Verus {
         else if ( $this->sts != 404 ) {
             switch ( $this->sts ) {
 		        case 0:
-		            $this->err = 'daemon offline';
+		            $this->err = $this->lng[19];
                     break;
             }
         }

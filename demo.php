@@ -1,13 +1,9 @@
 <?php
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
-error_reporting(E_ALL);
-
 // IMPORTANT
 // Define your VCT installation URL/IP and your Access Code (generated during install) in the following variables
-$url = 'location/to/your/vct/url';
+$url = 'localhost/path/to/vct/script';
 $d = array(
-    'a' => 'codegeneratedatinstall',
+    'a' => 'accesscodeGeneratedDuringInstall',
 );
 /**
  * Demo file for VerusChainTools
