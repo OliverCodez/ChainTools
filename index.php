@@ -93,7 +93,7 @@ else {
         include_once( 'config.php' );
     }
     else {
-        echo _output( 'Config file missing or corrupt', FALSE );
+        echo _out( 'Config file missing or corrupt', FALSE );
         die();
     }
     // Set config settings to array
@@ -142,17 +142,17 @@ else {
      */
     // Compare access code provided with set in config
     if ( $i['a'] != $c['A'] ) {
-        echo _output( $lng[2], FALSE );
+        echo _out( $lng[2], FALSE );
         die();
     }
     // Check that chain is set
     if ( empty( $i['c'] ) ) {
-        echo _output( $lng[3], FALSE );
+        echo _out( $lng[3], FALSE );
         die();
     }
     // Check that method is set
     if ( empty( $i['m'] ) ) {
-        echo _output( $lng[4], FALSE );
+        echo _out( $lng[4], FALSE );
         die();
     }
 
@@ -175,7 +175,7 @@ else {
         );
         $data = _get_daemon( $data );
         if ( $data === FALSE ) {
-            echo _output( $_chn.$lng[16], FALSE );
+            echo _out( $_chn.$lng[16], FALSE );
             die();
         }
         $c['S'] = $data['S'];
@@ -218,7 +218,7 @@ function _go( $d ) {
     $verus = new Verus( $d['usr'], $d['pas'], $d['url'], $d['prt'], $d['pro'], $lng );
     $s = $verus->status();
     if ( $s === $lng[19] ) {
-        return _output( $s, FALSE );
+        return _out( $s, FALSE );
         die();
     }
     $chn = $d['c'];
@@ -260,7 +260,7 @@ function _go( $d ) {
          * For testing status of daemon(s)
          */
         case 'test':
-            return _output( $s );
+            return _out( $s );
             break;
         /**
          * Helpful Tools
@@ -269,15 +269,18 @@ function _go( $d ) {
          * Have a suggestion? 
          * Create an issue in https://github.com/joliverwestbrook/VerusChainTools/issues
          *  */
-
+        // Return integer representing the type of txs chain is capable of (0=transparent+private,1=transparent only, 2=private only)
+        case 'type':
+            return _out( $tx );
+            break;
         // Return the current daemon version
         case 'version':
-            return _output( $verus->getinfo()['version'] );
+            return _out( $verus->getinfo()['version'] );
             break;
         // Return the lowest confirm TX
         case 'lowest':
             if ( !isset( $p ) ) {
-                return _output( $lng[9], FALSE );
+                return _out( $lng[9], FALSE );
                 break;
             }
             else if ( substr( $p, 1, 2 ) === 'zs' ) {
@@ -286,33 +289,33 @@ function _go( $d ) {
                 foreach ( $r as $v ) {
                     array_push( $a, $v['amount'] );
                 }
-                return _output( array_sum( $a ) );
+                return _out( array_sum( $a ) );
                 break;
             }
             else {
-                return _output( $verus->getreceivedbyaddress( $p ) );
+                return _out( $verus->getreceivedbyaddress( $p ) );
                 break;
             }
             break;
         // Return a count of all T (transparent) addresses
         case 't_count':
             if ( !isset( $p ) ) {
-                return _output( $lng[9], FALSE );
+                return _out( $lng[9], FALSE );
                 break;
             }
             else {
-                return _output( count( $verus->getaddressesbyaccount( $p ) ) );
+                return _out( count( $verus->getaddressesbyaccount( $p ) ) );
                 break;
             }
             break;
         // Return a count of all Z (private) addresses
         case 'z_count':
-            return _output( count( $verus->z_listaddresses() ) );
+            return _out( count( $verus->z_listaddresses() ) );
             break;
         // Iterate all T and Z addresses and return balance of each and totals
         case 'bal':
             if ( !isset( $p ) ) {
-                return _output( $lng[9], FALSE );
+                return _out( $lng[9], FALSE );
                 break;
             }
             else {
@@ -337,11 +340,11 @@ function _go( $d ) {
                     }
                     $r = array_merge( $tb, $zb, $verus->z_gettotalbalance() );
                     if ( is_array( $r ) ) {
-                        return _output( _format( $r ) );
+                        return _out( _format( $r ) );
                         break;
                     }
                     else {
-                        return _output( $r );
+                        return _out( $r );
                         break;
                     }
                 }
@@ -369,26 +372,26 @@ function _go( $d ) {
                     // Show the configured T-Cashout address where relevant
                     case 'show_taddr':
                         if ( $tx == 0 || $tx == 1 ) {
-                            return _output( $c['C'][$chn]['T'] );
+                            return _out( $c['C'][$chn]['T'] );
                         }
                         else {
-                            return _output( $lng[13], FALSE );
+                            return _out( $lng[13], FALSE );
                         }
                         break;
                     // Show the configured Z-Cashout address where relevant
                     case 'show_zaddr':
                         if ( $tx == 0 || $tx == 2 ) {
-                            return _output( $c['C'][$chn]['Z'] );
+                            return _out( $c['C'][$chn]['Z'] );
                         }
                         else {
-                            return _output( $lng[13], FALSE );
+                            return _out( $lng[13], FALSE );
                         }
                         break;
                     // Perform a cashout to the configured T address where relevant
                     case 'cashout_t':
                         if ( $tx == 0 || $tx == 1 ) {
                             if ( $_ts === FALSE ) {
-                                return _output( $_t, FALSE );
+                                return _out( $_t, FALSE );
                                 break;
                             }
                             $total = $verus->getbalance();
@@ -397,7 +400,7 @@ function _go( $d ) {
                             break;
                         }
                         else {
-                            return _output( $lng[13], FALSE );
+                            return _out( $lng[13], FALSE );
                             break;
                         }
                         break;
@@ -405,7 +408,7 @@ function _go( $d ) {
                     case 'cashout_z':
                         if ( $tx == 0 || $tx == 2 ) { // If zs tx supported
                             if ( $_zs === FALSE ) {
-                                return _output( $_z, FALSE );
+                                return _out( $_z, FALSE );
                                 break;
                             }
                             // Do cashout
@@ -423,11 +426,11 @@ function _go( $d ) {
                                     );
                                 }
                             }
-                            return _output( $result );
+                            return _out( $result );
                             break;
                         }
                         else { // If zs tx NOT supported return error
-                            return _output( $lng[13], FALSE );
+                            return _out( $lng[13], FALSE );
                             break;
                         }
                         break;
@@ -439,7 +442,7 @@ function _go( $d ) {
                         }
                         else {
                             // If method not whitelisted, error
-                            return _output( $lng[10], FALSE );
+                            return _out( $lng[10], FALSE );
                             die();
                             break;
                         }
@@ -458,7 +461,7 @@ function _go( $d ) {
                 }
                 else {
                     // If method not whitelisted, error
-                    return _output( $lng[10], FALSE );
+                    return _out( $lng[10], FALSE );
                     die();
                     break;
                 }
@@ -473,7 +476,7 @@ function _go( $d ) {
             }
             else {
                 // If method not found, error
-                return _output( $lng[10], FALSE );
+                return _out( $lng[10], FALSE );
                 die();
                 break;
             }
@@ -495,17 +498,17 @@ function _go_any( $verus, $e, $p ) {
         $r = $verus->$e();
     }
     if ( is_array( $r ) ) {
-        return _output( _format( $r ) );
+        return _out( _format( $r ) );
     }
     else {
         if ( strpos( $r, 'curltest') !== FALSE ) {
             $r = strstr( $r, '"params"' );
             $r = preg_replace('/"params": /', '', $r);
             $r = substr( $r, 0, strpos( $r, "}' -H" ) );
-            return _output( $lng[15].$r, FALSE );
+            return _out( $lng[15].$r, FALSE );
         }
         else {
-            return _output( $r );
+            return _out( $r );
         }
     }
 }
@@ -612,7 +615,7 @@ function _filter( $d, $p = FALSE ) {
  * 
  * For errors, params missing, or similar to provide a clean json compatible output
  */
-function _output( $d, $t = TRUE ) {
+function _out( $d, $t = TRUE ) {
     global $lng;
     if ( $t === TRUE ) {
         $t = $lng[5];
