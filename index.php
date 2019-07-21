@@ -61,40 +61,20 @@ error_reporting(E_ALL);
  * Check if first run / install and either run install or process results
  */
 if ( file_exists( 'install.php' ) ) {
-    if ( ! empty( $_POST['s'] ) ) {
+    if ( ! empty( $_POST['S'] ) ) {
         // Create the config file and remove the install script
-        $s_a = $_POST;
-        if ( isset( $s_a['c'] ) ) {
-            foreach ( $s_a['c'] as $k => $v ) {
-                $s_a['c'][$v] = array();
-                $s_a['c'][$v]['d'] = date( 'Y-m-d H:i:s', time() );
-                $s_a['c'][$v]['tx'] = $s_a[$v.'_txtype'];
-                unset( $s_a[$v.'_txtype'] );
-                if ( isset( $s_a[$v.'_t'] ) ) {
-                    $s_a['c'][$v]['t'] = $s_a[$v.'_t'];
-                    unset( $s_a[$v.'_t'] );
-                }
-                if ( isset( $s_a[$v.'_z'] ) ) {
-                    $s_a['c'][$v]['z'] = $s_a[$v.'_z'];
-                    unset( $s_a[$v.'_z'] );
-                }
-                unset( $s_a['c'][$k] );
-            }
-        }
-        $s_a['f'] = explode( ',', $s_a['f'] );
-        foreach( $s_a['f'] as $k => $v ) {
-            $s_a['f'][$k] = vct_clean( $v );
-        }
-        file_put_contents( 'config.php','<?php $c = \''.serialize($s_a).'\'; ?>' );
+        $posted = array_change_key_case( $_POST, CASE_UPPER );
+        $daemon = vct_find_daemon( $posted );
+        file_put_contents( 'config.php','<?php $c = \''.serialize( $daemon ).'\'; ?>' );
         unlink( 'install.php' );
         die( '<h2><center>Successfully Installed!</center></h2>' );
     }
     else {
-        // If first run, do install
         include_once( 'install.php' );
         die();
     }
 }
+
 /**
  * Backwards Compatibility
  * 
@@ -110,24 +90,54 @@ if ( isset( $_POST['access'] ) ) {
 else {
     
     /**
-     * Get Data and Setup Vars
-     *
-     * Get php input in json format for handling api calls
+     * Includes and Config
      */
     $_url = 'localhost';
     include_once( 'verusclass.php' );
-    include_once( 'config.php' );
+    if ( file_exists( 'config.php' ) ) {
+        include_once( 'config.php' );
+    }
+    else {
+        echo vct_return_helper( 'error', 'Config file missing or corrupt' );
+        die();
+    }
     include_once( 'lang.php' );
     // Set config settings to array
     $c = unserialize($c);
-    $c['lng'] = $lng[$c['l']];
-    if ( !isset( $c['f'] ) ) {
-        $c['f'] = array();
+    /**
+     * Manual Update
+     * 
+     * Check if an update is being performed
+     */
+    if ( isset( $_REQUEST['update'] ) ) {
+        if ( $_SERVER['REQUEST_METHOD'] === 'GET' && $_REQUEST['update'] === $c['U'] && file_exists( 'update.php' ) ) {
+            include_once( 'update.php' );
+            die();
+        }
+        else if ( $_SERVER['REQUEST_METHOD'] === 'POST' && $_REQUEST['update'] === $c['U'] ) {
+            $posted = array_change_key_case( $_POST, CASE_UPPER );
+            $posted['DYN'] = FALSE;
+            $c['S'] = $posted['S'];
+            $posted = vct_find_daemon( $posted );
+            unset( $posted['UPDATE'], $posted['S'], $posted['D'], $c['C'] );
+            $daemon = array_merge( $c, $posted );
+            file_put_contents( 'config.php','<?php $c = \''.serialize( $daemon ).'\'; ?>' );
+            die( '<h2><center>Update Successful!</center></h2>' );
+        }
+        else {
+            die();
+        }
     }
+    // Check for function whitelist, blank array if none
+    if ( !isset( $c['F'] ) ) {
+        $c['F'] = array();
+    }
+    /**
+     * Get Input
+     */
     $i = json_decode( file_get_contents( 'php://input' ), TRUE);
-    // If no input, die
     if ( empty( $i ) ) {
-	    die($c['lng'][1]);
+        die('<h2>'.$lng[$c['L']][1].'</h2>');
     }
     /**
      * Check Things
@@ -135,50 +145,82 @@ else {
      * Check access code, chain, and method
      */
     // Compare access code provided with set in config
-    if ( $i['a'] != $c['a'] ) {
-        die( $c['lng'][2] );
+    if ( $i['a'] != $c['A'] ) {
+        echo vct_return_helper( 'error', $lng[$c['L']][2] );
+        die();
     }
     // Check that chain is set
     if ( empty( $i['c'] ) ) {
-        die( $c['lng'][3] );
+        echo vct_return_helper( 'error', $lng[$c['L']][3] );
+        die();
     }
     // TODO: Function to check for chain on local wallet and return result (error out if non-exist or down)
     //
     // Check that method is set
     if ( empty( $i['m'] ) ) {
-        die( $c['lng'][4] );
+        echo vct_return_helper( 'error', $lng[$c['L']][4] );
+        die();
     }
 
-    // Build data array for functions with posted chain data
-    // TODO: Create more reliable method of finding installed chains: use config after install and if not search and update config if found
-    // TODO: add function to allow api call to signal a new chain is being instantiated
+    /**
+     * Check Chain & Finalize Settings
+     * 
+     * Check for chain daemon info in config, if not found, check server and if found update config
+     */
     $_chn = strtoupper( $i['c'] );
-    if ( $_chn == 'VRSCTEST' ) { // If parent pbaas chain, set director (only necessary if parent has unique location from pbaas chains, specific testing, etc)
-        $_dir = '/home/user/.komodo/VRSCTEST'; // temporary method
+    if ( !isset( $c['C'][$_chn] ) || !isset( $c['C'][$_chn]['L'] ) || !isset( $c['C'][$_chn]['U'] ) || !isset( $c['C'][$_chn]['P'] ) || !isset( $c['C'][$_chn]['N'] ) ) {
+        $data = array(
+            'DYN' => TRUE,
+            'S' => 'u',
+            $_chn.'_TXTYPE' => '0',
+            'C' => array(
+                $_chn,
+            ),
+            $_chn.'_T' => 'ForCashout_Complete_update_manually_on_VCT_server',
+            $_chn.'_Z' => 'ForCashout_Complete_update_manually_on_VCT_server',
+        );
+        $data = vct_find_daemon( $data );
+        if ( $data === FALSE ) {
+            echo vct_return_helper( 'error', $_chn.' daemon must be running on daemon server' );
+            die();
+        }
+        $c['S'] = $data['S'];
+        $c['C'] = array_merge( $c['C'], $data['C'] );
+        file_put_contents( 'config.php','<?php $c = \''.serialize( $c ).'\'; ?>' );
+        $daemon = $c['C'][$_chn];
     }
     else {
-        $_dir = trim( shell_exec( 'find /opt -type d -name "'.$_chn.'"' ) );
+        $daemon = $c['C'][$_chn];
     }
-    /**
-     * Input Array
-     * 
-     * Finish setting up input data array before processing
-     */
     $i['m'] = vct_clean( $i['m'] );
     $i = array_merge( $i, array(
         'pro' => 'http',
         'url' => $_url,
-        'dir' => $_dir,
-        'usr' => trim( substr( shell_exec( 'cat ' . $_dir . '/' . $_chn . '.conf | grep "rpcuser="' ), strlen( 'rpcuser=' ) ) ),
-        'pas' => trim( substr( shell_exec( 'cat ' . $_dir . '/' . $_chn . '.conf | grep "rpcpassword="' ), strlen( 'rpcpassword=' ) ) ),
-        'prt' => trim( substr( shell_exec( 'cat ' . $_dir . '/' . $_chn . '.conf | grep "rpcport="' ), strlen( 'rpcport=' ) ) ),
-    ) );
+        'dir' => $daemon['L'],
+        'usr' => $daemon['U'],
+        'pas' => $daemon['P'],
+        'prt' => $daemon['N'],
+        )
+    );
+
+//TEST
+/*$i = array(
+    'm' => 'version',
+    'p' => null,
+    'o' => null,
+    'pro' => 'http',
+    'url' => $_url,
+    'usr' => 'user3420326507',
+    'pas' => 'pass5fd3c109caf64a87d38c59e951f363e09f0f6faf81cdcfed6b7254d2b430443564',
+    'prt' => '18361',
+);
+//END */
     /**
-     * Go!
+     * Go VerusClass!
      * 
      * Run the _go function to process the provided method and related data
      */
-    echo json_encode( array( 'command' => $i['m'], 'result' => _go( $i ) ), TRUE );
+    echo _go( $i );
 }
 
 /**
@@ -189,31 +231,28 @@ else {
 function _go( $d ) {
     // Include config array
     global $c;
+    global $lng;
     // New Verus class for interacting with daemon
     $verus = new Verus( $d['usr'], $d['pas'], $d['url'], $d['prt'], $d['pro'] );
+    $s = $verus->status();
+    if ( $s === 'daemon offline' ) {
+        return vct_return_helper( 'error', $s );
+        die();
+    }
+    $chn = $d['c'];
+    $tx = $c['C'][$chn]['TX'];
     $e = $d['m'];
     $p = $d['p'];
     $o = $d['o'];
     switch ( $e ) {
-
         /**
          * Testing
          * 
          * For testing status of daemon(s)
          */
-
         case 'test':
-            $verus->status();
-	        if ( $verus->sts === 404 ) {
-                return vct_return_helper( $c['lng'][5], $c['lng'][6] );
-                break;
-	        }
-	        else {
-                return vct_return_helper( $c['lng'][5], $c['lng'][7] );
-                break;
-	        }
+            return vct_return_helper( 'success', $s );
             break;
-
         /**
          * Helpful Tools
          * 
@@ -222,47 +261,47 @@ function _go( $d ) {
 
         // Return the current daemon version
         case 'version':
-            return $verus->getinfo()['version'];
+            return vct_return_helper( 'success', $verus->getinfo()['version'] );
             break;
         // Return the lowest confirm TX
         case 'lowest':
             if ( !isset( $p ) ) {
-                return vct_return_helper( 1, NULL );
+                return vct_return_helper( 'error', $lng[$c['L']][9] );
                 break;
             }
-            else if ( substr( $p, 0, 2 ) === 'zs' ) {
+            else if ( substr( $p, 1, 2 ) === 'zs' ) {
                 $r = $verus->z_listreceivedbyaddress( $p );
                 $a = array();
                 foreach ( $r as $v ) {
                     array_push( $a, $v['amount'] );
                 }
-            return json_encode( array_sum( $a ), TRUE );
-            break;
+                return vct_return_helper( 'success', array_sum( $a ) );
+                break;
             }
             else {
-                return json_encode( $verus->getreceivedbyaddress( $p ), TRUE );
+                return vct_return_helper( 'success', $verus->getreceivedbyaddress( $p ) );
                 break;
             }
             break;
         // Return a count of all T (transparent) addresses
         case 't_count':
             if ( !isset( $p ) ) {
-                return vct_return_helper( 1, NULL );
+                return vct_return_helper( 'error', $lng[$c['L']][9] );
                 break;
             }
             else {
-                return json_encode( count( $verus->getaddressesbyaccount( $p ) ), TRUE );
+                return vct_return_helper( 'success', count( $verus->getaddressesbyaccount( $p ) ) );
                 break;
             }
             break;
         // Return a count of all Z (private) addresses
         case 'z_count':
-            return json_encode( count( $verus->z_listaddresses() ), TRUE );
+            return vct_return_helper( 'success', count( $verus->z_listaddresses() ) );
             break;
         // Iterate all T and Z addresses and return balance of each and totals
         case 'bal':
             if ( !isset( $p ) ) {
-                return vct_return_helper( 1, NULL );
+                return vct_return_helper( 'error', $lng[$c['L']][9] );
                 break;
             }
             else {
@@ -287,11 +326,11 @@ function _go( $d ) {
                     }
                     $r = array_merge( $tb, $zb, $verus->z_gettotalbalance() );
                     if ( is_array( $r ) ) {
-                        return vct_format( $r );
+                        return vct_return_helper( 'success', vct_format( $r ) );
                         break;
                     }
                     else {
-                        return $r;
+                        return vct_return_helper( 'success', $r );
                         break;
                     }
                 }
@@ -311,20 +350,31 @@ function _go( $d ) {
              * 
              * Specific to use with VerusPay Plugin with custom whitelist in config file, set at install, and custom methods defined below
              */
-            if ( $c['m'] === '_vp_' ) {
+            if ( $c['M'] === '_vp_' ) {
                 switch ( $e ) {
                     /**
                      * VerusPay-specific Custom Methods
                      *  */
                     // Show the configured T-Cashout address where relevant
                     case 'show_taddr':
-                        return $installed_wallets[$coin][ 'taddr' ];
+                        if ( $tx == 0 || $tx == 1 ) {
+                            return vct_return_helper( 'success', $c['C'][$chn]['T'] );
+                        }
+                        else {
+                            return vct_return_helper( 'error', $lng[$c['L']][13] );
+                        }
                         break;
                     // Show the configured Z-Cashout address where relevant
                     case 'show_zaddr':
-                        return $installed_wallets[$coin][ 'zaddr' ];
+                        if ( $tx == 0 || $tx == 2 ) {
+                            return vct_return_helper( 'success', $c['C'][$chn]['Z'] );
+                        }
+                        else {
+                            return vct_return_helper( 'error', $lng[$c['L']][13] );
+                        }
                         break;
                     // Perform a cashout to the configured T address where relevant
+                    // TODO: Left off here, cleaning all functions and final backend edits!
                     case 'cashout_t':
                         if ( strtolower($coin) == 'arrr' ) { // TODO: config file to track chains and capabilities etc
                             return "Transparent TXs Not Supported"; // Msg that T is not supported - TODO: Based on chain won't even use this.
@@ -336,7 +386,7 @@ function _go( $d ) {
                         }
                         else {
                             // If address not set, error
-                            return $c['lng'][11];
+                            return $lng[$c['L']][11];
                             break;
                         }
                         break;
@@ -363,19 +413,19 @@ function _go( $d ) {
                                     );
                                 }
                             }
-                            return json_encode( $results, true );
+                            return vct_return_helper( 'success', $results );
                             break;
                         }
                         else {
                             // If address not set, error
-                            return $c['lng'][11];
+                            return $lng[$c['L']][11];
                             break;
                         }
                         break;
                     // All other methods, filtered by whitelist preconfigured during install
                     default:
                         // If whitelisted, continue
-                        if ( in_array( $e, $c['f'], TRUE ) ) {
+                        if ( in_array( $e, $c['F'], TRUE ) ) {
                             if ( isset( $p ) ) {
                                 $r = $verus->$e( $p );
                             }
@@ -383,7 +433,7 @@ function _go( $d ) {
                                 $r = $verus->$e();
                             }
                             if ( is_array( $r ) ) {
-                                return vct_format( $r );
+                                return vct_return_helper( 'success', vct_format( $r ) );
                                 break;
                             }
                             else {
@@ -391,18 +441,19 @@ function _go( $d ) {
                                     $r = strstr( $r, '"params"' );
                                     $r = preg_replace('/"params": /', '', $r);
                                     $r = substr( $r, 0, strpos( $r, "}' -H" ) );
-                                    return vct_return_helper( 2, $r );
+                                    return vct_return_helper( 'error', 'Params missing or incorrect, e.g. '.$r );
                                     break;
                                 }
                                 else {
-                                    return $r;
+                                    return vct_return_helper( 'success', $r );
                                     break;
                                 }
                             }
                         }
                         else {
                             // If method not whitelisted, error
-                            return $c['lng'][10];
+                            return vct_return_helper( 'error', $lng[$c['L']][10] );
+                            die();
                             break;
                         }
                         break;
@@ -413,9 +464,9 @@ function _go( $d ) {
              * 
              * Limited access to daemon methods using whitelist configured at install
              */
-            else if ( $c['m'] === '_lt_' ) {
+            else if ( $c['M'] === '_lt_' ) {
                 // If whitelisted, continue
-                if ( in_array( $e, $c['f'], TRUE ) ) {
+                if ( in_array( $e, $c['F'], TRUE ) ) {
                     if ( isset( $p ) ) {
                         $r = $verus->$e( $p );
                     }
@@ -423,7 +474,7 @@ function _go( $d ) {
                         $r = $verus->$e();
                     }
                     if ( is_array( $r ) ) {
-                        return vct_format( $r );
+                        return vct_return_helper( 'success', vct_format( $r ) );
                         break;
                     }
                     else {
@@ -431,18 +482,19 @@ function _go( $d ) {
                             $r = strstr( $r, '"params"' );
                             $r = preg_replace('/"params": /', '', $r);
                             $r = substr( $r, 0, strpos( $r, "}' -H" ) );
-                            return vct_return_helper( 2, $r );
+                            return vct_return_helper( 'error', 'Params missing or incorrect, e.g. '.$r );
                             break;
                         }
                         else {
-                            return $r;
+                            return vct_return_helper( 'success', $r );
                             break;
                         }
                     }
                 }
                 else {
                     // If method not whitelisted, error
-                    return $c['lng'][10];
+                    return vct_return_helper( 'error', $lng[$c['L']][10] );
+                    die();
                     break;
                 }
             }
@@ -451,7 +503,7 @@ function _go( $d ) {
              * 
              * Full access to daemon (no whitelist)
              */
-            else if ( $c['m'] === '_bg_' ) {
+            else if ( $c['M'] === '_bg_' ) {
                 if ( isset( $p ) ) {
                     $r = $verus->$e( $p );
                 }
@@ -459,7 +511,7 @@ function _go( $d ) {
                     $r = $verus->$e();
                 }
                 if ( is_array( $r ) ) {
-                    return vct_format( $r );
+                    return vct_return_helper( 'success', vct_format( $r ) );
                     break;
                 }
                 else {
@@ -467,21 +519,76 @@ function _go( $d ) {
                         $r = strstr( $r, '"params"' );
                         $r = preg_replace('/"params": /', '', $r);
                         $r = substr( $r, 0, strpos( $r, "}' -H" ) );
-                        return vct_return_helper( 2, $r );
+                        return vct_return_helper( 'error', 'Params missing or incorrect, e.g. '.$r );
                         break;
                     }
                     else {
-                        return $r;
+                        return vct_return_helper( 'success', $r );
                         break;
                     }
                 }
             }
             else {
                 // If method not found, error
-                die( $c['lng'][10] );
+                return vct_return_helper( 'error', $lng[$c['L']][10] );
+                die();
+                break;
             }
             break;
     }
+}
+
+/**
+ * Find/Add Daemon
+ * 
+ * Pass API chain ticker to search for chain daemon on server and optionally run update config if found ($u = true to update config)
+ */
+function vct_find_daemon( $data ) {
+    foreach ( $data['C'] as $k => $v ) {
+        $v = strtoupper( $v );
+        $dir = trim( shell_exec( 'find /opt /home -type d -name "'.$v.'" 2>&1 | grep -v "Permission denied"' ) );
+        if ( !isset( $dir ) || empty( $dir ) || !strstr( $dir, $v ) ) { // Not Found on Server
+            if ( file_exists( 'config.php' ) && $data['S'] != 'u' ) {
+                unlink( 'config.php' );
+            }
+            if ( $data['DYN'] === TRUE ) {
+                return FALSE;
+                die();
+            }
+            die( $v.' daemon not found on this server - install halted - add daemon and restart install' );
+        }
+        else {
+            if ( isset( $data['DYN'] ) ) {
+                unset( $data['DYN'] );
+            }
+            if ( !isset( $data['C'][$v] ) ) {
+                $data['C'][$v] = array();
+            }
+            $data['C'][$v]['D'] = date( 'Y-m-d H:i:s', time() );
+            $data['C'][$v]['TX'] = $data[$v.'_TXTYPE'];
+            unset( $data[$v.'_TXTYPE'] );
+            if ( isset( $data[$v.'_T'] ) ) {
+                $data['C'][$v]['T'] = $data[$v.'_T'];
+                unset( $data[$v.'_T'] );
+            }
+            if ( isset( $data[$v.'_Z'] ) ) {
+                $data['C'][$v]['Z'] = $data[$v.'_Z'];
+                unset( $data[$v.'_Z'] );
+            }
+            $data['C'][$v]['L'] = $dir;
+            $data['C'][$v]['U'] = trim( substr( shell_exec( 'cat ' . $dir . '/' . $v . '.conf | grep "rpcuser="' ), strlen( 'rpcuser=' ) ) );
+            $data['C'][$v]['P'] = trim( substr( shell_exec( 'cat ' . $dir . '/' . $v . '.conf | grep "rpcpassword="' ), strlen( 'rpcpassword=' ) ) );
+            $data['C'][$v]['N'] = trim( substr( shell_exec( 'cat ' . $dir . '/' . $v . '.conf | grep "rpcport="' ), strlen( 'rpcport=' ) ) );
+            unset( $data['C'][$k] );
+        }
+    }
+    if ( $data['S'] != 'u' ) {
+        $data['F'] = explode( ',', $data['F'] );
+        foreach( $data['F'] as $k => $v ) {
+            $data['F'][$k] = vct_clean( $v );
+        }
+    }
+    return $data;
 }
 
 /**
@@ -529,17 +636,7 @@ function vct_clean( $d ) {
  * For errors, params missing, or similar to provide a clean json compatible output
  */
 function vct_return_helper( $t, $d ) {
-    global $c;
-    switch ( $t ) {
-        case 1:
-            $r = array( 'return' => $c['lng'][8], 'details' => $c['lng'][9] );
-            break;
-        case 2:
-            $r = array( 'return' => $c['lng'][8], 'details' => $c['lng'][9], 'param_example' => $d );
-            break;
-        default:
-            $r = array( 'return' => $t, 'details' => $d );
-            break;
-        }
-    return str_replace('\"', '"', json_encode( $r, TRUE ) );
+    $r = array( 'return' => $t, 'details' => $d );
+    return json_encode( str_replace('\"', '"', json_encode( $r, TRUE ) ), TRUE );
 }
+

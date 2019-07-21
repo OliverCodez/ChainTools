@@ -97,23 +97,23 @@ class Verus {
         $this->par = array();
         if ( $mth === 'help' ) {
             $this->frm = TRUE;
-        }
-	    if ( !empty( $par[0] ) ) {
+        }    
+        if ( !empty( $par[0] ) ) {
             if ( $par[0][0] === '[' ) {
-		        $this->par = json_decode( $par[0], TRUE );
-	        }
-	        else {
-		        $this->par = array( json_decode( $par[0], TRUE ) );
-	        }
+                $this->par = json_decode( $par[0], TRUE );
+            }
+            else {
+                $this->par = array( json_decode( $par[0], TRUE ) );
+            }
         }
-	    $this->par = array_values( $this->par );
+        $this->par = array_values( $this->par );
         $this->id++;
         $req = json_encode( array(
             'method' => $mth,
             'params' => $this->par,
             'id'     => $this->id
         ) );
-        $cur    = curl_init( "{$this->pr}://{$this->h}:{$this->po}" );
+        $cur = curl_init( "{$this->pr}://{$this->h}:{$this->po}" );
         $opt = array(
             CURLOPT_HTTPAUTH       => CURLAUTH_BASIC,
             CURLOPT_USERPWD        => $this->u . ':' . $this->p,
@@ -138,7 +138,17 @@ class Verus {
         curl_setopt_array( $cur, $opt );
         $this->raw = curl_exec( $cur );
         $this->ret = json_decode( $this->raw, true );
-        $this->sts = curl_getinfo( $cur, CURLINFO_HTTP_CODE );
+        $this->sts = curl_getinfo( $cur, CURLINFO_HTTP_CODE);
+        if ( $mth === 'status' ) {
+            if ( $this->sts != 404 ) {
+                return 'daemon offline';
+                die();
+            }
+            else {
+                return 'daemon online';
+                die();
+            }
+        }
         $cre = curl_error( $cur );
         curl_close( $cur );
         if ( ! empty( $cre ) ) {
@@ -146,22 +156,15 @@ class Verus {
         }
         if ( $this->ret['error'] ) {
             $this->err = $this->ret['error']['message'];
-        } elseif ( $this->sts != 404 ) {
+        }
+        else if ( $this->sts != 404 ) {
             switch ( $this->sts ) {
-		case 0:
-		    $this->err = 'Offline';
-		    break;
-                case 400:
-                    $this->err = '400';
-                    break;
-                case 401:
-                    $this->err = '401';
-                    break;
-                case 403:
-                    $this->err = '403';
+		        case 0:
+		            $this->err = 'daemon offline';
                     break;
             }
         }
+
         if ( $this->err ) {
             return $this->err;
         }

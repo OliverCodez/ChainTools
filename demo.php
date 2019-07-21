@@ -5,9 +5,9 @@ error_reporting(E_ALL);
 
 // IMPORTANT
 // Define your VCT installation URL/IP and your Access Code (generated during install) in the following variables
-$url = 'location/or/url/to/your/vct/script';
+$url = 'location/to/your/vct/url';
 $d = array(
-    'a' => 'code_generated_at_install',
+    'a' => 'codegeneratedatinstall',
 );
 /**
  * Demo file for VerusChainTools
@@ -88,10 +88,9 @@ $d = array_merge( $d, array(
     'o'   => $_opt,
     ) 
 );
-
 $raw_d = json_decode( vg_go( $url, $d ), true );
 if ( $d['o'] != null ) {
-    $opt_d = json_decode( $raw_d['result'], true);
+    $opt_d = json_decode( $raw_d, true);
     if ( isset( $opt_d[$d['o']] ) ) {
         $opt_d = $d['c'] . '/' . $d['m'] . ' - ' . $d['o'] . ': ' . $opt_d[$d['o']];
     }
@@ -100,8 +99,7 @@ if ( $d['o'] != null ) {
     }
 }
 if ( $opt_d == null ) { $opt_d = $d['c'] . ' - Hash or Opt not set!'; }
-$raw_r = $raw_d['result'];
-
+$raw_r = $raw_d;
 
 function vg_go( $url, $d ) {
     $ch = curl_init();

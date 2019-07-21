@@ -1,18 +1,15 @@
 <?php
-//TODO: Test all install functionality again
-// Leading, non-zero number of version - used for compatibility checks in the main scripts
-$_version = '4';
 /**
  * VerusChainTools Installer
  * 
- * Description: This file is a one-time installer for a first-use of VerusChainTools
+ * Description: This file is the updater for VerusChainTools
  * 
  * Included files:
  *      index.php
  *      verusclass.php
  *      lang.php
- *      update.php
- *      install.php (this file)
+ *      update.php (this file)
+ *      install.php
  *      demo.php
  *
  * @category Cryptocurrency
@@ -48,18 +45,6 @@ $_version = '4';
  * 
  * ====================
  */
-$accessCode = $_version . rand_chars( 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890', 71, TRUE );
-$updateCode = 'U' . $_version . rand_chars( 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890', 70, TRUE );
-// TODO: Build function to check for Verus daemon as minimun prerequisite for installation
-function rand_chars($c, $l, $u = FALSE) {
-    if ( !$u ) {
-        for ($s = '', $i = 0, $z = strlen($c)-1; $i < $l; $x = rand(0,$z), $s .= $c{$x}, $i++);
-    }
-    else {
-        for ($i = 0, $z = strlen($c)-1, $s = $c{rand(0,$z)}, $i = 1; $i != $l; $x = rand(0,$z), $s .= $c{$x}, $s = ($s{$i} == $s{$i-1} ? substr($s,0,-1) : $s), $i=strlen($s));
-    }
-    return $s;
-}
 ?>
 <html lang="en">
 <head>
@@ -90,7 +75,7 @@ function rand_chars($c, $l, $u = FALSE) {
         main {
             padding: 20px;
             font-family: arial;
-            font-size: 1.6rem;
+            font-size: 2rem;
         }
         .content_top {
             display: block;
@@ -110,7 +95,7 @@ function rand_chars($c, $l, $u = FALSE) {
             position: relative;
             float: none;
         }
-        .code_block-outer > p {
+        .code_block-outer > p:first-child {
             font-weight: bold;
             font-size: 2.2rem;
             text-align: center;
@@ -128,7 +113,7 @@ function rand_chars($c, $l, $u = FALSE) {
             padding: 5px 0;
             height: 60px;
         }
-        #copy_code, #copy_ucode {
+        #copy_code {
             height: 50px;
             max-width: 40px;
             display: block;
@@ -164,7 +149,7 @@ function rand_chars($c, $l, $u = FALSE) {
             cursor:pointer;
             color: #FB5656;
         }
-        #access_code-container, #update_code-container {
+        #access_code-container {
             width: 90%;
             display: block;
             line-height: 50px;
@@ -176,13 +161,13 @@ function rand_chars($c, $l, $u = FALSE) {
             border: 1px dotted #FB5656;
             margin: 0 10px;
         }
-        #access_code, #update_code {
+        #access_code {
             text-align: center;
             color: #FB5656;
             font-weight: bold;
             font-size: 1.6rem;
         }
-        #success_div, #usuccess_div {
+        #success_div {
             display:none;
             top: 0;
             left: 0;
@@ -315,11 +300,11 @@ function rand_chars($c, $l, $u = FALSE) {
             .code_block-outer {
                 padding: 20px 4px;
             }
-            #copy_code, #copy_ucode {
+            #copy_code {
                 min-width: 40px;
                 width: calc(100% * 1/8);
             }
-            #access_code-container, #update_code-container {
+            #access_code-container {
                 width: calc(100% * 6/8);
             }
         }
@@ -328,57 +313,51 @@ function rand_chars($c, $l, $u = FALSE) {
 </head>
 <body>
     <header>
-        <div>Welcome to the VerusChainTools Installer</div>
+        <div>Welcome to the VerusChainTools Updater</div>
     </header>
     <main>
         <div class="content_top">
-            <p>Thank you for installing VerusChainTools! Below is your unique Access Code and Update Code. Keep your Update Code in a secure location for future use, if you ever need to add more blockchain daemons or update any of your config settings. Your Access Code is for use with either VerusPay or the web tool you are using with the VerusChainTools API. Please verify the first number of your Access Code matches the first non-zero version number of this VerusChainTools API which you're installing.  For example, "4" would match with VerusChainTools version 0.4.2.  If it does not match, abandon this install and contact the developer.</p>
+            <p>Thank you for installing VerusChainTools! Below is your unique Access Code and a section to add your installed daemons.  Please verify the leading 4 characters of the Access Code match the version number of VerusChainTools which you're installing.  For example "v040" for version 0.4.0.</p>
             <p></p>
             <p></p>
-            <p>After adding your chains and any payout addresses (for VerusPay users), click Save and your config file will be created locally on this server and this installation script will be removed.  If you need to change something or update these settings in the future, visit this same script and append the following to the URL: ?update=YOUR_PRIVATE_UPDATE_CODE ( e.g. https://127.127.27.27/?update=YourPrivateUpdateCode )</p>
+            <p>Please copy your access code for use with your web server.  After adding your chains and any payout addresses, click Save and your config file will be created locally on this server and this installation script will be removed.</p>
             <p></p>
         </div>
         <div class="code_block-outer">
-            <p>Your Unique Acces Code:</p>
-            <div class="code_block-inner">
-                <div id="copy_code">
-                    <span class="copy_symbol"></span>
-                </div>
-                <div id="access_code-container">
-                    <p id="access_code"><?php echo $accessCode; ?></p>
-                    <p id="success_div" style="z-index:999">Access Code Copied</p>
-                </div>
-            </div>
-            <p>Your Private Update Code:</p>
-            <div class="code_block-inner">
-                <div id="copy_ucode">
-                    <span class="copy_symbol"></span>
-                </div>
-                <div id="update_code-container">
-                    <p id="update_code"><?php echo $updateCode; ?></p>
-                    <p id="usuccess_div">Update Code Copied</p>
-                </div>
-            </div>
+            
             <form id="config" name="config" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>" method="POST">
-                <input type="hidden" name="S" value="s">
-                <input type="hidden" name="D" value="<?php echo date( 'Y-m-d H:i:s', time() ); ?>">
-                <input type="hidden" name="A" value="<?php echo $accessCode; ?>">
-                <input type="hidden" name="U" value="<?php echo $updateCode; ?>">
+                <input type="hidden" name="update" value="<?php echo $_GET['update']; ?>">
+                <input type="hidden" name="S" value="u">
                 <div class="main_container" style="display: block;float: left;width: 100%;padding: 0 0 20px 0;margin: 10px auto;">
-    <p style="font-weight: bold;font-size: 2.2rem;text-align: center;display: block;float: none;margin: 0 auto;width: 100%;padding: 5px 0;margin-top: 20px;">Choose VerusChainTools Mode and Language:</p>
-    <span style="font-size: 16px;padding: 0 0 20px;display: block;">Choose how you intend to use VerusChainTools and your preferred language.</span>
-                    <select name="m" id="vct_mode" style="display: block;width: 100%;margin: 10px 40px;max-width: 300px;">
-                        <option value="_vp_" selected="">VerusPay WordPress Mode</option>
-                        <option value="_bg_">Full Bridge Mode</option>
-                        <option value="_lt_">Limited Mode</option>
-                    </select>
-                    <input name="f" id="vct_limits" placeholder="Enter allowed/whitelisted valid method names seperated by a comma" style="display: none;width: 80%;margin: 10px 40px;" value="setgenerate,getgenerate,getnewaddress,z_getnewaddress,z_getbalance,getunconfirmedbalance,getaddressesbyaccount,z_listaddresses,getreceivedbyaddress">
-                    <select name="l" id="vct_lang" style="display: block;margin: 10px 40px;width: 300px;">
-                        <option value="eng" selected="">English</option>
-                    </select>
+
+    <p style="font-weight: bold;font-size: 2.2rem;text-align: center;display: block;float: none;margin: 0 auto;width: 100%;padding: 5px 0;margin-top: 20px;">Update Settings for Configured Chain Daemons:</p>
+
                 </div>
+                <?php
+                    foreach ( $c['C'] as $key => $value ) {
+                        $sel = array(
+                            0 => '',
+                            1 => '',
+                            2 => '',
+                        );
+                        $adr = array(
+
+                        );
+                        $sel[$c['C'][$key]['TX']] = 'selected';
+                        if ( $sel['0'] == 'selected' ) {
+                            $addresses = '<input id="'.$key.'_t" class="addr_text taddr" placeholder="Transparent Payout Address (leave empty if unsupported or not desired)" type="text" value="'.$c['C'][$key]['T'].'" name="'.$key.'_t"><input id="'.$key.'_z" class="addr_text zaddr" placeholder="Private (Sapling) Payout Address (leave empty if unsupported or not desired)" type="text" value="'.$c['C'][$key]['Z'].'" name="'.$key.'_z">';
+                        }
+                        if ( $sel['1'] == 'selected' ) {
+                            $addresses = '<input id="'.$key.'_t" class="addr_text taddr" placeholder="Transparent Payout Address (leave empty if unsupported or not desired)" type="text" value="'.$c['C'][$key]['T'].'" name="'.$key.'_t"><input id="'.$key.'_z" class="addr_text zaddr" placeholder="Private (Sapling) Payout Address (leave empty if unsupported or not desired)" type="text" value="" name="" style="display:none;">';
+                        }
+                        if ( $sel['2'] == 'selected' ) {
+                            $addresses = '<input id="'.$key.'_t" class="addr_text taddr" placeholder="Transparent Payout Address (leave empty if unsupported or not desired)" type="text" value="" name="" style="display:none;"><input id="'.$key.'_z" class="addr_text zaddr" placeholder="Private (Sapling) Payout Address (leave empty if unsupported or not desired)" type="text" value="'.$c['C'][$key]['Z'].'" name="'.$key.'_z">';
+                        }
+                        echo '<div class="addr_block '.$key.'_container"><span class="easytitle"><span class="addr">'.$key.'</span> Chain Settings<span class="chain_del" data-chain="'.$key.'">delete chain</span></span><label class="dropdown_label" style="display: block;font-weight:normal;"> TX Capabilities:<select class="dropdown chain_capabilities" data-chain="'.$key.'" name="'.$key.'_txtype" style="min-width: 300px;"><option value="0" '.$sel['0'].'>Transparent and Private</option><option value="1" '.$sel['1'].'>Transparent Only</option><option value="2" '.$sel['2'].'>Private zs Only</option></select></label><span class="easytitle">Payout Addresses</span><input class="addr_name" type="hidden" value="'.$key.'" name="c[]">'.$addresses.'</div>';
+                    }
+                ?>
                 <div id="addr_block_location"></div>
-                <p style="font-weight: bold;font-size: 2.2rem;text-align: center;display: block;float: none;margin: 0 auto;width: 100%;padding: 5px 0;margin-top: 20px;">Add Your Chains:</p>
+                <p style="font-weight: bold;font-size: 2.2rem;text-align: center;display: block;float: none;margin: 0 auto;width: 100%;padding: 5px 0;margin-top: 20px;">Add New Chains:</p>
                 <span style="font-size: 16px;padding: 0 0 20px;display: block;">Add the chains/coins by entering the chain symbol and clicking the Add Chain button.  Add chains this wallet server will access, one at a time and enter the appropriate Payout address (if desired/compatible) for each chain added.  Only add chains for which you have the daemon installed and running on this wallet server.</span>
                 <div class="add_chain_container">
                     <input id="chain_name" name="" type="text" placeholder="VRSC" value="">
@@ -432,17 +411,6 @@ function rand_chars($c, $l, $u = FALSE) {
             document.execCommand('copy');
             $temp.remove();
             $('#success_div').fadeIn('slow', function () {
-                $(this).delay(1000).fadeOut('slow');
-            });
-        });
-        $('#copy_ucode').on('click touchstart', function(){
-            var $temp = $("<input>");
-            var $addr = $('#update_code').text();
-            $("body").append($temp);
-            $temp.val($('#update_code').text()).select();
-            document.execCommand('copy');
-            $temp.remove();
-            $('#usuccess_div').fadeIn('slow', function () {
                 $(this).delay(1000).fadeOut('slow');
             });
         });
