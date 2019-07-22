@@ -56,17 +56,22 @@
  * Check if first run / install and either run install or process results
  */
 if ( file_exists( 'install.php' ) ) {
-    if ( ! empty( $_POST['S'] ) ) {
-        // Create the config file and remove the install script
-        $posted = array_change_key_case( $_POST, CASE_UPPER );
-        $daemon = _get_daemon( $posted );
-        file_put_contents( 'config.php','<?php $c = \''.serialize( $daemon ).'\'; ?>' );
-        unlink( 'install.php' );
-        die( '<h2><center>Successfully Installed!</center></h2>' );
+    if ( is_writable( 'install.php' ) ) {
+        if ( ! empty( $_POST['S'] ) ) {
+            // Create the config file and remove the install script
+            $posted = array_change_key_case( $_POST, CASE_UPPER );
+            $daemon = _get_daemon( $posted );
+            file_put_contents( 'config.php','<?php $c = \''.serialize( $daemon ).'\'; ?>' );
+            unlink( 'install.php' );
+            die( '<h2><center>Successfully Installed!</center></h2>' );
+        }
+        else {
+            include_once( 'install.php' );
+            die();
+        }
     }
     else {
-        include_once( 'install.php' );
-        die();
+        die( '<h2 style="color:red"><center>Error</center></h2><p>Cannot Write to Directory - Check Permissions for Web User (usually www-data).  The directory containing VerusChainTools must be owned by your servers web user.  It is recommended you also set permissions 755 on the same folder and all contents.</p><p>Install will now exit.</p>' );
     }
 }
 
@@ -107,8 +112,13 @@ else {
      */
     if ( isset( $_REQUEST['update'] ) ) {
         if ( $_SERVER['REQUEST_METHOD'] === 'GET' && $_REQUEST['update'] === $c['U'] && file_exists( 'update.php' ) ) {
-            include_once( 'update.php' );
-            die();
+            if ( is_writable( 'config.php' ) ) {
+                include_once( 'update.php' );
+                die();
+            }
+            else {
+                die( '<h2 style="color:red"><center>Error</center></h2><p>Cannot Write to Directory - Check Permissions for Web User (usually www-data).  The directory containing VerusChainTools must be owned by your servers web user.  It is recommended you also set permissions 755 on the same folder and all contents.</p><p>Update will now exit.</p>' );
+            }
         }
         else if ( $_SERVER['REQUEST_METHOD'] === 'POST' && $_REQUEST['update'] === $c['U'] ) {
             $posted = array_change_key_case( $_POST, CASE_UPPER );
