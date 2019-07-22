@@ -55,6 +55,7 @@
  * 
  * Check if first run / install and either run install or process results
  */
+// TODO: Include option to install as API vs Local
 if ( file_exists( 'install.php' ) ) {
     if ( is_writable( 'install.php' ) ) {
         if ( ! empty( $_POST['S'] ) ) {
@@ -141,6 +142,7 @@ else {
     /**
      * Get Input
      */
+    // TODO: Allow for use as API or Local include, if API do the following (add Local include later and use config.php file to record this option which will be set during the install process )
     $i = json_decode( file_get_contents( 'php://input' ), TRUE);
     if ( empty( $i ) ) {
         die('<h2>'.$lng[1].'</h2>');
