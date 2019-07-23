@@ -8,6 +8,10 @@
  
 Copyright (c) 2019 John Oliver Westbrook
 
+This is experimental and unfinished software. Use at your own risk! 
+
+No warranty for any kind of damage!
+
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
 in the Software without restriction, including without limitation the rights
@@ -31,7 +35,14 @@ Verus Chain Tools is a PHP API toolkit for Verus, Verus PBaaS, Zcash or Bitcoin 
 
 No PHP dependencies or frameworks are used in this project.  All code is open source and included in this repository.
 
-Before use, you must run the Install by simply visiting your main script api URL, after you've placed it on your VerusChainTools (VCT) server. Your VCT API server must be the same server running the daemon or daemons with which you'll interact, unless you have a strong understanding of routing RPC traffic to the VCT API server.  
+Before use, you must run the Install by simply visiting your main script api URL, after you've placed it on your VerusChainTools (VCT) server. Your VCT API server must be the same server running the daemon or daemons with which you'll interact, unless you have a strong understanding of routing RPC traffic to the VCT API server.
+
+## General Notes and Security
+In this repo you'll find the main `index.php` file, which is the VCT API script. Included is the `verusclass.php` class file, `lang.php` language file, `install.php` one-time installer, `update.php` updater for use in either editing config settings or adding more daemons, and a demo page to help developers and users learn how the API works and how to interact with it for their own applications.
+
+In addition to these scripts, included is a `.htaccess` file to place in the same directory containing the API.  The API should always be in it's own directory, not in a directory with other live files being used on your site. Whether the API is used on a daemon server, behind a strong firewall with only your web server allowed through, or on the same server as your website and your daemon, it always needs to be in its own subfolder of the domain/IP. The custom `.htaccess` file works in conjunction with the Apache Directory settings, locking down this subfolder to only the local server or remote server for API access. Any attempts to browse to this folder are treated as a "normal" 404 request using this unique .htaccess file, confuscating what folder even contains your API and blocking access with the actual 403 forbidden process.
+
+It is advised to always seperate your public-facing web server and daemon server for maximum security, however, security is only ever as good as the measures you've taken.  If, for example, your web server is not well secured, your daemon server is still at as much risk as the capabilities allowed by the API and the funds left in the daemon server. Always use strong, non-word passwords and difficult to guess usernames when setting up any web service/site. In addition, it's strongly advised to only allow SSH-Key logins to all your servers.
 
 ## Installation
 To install and use this API, simply place the contents of this repo inside the webserver directory you are working with, in most cases running on the same server as your blockchain RPC daemon/CLI. This script was designed specifically for use on the same server of the daemon, if you wish to separate it, you'll need to change the default 'localhost' setting inside the index.php file and make any other changes necessary for that config to work.
