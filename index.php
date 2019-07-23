@@ -142,7 +142,7 @@ else {
     /**
      * Get Input
      */
-    // TODO: Allow for use as API or Local include, if API do the following (add Local include later and use config.php file to record this option which will be set during the install process )
+    // TODO: May keep API and just use folder security...or Allow for use as API or Local include, if API do the following (add Local include later and use config.php file to record this option which will be set during the install process )
     $i = json_decode( file_get_contents( 'php://input' ), TRUE);
     if ( empty( $i ) ) {
         die('<h2>'.$lng[1].'</h2>');
@@ -636,5 +636,5 @@ function _out( $d, $t = TRUE ) {
         $t = $lng[8];
     }
     $r = array( 'result' => $t, 'return' => $d );
-    return json_encode( str_replace('\"', '"', json_encode( $r, TRUE ) ), TRUE );
+    return json_encode( $r, TRUE );
 }

@@ -84,7 +84,7 @@ $d = array_merge( $d, array(
     'o'   => $_opt,
     ) 
 );
-$raw_d = json_decode( vg_go( $url, $d ), true );
+$raw_d = json_decode( vg_go( $url, $d ), TRUE );
 if ( $d['o'] != null ) {
     $opt_d = json_decode( $raw_d, true);
     if ( isset( $opt_d[$d['o']] ) ) {
@@ -95,7 +95,7 @@ if ( $d['o'] != null ) {
     }
 }
 if ( $opt_d == null ) { $opt_d = $d['c'] . ' - Params or Opt not set!'; }
-$raw_r = $raw_d;
+$raw_r = str_replace( '\"', '"', json_encode( $raw_d, TRUE ) ); // Using str_replace for "friendly" viewing of output, in normal funtion you'd call the array 'result' or 'return'
 
 function vg_go( $url, $d ) {
     $ch = curl_init();
