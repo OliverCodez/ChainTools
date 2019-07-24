@@ -56,6 +56,7 @@
  * Check if first run / install and either run install or process results
  */
 // TODO: Include option to install as API vs Local
+// TODO: Create way to return chains installed and active for api caller
 if ( file_exists( 'install.php' ) ) {
     if ( is_writable( 'install.php' ) ) {
         if ( ! empty( $_POST['S'] ) ) {
@@ -77,146 +78,128 @@ if ( file_exists( 'install.php' ) ) {
 }
 
 /**
- * Backwards Compatibility
- * 
- * Support for deprecated versions (support ends Sep 1, 2019)
- */
-if ( isset( $_POST['access'] ) ) {
-    $access_pass = $_POST['access'];
-    include_once( 'deprecated-index.php' );
-}
-/**
  * Main Script
  */
+$_url = 'localhost';
+include_once( 'verusclass.php' );
+if ( file_exists( 'config.php' ) ) {
+    include_once( 'config.php' );
+}
 else {
-    
-    /**
-     * Includes and Config
-     */
-    $_url = 'localhost';
-    include_once( 'verusclass.php' );
-    if ( file_exists( 'config.php' ) ) {
-        include_once( 'config.php' );
-    }
-    else {
-        echo _out( 'Config file missing or corrupt', FALSE );
-        die();
-    }
-    // Set config settings to array
-    $c = unserialize($c);
-    include_once( 'lang.php' );
-    $lng = $lng[$c['L']];
-    /**
-     * Manual Update
-     * 
-     * Check if an update is being performed
-     */
-    if ( isset( $_REQUEST['update'] ) ) {
-        if ( $_SERVER['REQUEST_METHOD'] === 'GET' && $_REQUEST['update'] === $c['U'] && file_exists( 'update.php' ) ) {
-            if ( is_writable( 'config.php' ) ) {
-                include_once( 'update.php' );
-                die();
-            }
-            else {
-                die( '<h2 style="color:red"><center>Error</center></h2><p>Cannot Write to Directory - Check Permissions for Web User (usually www-data).  The directory containing VerusChainTools must be owned by your servers web user.  It is recommended you also set permissions 755 on the same folder and all contents.</p><p>Update will now exit.</p>' );
-            }
-        }
-        else if ( $_SERVER['REQUEST_METHOD'] === 'POST' && $_REQUEST['update'] === $c['U'] ) {
-            $posted = array_change_key_case( $_POST, CASE_UPPER );
-            $posted['DYN'] = FALSE;
-            $c['S'] = $posted['S'];
-            $posted = _get_daemon( $posted );
-            unset( $posted['UPDATE'], $posted['S'], $posted['D'], $c['C'] );
-            $daemon = array_merge( $c, $posted );
-            file_put_contents( 'config.php','<?php $c = \''.serialize( $daemon ).'\'; ?>' );
-            die( $lng[18] );
+    echo _out( 'Config file missing or corrupt', FALSE );
+    die();
+}
+// Set config settings to array
+$c = unserialize($c);
+include_once( 'lang.php' );
+$lng = $lng[$c['L']];
+/**
+ * Manual Update
+ * 
+ * Check if an update is being performed
+ */
+if ( isset( $_REQUEST['update'] ) ) {
+    if ( $_SERVER['REQUEST_METHOD'] === 'GET' && $_REQUEST['update'] === $c['U'] && file_exists( 'update.php' ) ) {
+        if ( is_writable( 'config.php' ) ) {
+            include_once( 'update.php' );
+            die();
         }
         else {
-            die();
+            die( '<h2 style="color:red"><center>Error</center></h2><p>Cannot Write to Directory - Check Permissions for Web User (usually www-data).  The directory containing VerusChainTools must be owned by your servers web user.  It is recommended you also set permissions 755 on the same folder and all contents.</p><p>Update will now exit.</p>' );
         }
     }
-    // Check for function whitelist, blank array if none
-    if ( !isset( $c['F'] ) ) {
-        $c['F'] = array();
-    }
-    /**
-     * Get Input
-     */
-    // TODO: May keep API and just use folder security...or Allow for use as API or Local include, if API do the following (add Local include later and use config.php file to record this option which will be set during the install process )
-    $i = json_decode( file_get_contents( 'php://input' ), TRUE);
-    if ( empty( $i ) ) {
-        die('<h2>'.$lng[1].'</h2>');
-    }
-    /**
-     * Check Things
-     * 
-     * Check access code, chain, and method
-     */
-    // Compare access code provided with set in config
-    if ( $i['a'] != $c['A'] ) {
-        echo _out( $lng[2], FALSE );
-        die();
-    }
-    // Check that chain is set
-    if ( empty( $i['c'] ) ) {
-        echo _out( $lng[3], FALSE );
-        die();
-    }
-    // Check that method is set
-    if ( empty( $i['m'] ) ) {
-        echo _out( $lng[4], FALSE );
-        die();
-    }
-
-    /**
-     * Check Chain & Finalize Settings
-     * 
-     * Check for chain daemon info in config, if not found, check server and if found update config
-     */
-    $_chn = strtoupper( $i['c'] );
-    if ( !isset( $c['C'][$_chn] ) || !isset( $c['C'][$_chn]['L'] ) || !isset( $c['C'][$_chn]['U'] ) || !isset( $c['C'][$_chn]['P'] ) || !isset( $c['C'][$_chn]['N'] ) ) {
-        $data = array(
-            'DYN' => TRUE,
-            'S' => 'u',
-            $_chn.'_TXTYPE' => '0',
-            'C' => array(
-                $_chn,
-            ),
-            $_chn.'_T' => $lng[17],
-            $_chn.'_Z' => $lng[17],
-        );
-        $data = _get_daemon( $data );
-        if ( $data === FALSE ) {
-            echo _out( $_chn.$lng[16], FALSE );
-            die();
-        }
-        $c['S'] = $data['S'];
-        $c['C'] = array_merge( $c['C'], $data['C'] );
-        file_put_contents( 'config.php','<?php $c = \''.serialize( $c ).'\'; ?>' );
-        $daemon = $c['C'][$_chn];
+    else if ( $_SERVER['REQUEST_METHOD'] === 'POST' && $_REQUEST['update'] === $c['U'] ) {
+        $posted = array_change_key_case( $_POST, CASE_UPPER );
+        $posted['DYN'] = FALSE;
+        $c['S'] = $posted['S'];
+        $posted = _get_daemon( $posted );
+        unset( $posted['UPDATE'], $posted['S'], $posted['D'], $c['C'] );
+        $daemon = array_merge( $c, $posted );
+        file_put_contents( 'config.php','<?php $c = \''.serialize( $daemon ).'\'; ?>' );
+        die( $lng[18] );
     }
     else {
-        $daemon = $c['C'][$_chn];
+        die();
     }
-    $i['m'] = _filter( $i['m'] );
-    $i = array_merge( $i, array(
-        'pro' => 'http',
-        'url' => $_url,
-        'dir' => $daemon['L'],
-        'usr' => $daemon['U'],
-        'pas' => $daemon['P'],
-        'prt' => $daemon['N'],
-        )
-    );
-
-    /**
-     * Go VerusClass!
-     * 
-     * Run the _go function to process the provided method and related data
-     */
-    echo _go( $i );
 }
-
+// Check for function whitelist, blank array if none
+if ( !isset( $c['F'] ) ) {
+    $c['F'] = array();
+}
+/**
+ * Get Input
+ */
+// TODO: May keep API and just use folder security...or Allow for use as API or Local include, if API do the following (add Local include later and use config.php file to record this option which will be set during the install process )
+$i = json_decode( file_get_contents( 'php://input' ), TRUE);
+if ( empty( $i ) ) {
+    die('<h2>'.$lng[1].'</h2>');
+}
+/**
+ * Check Things
+ * 
+ * Check access code, chain, and method
+ */
+// Compare access code provided with set in config
+if ( $i['a'] != $c['A'] ) {
+    echo _out( $lng[2], FALSE );
+    die();
+}
+// Check that chain is set
+if ( empty( $i['c'] ) ) {
+    echo _out( $lng[3], FALSE );
+    die();
+}
+// Check that method is set
+if ( empty( $i['m'] ) ) {
+    echo _out( $lng[4], FALSE );
+    die();
+}
+/**
+ * Check Chain & Finalize Settings
+ * 
+ * Check for chain daemon info in config, if not found, check server and if found update config
+ */
+$_chn = strtoupper( $i['c'] );
+if ( !isset( $c['C'][$_chn] ) || !isset( $c['C'][$_chn]['L'] ) || !isset( $c['C'][$_chn]['U'] ) || !isset( $c['C'][$_chn]['P'] ) || !isset( $c['C'][$_chn]['N'] ) ) {
+    $data = array(
+        'DYN' => TRUE,
+        'S' => 'u',
+        $_chn.'_TXTYPE' => '0',
+        'C' => array(
+            $_chn,
+        ),
+        $_chn.'_T' => $lng[17],
+        $_chn.'_Z' => $lng[17],
+    );
+    $data = _get_daemon( $data );
+    if ( $data === FALSE ) {
+        echo _out( $_chn.$lng[16], FALSE );
+        die();
+    }
+    $c['S'] = $data['S'];
+    $c['C'] = array_merge( $c['C'], $data['C'] );
+    file_put_contents( 'config.php','<?php $c = \''.serialize( $c ).'\'; ?>' );
+    $daemon = $c['C'][$_chn];
+}
+else {
+    $daemon = $c['C'][$_chn];
+}
+$i['m'] = _filter( $i['m'] );
+$i = array_merge( $i, array(
+    'pro' => 'http',
+    'url' => $_url,
+    'dir' => $daemon['L'],
+    'usr' => $daemon['U'],
+    'pas' => $daemon['P'],
+    'prt' => $daemon['N'],
+    )
+);
+/**
+ * Go VerusClass!
+ * 
+ * Run the _go function to process the provided method and related data
+ */
+echo _go( $i );
 /**
  * Go Process Request
  * 
