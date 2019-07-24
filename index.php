@@ -552,8 +552,18 @@ function _get_daemon( $data ) {
                 $data['C'][$v] = array();
             }
             $data['C'][$v]['D'] = date( 'Y-m-d H:i:s', time() );
+            $data['C'][$v]['FN'] = $data[$v.'_NAME'];
+            unset( $data[$v.'_NAME'] );
             $data['C'][$v]['TX'] = $data[$v.'_TXTYPE'];
             unset( $data[$v.'_TXTYPE'] );
+            if ( isset( $data[$v.'_GS'] ) ) {
+                $data['C'][$v]['GS'] = $data[$v.'_GS'];
+                unset( $data[$v.'_GS'] );
+            }
+            if ( isset( $data[$v.'_GM'] ) ) {
+                $data['C'][$v]['GM'] = $data[$v.'_GM'];
+                unset( $data[$v.'_GM'] );
+            }
             if ( isset( $data[$v.'_T'] ) ) {
                 $data['C'][$v]['T'] = $data[$v.'_T'];
                 unset( $data[$v.'_T'] );
