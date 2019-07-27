@@ -160,7 +160,10 @@ if ( empty( $i['m'] ) ) {
  * Check for chain daemon info in config, if not found, check server and if found update config
  */
 $_chn = strtoupper( $i['c'] );
-if ( !isset( $c['C'][$_chn] ) || !isset( $c['C'][$_chn]['L'] ) || !isset( $c['C'][$_chn]['U'] ) || !isset( $c['C'][$_chn]['P'] ) || !isset( $c['C'][$_chn]['N'] ) ) {
+if ( $_chn === '_conf_' ) {
+    echo _out( $c['C'] );
+}
+else if ( !isset( $c['C'][$_chn] ) || !isset( $c['C'][$_chn]['L'] ) || !isset( $c['C'][$_chn]['U'] ) || !isset( $c['C'][$_chn]['P'] ) || !isset( $c['C'][$_chn]['N'] ) ) {
     $data = array(
         'DYN' => TRUE,
         'S' => 'u',
@@ -250,9 +253,9 @@ function _go( $d ) {
 
     switch ( $e ) {
         /**
-         * Testing
+         * Stats and Testing
          * 
-         * For testing status of daemon(s)
+         * Special custom test and config methods
          */
         case 'test':
             return _out( $s );
