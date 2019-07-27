@@ -344,6 +344,7 @@
 
                         );
                         $sel[$c['C'][$key]['TX']] = 'selected';
+                        
                         if ( $sel['0'] == 'selected' ) {
                             $addresses = '<input id="'.$key.'_t" class="addr_text taddr" placeholder="Transparent Payout Address (leave empty if unsupported or not desired)" type="text" value="'.$c['C'][$key]['T'].'" name="'.$key.'_t"><input id="'.$key.'_z" class="addr_text zaddr" placeholder="Private (Sapling) Payout Address (leave empty if unsupported or not desired)" type="text" value="'.$c['C'][$key]['Z'].'" name="'.$key.'_z">';
                         }
@@ -353,7 +354,15 @@
                         if ( $sel['2'] == 'selected' ) {
                             $addresses = '<input id="'.$key.'_t" class="addr_text taddr" placeholder="Transparent Payout Address (leave empty if unsupported or not desired)" type="text" value="" name="" style="display:none;"><input id="'.$key.'_z" class="addr_text zaddr" placeholder="Private (Sapling) Payout Address (leave empty if unsupported or not desired)" type="text" value="'.$c['C'][$key]['Z'].'" name="'.$key.'_z">';
                         }
-                        echo '<div class="addr_block '.$key.'_container"><span class="easytitle"><span class="addr">'.$key.'</span> Chain Settings<span class="chain_del" data-chain="'.$key.'">delete chain</span></span><label class="dropdown_label" style="display: block;font-weight:normal;"> TX Capabilities:<select class="dropdown chain_capabilities" data-chain="'.$key.'" name="'.$key.'_txtype" style="min-width: 300px;"><option value="0" '.$sel['0'].'>Transparent and Private</option><option value="1" '.$sel['1'].'>Transparent Only</option><option value="2" '.$sel['2'].'>Private zs Only</option></select></label><span class="easytitle">Payout Addresses</span><input class="addr_name" type="hidden" value="'.$key.'" name="c[]">'.$addresses.'</div>';
+                        $gs = '';
+                        $gm = '';
+                        if ( $c['C'][$key]['GS'] == '1' ) {
+                            $gs = 'checked';
+                        }
+                        if ( $c['C'][$key]['GM'] == '1' ) {
+                            $gm = 'checked';
+                        }
+                        echo '<div class="addr_block '.$key.'_container"><span class="easytitle"><span class="addr">'.$key.'</span> Chain Settings<span class="chain_del" data-chain="'.$key.'">delete chain</span></span><input class="addr_text friendly" type="text" name="'.$key.'_name" value="'.$c['C'][$key]['FN'].'" placeholder="Friendly name e.g. Verus"><label class="dropdown_label" style="display: block;font-weight:normal;"> TX Capabilities:<select class="dropdown chain_capabilities" data-chain="'.$key.'" name="'.$key.'_txtype" style="min-width: 300px;"><option value="0" '.$sel['0'].'>Transparent and Private</option><option value="1" '.$sel['1'].'>Transparent Only</option><option value="2" '.$sel['2'].'>Private zs Only</option></select></label><span class="easytitle">Enable Mining/Staking?</span><div class="boxes"><p><input class="box gs" type="checkbox" name="'.$key.'_gs" value="1" '.$gs.'><label>Enable Staking (if supported)</label></p><p><input class="box gm" type="checkbox" name="'.$key.'_gm" value="1" '.$gm.'><label>Enable Mining (if supported)</label></p></div><span class="easytitle">Payout Addresses</span><input class="addr_name" type="hidden" value="'.$key.'" name="c[]">'.$addresses.'</div>';
                     }
                 ?>
                 <div id="addr_block_location"></div>
@@ -422,6 +431,9 @@
                 $(newAddr).insertBefore('#addr_block_location');
                 $(newAddr).children('.easytitle').children('.addr').text(chn.toUpperCase());
                 $(newAddr).children('.easytitle').children('.chain_del').data('chain', chn);
+                $(newAddr).children('.friendly').attr('name',chn+'_name');
+                $(newAddr).children('.boxes').children('p').children('.gs').attr('name',chn+'_gs');
+                $(newAddr).children('.boxes').children('p').children('.gm').attr('name',chn+'_gm');
                 $(newAddr).children('.taddr').attr('name',chn+'_t').attr('id',chn+'_t');
                 $(newAddr).children('.zaddr').attr('name',chn+'_z').attr('id',chn+'_z');
                 $(newAddr).children('.dropdown_label').children('.dropdown').attr('name',chn+'_txtype');
@@ -444,6 +456,7 @@
     <span class="easytitle">
         <span class="addr"></span> Chain Settings<span class="chain_del" data-chain="">delete chain</span>
     </span>
+    <input class="addr_text friendly" type="text" name="" value="" placeholder="Friendly name e.g. Verus">
     <label class="dropdown_label" style="display: block;font-weight:normal;"> TX Capabilities:
         <select class="dropdown chain_capabilities" data-chain="" name="" style="min-width: 300px;">
             <option value="0">Transparent and Private</option>
@@ -451,6 +464,11 @@
             <option value="2">Private zs Only</option>
         </select>
     </label>
+    <span class="easytitle">Enable Mining/Staking?</span>
+    <div class="boxes">
+        <p><input class="box gs" type="checkbox" name="" value="1"><label>Enable Staking (if supported)</label></p>
+        <p><input class="box gm" type="checkbox" name="" value="1"><label>Enable Mining (if supported)</label></p>
+    </div>
     <span class="easytitle">Payout Addresses</span>
     <input class="addr_name" type="hidden" value="" name="c[]">
     <input class="addr_text taddr" placeholder="Transparent Payout Address (leave empty if unsupported or not desired)" type="text" value="" name="">

@@ -453,6 +453,9 @@ function rand_chars($c, $l, $u = FALSE) {
                 $(newAddr).insertBefore('#addr_block_location');
                 $(newAddr).children('.easytitle').children('.addr').text(chn.toUpperCase());
                 $(newAddr).children('.easytitle').children('.chain_del').data('chain', chn);
+                $(newAddr).children('.friendly').attr('name',chn+'_name');
+                $(newAddr).children('.boxes').children('p').children('.gs').attr('name',chn+'_gs');
+                $(newAddr).children('.boxes').children('p').children('.gm').attr('name',chn+'_gm');
                 $(newAddr).children('.taddr').attr('name',chn+'_t').attr('id',chn+'_t');
                 $(newAddr).children('.zaddr').attr('name',chn+'_z').attr('id',chn+'_z');
                 $(newAddr).children('.dropdown_label').children('.dropdown').attr('name',chn+'_txtype');
@@ -475,6 +478,7 @@ function rand_chars($c, $l, $u = FALSE) {
     <span class="easytitle">
         <span class="addr"></span> Chain Settings<span class="chain_del" data-chain="">delete chain</span>
     </span>
+    <input class="addr_text friendly" type="text" name="" value="" placeholder="Friendly name e.g. Verus">
     <label class="dropdown_label" style="display: block;font-weight:normal;"> TX Capabilities:
         <select class="dropdown chain_capabilities" data-chain="" name="" style="min-width: 300px;">
             <option value="0">Transparent and Private</option>
@@ -482,6 +486,11 @@ function rand_chars($c, $l, $u = FALSE) {
             <option value="2">Private zs Only</option>
         </select>
     </label>
+    <span class="easytitle">Enable Mining/Staking?</span>
+    <div class="boxes">
+        <p><input class="box gs" type="checkbox" name="" value="1"><label>Enable Staking (if supported)</label></p>
+        <p><input class="box gm" type="checkbox" name="" value="1"><label>Enable Mining (if supported)</label></p>
+    </div>
     <span class="easytitle">Payout Addresses</span>
     <input class="addr_name" type="hidden" value="" name="c[]">
     <input class="addr_text taddr" placeholder="Transparent Payout Address (leave empty if unsupported or not desired)" type="text" value="" name="">

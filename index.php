@@ -1,4 +1,5 @@
 <?php
+$vct_version = '0.4.0';
 /**
  * VerusChainTools
  * 
@@ -55,156 +56,154 @@
  * 
  * Check if first run / install and either run install or process results
  */
+// TODO: Include option to install as API vs Local
+// TODO: Create way to return chains installed and active for api caller
 if ( file_exists( 'install.php' ) ) {
-    if ( ! empty( $_POST['S'] ) ) {
-        // Create the config file and remove the install script
-        $posted = array_change_key_case( $_POST, CASE_UPPER );
-        $daemon = _get_daemon( $posted );
-        file_put_contents( 'config.php','<?php $c = \''.serialize( $daemon ).'\'; ?>' );
-        unlink( 'install.php' );
-        die( '<h2><center>Successfully Installed!</center></h2>' );
+    if ( is_writable( 'install.php' ) ) {
+        if ( ! empty( $_POST['S'] ) ) {
+            // Create the config file and remove the install script
+            $posted = array_change_key_case( $_POST, CASE_UPPER );
+            $daemon = _get_daemon( $posted );
+            file_put_contents( 'config.php','<?php $c = \''.serialize( $daemon ).'\'; ?>' );
+            unlink( 'install.php' );
+            die( '<h2><center>Successfully Installed!</center></h2>' );
+        }
+        else {
+            include_once( 'install.php' );
+            die();
+        }
     }
     else {
-        include_once( 'install.php' );
-        die();
+        die( '<h2 style="color:red"><center>Error</center></h2><p>Cannot Write to Directory - Check Permissions for Web User (usually www-data).  The directory containing VerusChainTools must be owned by your servers web user.  It is recommended you also set permissions 755 on the same folder and all contents.</p><p>Install will now exit.</p>' );
     }
 }
 
-/**
- * Backwards Compatibility
- * 
- * Support for deprecated versions (support ends Sep 1, 2019)
- */
-if ( isset( $_POST['access'] ) ) {
-    $access_pass = $_POST['access'];
-    include_once( 'deprecated-index.php' );
-}
 /**
  * Main Script
  */
+$_url = 'localhost';
+include_once( 'verusclass.php' );
+if ( file_exists( 'config.php' ) ) {
+    include_once( 'config.php' );
+}
 else {
-    
-    /**
-     * Includes and Config
-     */
-    $_url = 'localhost';
-    include_once( 'verusclass.php' );
-    if ( file_exists( 'config.php' ) ) {
-        include_once( 'config.php' );
-    }
-    else {
-        echo _out( 'Config file missing or corrupt', FALSE );
-        die();
-    }
-    // Set config settings to array
-    $c = unserialize($c);
-    include_once( 'lang.php' );
-    $lng = $lng[$c['L']];
-    /**
-     * Manual Update
-     * 
-     * Check if an update is being performed
-     */
-    if ( isset( $_REQUEST['update'] ) ) {
-        if ( $_SERVER['REQUEST_METHOD'] === 'GET' && $_REQUEST['update'] === $c['U'] && file_exists( 'update.php' ) ) {
+    echo _out( 'Config file missing or corrupt', FALSE );
+    die();
+}
+// Set config settings to array
+$c = unserialize($c);
+include_once( 'lang.php' );
+$lng = $lng[$c['L']];
+/**
+ * Manual Update
+ * 
+ * Check if an update is being performed
+ */
+if ( isset( $_REQUEST['update'] ) ) {
+    if ( $_SERVER['REQUEST_METHOD'] === 'GET' && $_REQUEST['update'] === $c['U'] && file_exists( 'update.php' ) ) {
+        if ( is_writable( 'config.php' ) ) {
             include_once( 'update.php' );
             die();
         }
-        else if ( $_SERVER['REQUEST_METHOD'] === 'POST' && $_REQUEST['update'] === $c['U'] ) {
-            $posted = array_change_key_case( $_POST, CASE_UPPER );
-            $posted['DYN'] = FALSE;
-            $c['S'] = $posted['S'];
-            $posted = _get_daemon( $posted );
-            unset( $posted['UPDATE'], $posted['S'], $posted['D'], $c['C'] );
-            $daemon = array_merge( $c, $posted );
-            file_put_contents( 'config.php','<?php $c = \''.serialize( $daemon ).'\'; ?>' );
-            die( $lng[18] );
-        }
         else {
-            die();
+            die( '<h2 style="color:red"><center>Error</center></h2><p>Cannot Write to Directory - Check Permissions for Web User (usually www-data).  The directory containing VerusChainTools must be owned by your servers web user.  It is recommended you also set permissions 755 on the same folder and all contents.</p><p>Update will now exit.</p>' );
         }
     }
-    // Check for function whitelist, blank array if none
-    if ( !isset( $c['F'] ) ) {
-        $c['F'] = array();
-    }
-    /**
-     * Get Input
-     */
-    $i = json_decode( file_get_contents( 'php://input' ), TRUE);
-    if ( empty( $i ) ) {
-        die('<h2>'.$lng[1].'</h2>');
-    }
-    /**
-     * Check Things
-     * 
-     * Check access code, chain, and method
-     */
-    // Compare access code provided with set in config
-    if ( $i['a'] != $c['A'] ) {
-        echo _out( $lng[2], FALSE );
-        die();
-    }
-    // Check that chain is set
-    if ( empty( $i['c'] ) ) {
-        echo _out( $lng[3], FALSE );
-        die();
-    }
-    // Check that method is set
-    if ( empty( $i['m'] ) ) {
-        echo _out( $lng[4], FALSE );
-        die();
-    }
-
-    /**
-     * Check Chain & Finalize Settings
-     * 
-     * Check for chain daemon info in config, if not found, check server and if found update config
-     */
-    $_chn = strtoupper( $i['c'] );
-    if ( !isset( $c['C'][$_chn] ) || !isset( $c['C'][$_chn]['L'] ) || !isset( $c['C'][$_chn]['U'] ) || !isset( $c['C'][$_chn]['P'] ) || !isset( $c['C'][$_chn]['N'] ) ) {
-        $data = array(
-            'DYN' => TRUE,
-            'S' => 'u',
-            $_chn.'_TXTYPE' => '0',
-            'C' => array(
-                $_chn,
-            ),
-            $_chn.'_T' => $lng[17],
-            $_chn.'_Z' => $lng[17],
-        );
-        $data = _get_daemon( $data );
-        if ( $data === FALSE ) {
-            echo _out( $_chn.$lng[16], FALSE );
-            die();
-        }
-        $c['S'] = $data['S'];
-        $c['C'] = array_merge( $c['C'], $data['C'] );
-        file_put_contents( 'config.php','<?php $c = \''.serialize( $c ).'\'; ?>' );
-        $daemon = $c['C'][$_chn];
+    else if ( $_SERVER['REQUEST_METHOD'] === 'POST' && $_REQUEST['update'] === $c['U'] ) {
+        $posted = array_change_key_case( $_POST, CASE_UPPER );
+        $posted['DYN'] = FALSE;
+        $c['S'] = $posted['S'];
+        $posted = _get_daemon( $posted );
+        unset( $posted['UPDATE'], $posted['S'], $posted['D'], $c['C'] );
+        $daemon = array_merge( $c, $posted );
+        file_put_contents( 'config.php','<?php $c = \''.serialize( $daemon ).'\'; ?>' );
+        die( $lng[18] );
     }
     else {
-        $daemon = $c['C'][$_chn];
+        die();
     }
-    $i['m'] = _filter( $i['m'] );
-    $i = array_merge( $i, array(
-        'pro' => 'http',
-        'url' => $_url,
-        'dir' => $daemon['L'],
-        'usr' => $daemon['U'],
-        'pas' => $daemon['P'],
-        'prt' => $daemon['N'],
-        )
-    );
-
-    /**
-     * Go VerusClass!
-     * 
-     * Run the _go function to process the provided method and related data
-     */
-    echo _go( $i );
 }
-
+// Check for function whitelist, blank array if none
+if ( !isset( $c['F'] ) ) {
+    $c['F'] = array();
+}
+/**
+ * Get Input
+ */
+// TODO: May keep API and just use folder security...or Allow for use as API or Local include, if API do the following (add Local include later and use config.php file to record this option which will be set during the install process )
+$i = json_decode( file_get_contents( 'php://input' ), TRUE);
+if ( empty( $i ) ) {
+    die('<h2>'.$lng[1].'</h2>');
+}
+/**
+ * Check Things
+ * 
+ * Check access code, chain, and method
+ */
+// Compare access code provided with set in config
+if ( $i['a'] != $c['A'] ) {
+    echo _out( $lng[2], FALSE );
+    die();
+}
+// Check that chain is set
+if ( empty( $i['c'] ) ) {
+    echo _out( $lng[3], FALSE );
+    die();
+}
+// Check that method is set
+if ( empty( $i['m'] ) ) {
+    echo _out( $lng[4], FALSE );
+    die();
+}
+/**
+ * Check Chain & Finalize Settings
+ * 
+ * Check for chain daemon info in config, if not found, check server and if found update config
+ */
+$_chn = strtoupper( $i['c'] );
+if ( $_chn === '_conf_' ) {
+    echo _out( $c['C'] );
+}
+else if ( !isset( $c['C'][$_chn] ) || !isset( $c['C'][$_chn]['L'] ) || !isset( $c['C'][$_chn]['U'] ) || !isset( $c['C'][$_chn]['P'] ) || !isset( $c['C'][$_chn]['N'] ) ) {
+    $data = array(
+        'DYN' => TRUE,
+        'S' => 'u',
+        $_chn.'_TXTYPE' => '0',
+        'C' => array(
+            $_chn,
+        ),
+        $_chn.'_T' => $lng[17],
+        $_chn.'_Z' => $lng[17],
+    );
+    $data = _get_daemon( $data );
+    if ( $data === FALSE ) {
+        echo _out( $_chn.$lng[16], FALSE );
+        die();
+    }
+    $c['S'] = $data['S'];
+    $c['C'] = array_merge( $c['C'], $data['C'] );
+    file_put_contents( 'config.php','<?php $c = \''.serialize( $c ).'\'; ?>' );
+    $daemon = $c['C'][$_chn];
+}
+else {
+    $daemon = $c['C'][$_chn];
+}
+$i['m'] = _filter( $i['m'] );
+$i = array_merge( $i, array(
+    'pro' => 'http',
+    'url' => $_url,
+    'dir' => $daemon['L'],
+    'usr' => $daemon['U'],
+    'pas' => $daemon['P'],
+    'prt' => $daemon['N'],
+    )
+);
+/**
+ * Go VerusClass!
+ * 
+ * Run the _go function to process the provided method and related data
+ */
+echo _go( $i );
 /**
  * Go Process Request
  * 
@@ -214,12 +213,23 @@ function _go( $d ) {
     // Include config array
     global $c;
     global $lng;
+    global $vct_version;
     // New Verus class for interacting with daemon
     $verus = new Verus( $d['usr'], $d['pas'], $d['url'], $d['prt'], $d['pro'], $lng );
     $s = $verus->status();
-    if ( $s === $lng[19] ) {
-        return _out( $s, FALSE );
+    if ( $s == '0' ) {
+        $r = json_encode( array(
+            'stat' => $s,
+            'desc' => $lng[19],
+        ), TRUE );
+        return _out( $r, FALSE );
         die();
+    }
+    else {
+        $s = json_encode( array(
+            'stat' => $s,
+            'desc' => $lng[20],
+        ), TRUE );
     }
     $chn = $d['c'];
     $tx = $c['C'][$chn]['TX'];
@@ -255,12 +265,15 @@ function _go( $d ) {
 
     switch ( $e ) {
         /**
-         * Testing
+         * Stats and Testing
          * 
-         * For testing status of daemon(s)
+         * Special custom test and config methods
          */
         case 'test':
             return _out( $s );
+            break;
+        case 'vct_version':
+            return _out( $vct_version );
             break;
         /**
          * Helpful Tools
@@ -315,38 +328,36 @@ function _go( $d ) {
         // Iterate all T and Z addresses and return balance of each and totals
         case 'bal':
             if ( !isset( $p ) ) {
-                return _out( $lng[9], FALSE );
+                $p = '""'; 
+            }
+            $t = $verus->getaddressesbyaccount( $p );
+            $z = $verus->z_listaddresses();
+            if ( json_encode( $z, TRUE ) == 'false' && json_encode( $t, TRUE) == 'false' ) {
+                return null;
                 break;
             }
             else {
-                $t = $verus->getaddressesbyaccount( $p );
-                $z = $verus->z_listaddresses();
-                if ( json_encode( $z, TRUE ) == 'false' && json_encode( $t, TRUE) == 'false' ) {
-                    return null;
+                $tb = array();
+                $zb = array();
+                if ( json_encode( $t, TRUE ) != 'false' ) {
+                    foreach ( $t as $v ) {
+                        $tb[$v] = $verus->z_getbalance( json_encode( $v, TRUE ) );
+                    }
+                }
+                if ( json_encode( $z, TRUE ) != 'false' ) {
+                    foreach ( $z as $v ) {
+                        $zb[$v] = $verus->z_getbalance( json_encode( $v, TRUE ) );
+                    }
+                }
+                $ub = array( 'unconfirmed' => $verus->getunconfirmedbalance() );
+                $r = array_merge( $tb, $zb, $verus->z_gettotalbalance(), $ub );
+                if ( is_array( $r ) ) {
+                    return _out( _format( $r ) );
                     break;
                 }
                 else {
-                    $tb = array();
-                    $zb = array();
-                    if ( json_encode( $t, TRUE ) != 'false' ) {
-                        foreach ( $t as $v ) {
-                            $tb[$v] = $verus->z_getbalance( json_encode( $v, TRUE ) );
-                        }
-                    }
-                    if ( json_encode( $z, TRUE ) != 'false' ) {
-                        foreach ( $z as $v ) {
-                            $zb[$v] = $verus->z_getbalance( json_encode( $v, TRUE ) );
-                        }
-                    }
-                    $r = array_merge( $tb, $zb, $verus->z_gettotalbalance() );
-                    if ( is_array( $r ) ) {
-                        return _out( _format( $r ) );
-                        break;
-                    }
-                    else {
-                        return _out( $r );
-                        break;
-                    }
+                    return _out( $r );
+                    break;
                 }
             }
             break;
@@ -540,8 +551,18 @@ function _get_daemon( $data ) {
                 $data['C'][$v] = array();
             }
             $data['C'][$v]['D'] = date( 'Y-m-d H:i:s', time() );
+            $data['C'][$v]['FN'] = $data[$v.'_NAME'];
+            unset( $data[$v.'_NAME'] );
             $data['C'][$v]['TX'] = $data[$v.'_TXTYPE'];
             unset( $data[$v.'_TXTYPE'] );
+            if ( isset( $data[$v.'_GS'] ) ) {
+                $data['C'][$v]['GS'] = $data[$v.'_GS'];
+                unset( $data[$v.'_GS'] );
+            }
+            if ( isset( $data[$v.'_GM'] ) ) {
+                $data['C'][$v]['GM'] = $data[$v.'_GM'];
+                unset( $data[$v.'_GM'] );
+            }
             if ( isset( $data[$v.'_T'] ) ) {
                 $data['C'][$v]['T'] = $data[$v.'_T'];
                 unset( $data[$v.'_T'] );
@@ -624,5 +645,5 @@ function _out( $d, $t = TRUE ) {
         $t = $lng[8];
     }
     $r = array( 'result' => $t, 'return' => $d );
-    return json_encode( str_replace('\"', '"', json_encode( $r, TRUE ) ), TRUE );
+    return json_encode( $r, TRUE );
 }
