@@ -1,4 +1,5 @@
 <?php
+$vct_version = '0.4.0';
 /**
  * VerusChainTools
  * 
@@ -212,12 +213,23 @@ function _go( $d ) {
     // Include config array
     global $c;
     global $lng;
+    global $vct_version;
     // New Verus class for interacting with daemon
     $verus = new Verus( $d['usr'], $d['pas'], $d['url'], $d['prt'], $d['pro'], $lng );
     $s = $verus->status();
-    if ( $s === $lng[19] ) {
-        return _out( $s, FALSE );
+    if ( $s == '0' ) {
+        $r = json_encode( array(
+            'stat' => $s,
+            'desc' => $lng[19],
+        ), TRUE );
+        return _out( $r, FALSE );
         die();
+    }
+    else {
+        $s = json_encode( array(
+            'stat' => $s,
+            'desc' => $lng[20],
+        ), TRUE );
     }
     $chn = $d['c'];
     $tx = $c['C'][$chn]['TX'];
@@ -259,6 +271,9 @@ function _go( $d ) {
          */
         case 'test':
             return _out( $s );
+            break;
+        case 'vct_version':
+            return _out( $vct_version );
             break;
         /**
          * Helpful Tools
@@ -313,38 +328,36 @@ function _go( $d ) {
         // Iterate all T and Z addresses and return balance of each and totals
         case 'bal':
             if ( !isset( $p ) ) {
-                return _out( $lng[9], FALSE );
+                $p = '""'; 
+            }
+            $t = $verus->getaddressesbyaccount( $p );
+            $z = $verus->z_listaddresses();
+            if ( json_encode( $z, TRUE ) == 'false' && json_encode( $t, TRUE) == 'false' ) {
+                return null;
                 break;
             }
             else {
-                $t = $verus->getaddressesbyaccount( $p );
-                $z = $verus->z_listaddresses();
-                if ( json_encode( $z, TRUE ) == 'false' && json_encode( $t, TRUE) == 'false' ) {
-                    return null;
+                $tb = array();
+                $zb = array();
+                if ( json_encode( $t, TRUE ) != 'false' ) {
+                    foreach ( $t as $v ) {
+                        $tb[$v] = $verus->z_getbalance( json_encode( $v, TRUE ) );
+                    }
+                }
+                if ( json_encode( $z, TRUE ) != 'false' ) {
+                    foreach ( $z as $v ) {
+                        $zb[$v] = $verus->z_getbalance( json_encode( $v, TRUE ) );
+                    }
+                }
+                $ub = array( 'unconfirmed' => $verus->getunconfirmedbalance() );
+                $r = array_merge( $tb, $zb, $verus->z_gettotalbalance(), $ub );
+                if ( is_array( $r ) ) {
+                    return _out( _format( $r ) );
                     break;
                 }
                 else {
-                    $tb = array();
-                    $zb = array();
-                    if ( json_encode( $t, TRUE ) != 'false' ) {
-                        foreach ( $t as $v ) {
-                            $tb[$v] = $verus->z_getbalance( json_encode( $v, TRUE ) );
-                        }
-                    }
-                    if ( json_encode( $z, TRUE ) != 'false' ) {
-                        foreach ( $z as $v ) {
-                            $zb[$v] = $verus->z_getbalance( json_encode( $v, TRUE ) );
-                        }
-                    }
-                    $r = array_merge( $tb, $zb, $verus->z_gettotalbalance() );
-                    if ( is_array( $r ) ) {
-                        return _out( _format( $r ) );
-                        break;
-                    }
-                    else {
-                        return _out( $r );
-                        break;
-                    }
+                    return _out( $r );
+                    break;
                 }
             }
             break;
