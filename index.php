@@ -290,26 +290,6 @@ function _go( $d ) {
         case 'version':
             return _out( $verus->getinfo()['version'] );
             break;
-        // Return the lowest confirm TX
-        case 'lowest':
-            if ( !isset( $p ) ) {
-                return _out( $lng[9], FALSE );
-                break;
-            }
-            else if ( substr( $p, 1, 2 ) === 'zs' ) {
-                $r = $verus->z_listreceivedbyaddress( $p );
-                $a = array();
-                foreach ( $r as $v ) {
-                    array_push( $a, $v['amount'] );
-                }
-                return _out( array_sum( $a ) );
-                break;
-            }
-            else {
-                return _out( $verus->getreceivedbyaddress( $p ) );
-                break;
-            }
-            break;
         // Return a count of all T (transparent) addresses
         case 't_count':
             if ( !isset( $p ) ) {
@@ -380,6 +360,30 @@ function _go( $d ) {
                     /**
                      * VerusPay-specific Custom Methods
                      *  */
+                    // Return the lowest confirm TX
+                    case 'lowest':
+                        if ( !isset( $p ) ) {
+                            return _out( $lng[9], FALSE );
+                            break;
+                        }
+                        $_isZ = FALSE;
+                        if ( substr( $p, 2, 2 ) === 'zs' ) {
+                            $_isZ = TRUE;
+                        }
+                        if ( $_isZ ) {
+                            $r = $verus->z_listreceivedbyaddress( $p );
+                            $a = array();
+                            foreach ( $r as $v ) {
+                                array_push( $a, $v['amount'] );
+                            }
+                            return _out( array_sum( $a ) );
+                            break;
+                        }
+                        else {
+                            return _out( $verus->getreceivedbyaddress( $p ) );
+                            break;
+                        }
+                        break;
                     // Show the configured T-Cashout address where relevant
                     case 'show_taddr':
                         if ( $tx == 0 || $tx == 1 ) {
