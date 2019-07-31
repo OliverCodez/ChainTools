@@ -161,8 +161,20 @@ if ( empty( $i['m'] ) ) {
  * Check for chain daemon info in config, if not found, check server and if found update config
  */
 $_chn = strtoupper( $i['c'] );
-if ( $_chn === '_conf_' ) {
-    echo _out( $c['C'] );
+if ( $_chn === '_STAT_' ) {
+    switch( $i['m'] ) {
+        case 'chainlist':
+            $filtered = array_filter( $c['C'] );
+            if ( ! empty( $filtered ) ) {
+                echo _out( $c['C'] );
+                die();
+            }
+            else {
+                echo _out( '_no_chains_found_' );
+                die();
+            }
+            break;
+    }
 }
 else if ( !isset( $c['C'][$_chn] ) || !isset( $c['C'][$_chn]['L'] ) || !isset( $c['C'][$_chn]['U'] ) || !isset( $c['C'][$_chn]['P'] ) || !isset( $c['C'][$_chn]['N'] ) ) {
     $data = array(
@@ -290,26 +302,6 @@ function _go( $d ) {
         case 'version':
             return _out( $verus->getinfo()['version'] );
             break;
-        // Return the lowest confirm TX
-        case 'lowest':
-            if ( !isset( $p ) ) {
-                return _out( $lng[9], FALSE );
-                break;
-            }
-            else if ( substr( $p, 1, 2 ) === 'zs' ) {
-                $r = $verus->z_listreceivedbyaddress( $p );
-                $a = array();
-                foreach ( $r as $v ) {
-                    array_push( $a, $v['amount'] );
-                }
-                return _out( array_sum( $a ) );
-                break;
-            }
-            else {
-                return _out( $verus->getreceivedbyaddress( $p ) );
-                break;
-            }
-            break;
         // Return a count of all T (transparent) addresses
         case 't_count':
             if ( !isset( $p ) ) {
@@ -380,6 +372,30 @@ function _go( $d ) {
                     /**
                      * VerusPay-specific Custom Methods
                      *  */
+                    // Return the lowest confirm TX
+                    case 'lowest':
+                        if ( !isset( $p ) ) {
+                            return _out( $lng[9], FALSE );
+                            break;
+                        }
+                        $_isZ = FALSE;
+                        if ( substr( $p, 2, 2 ) === 'zs' ) {
+                            $_isZ = TRUE;
+                        }
+                        if ( $_isZ ) {
+                            $r = $verus->z_listreceivedbyaddress( $p );
+                            $a = array();
+                            foreach ( $r as $v ) {
+                                array_push( $a, $v['amount'] );
+                            }
+                            return _out( array_sum( $a ) );
+                            break;
+                        }
+                        else {
+                            return _out( $verus->getreceivedbyaddress( $p ) );
+                            break;
+                        }
+                        break;
                     // Show the configured T-Cashout address where relevant
                     case 'show_taddr':
                         if ( $tx == 0 || $tx == 1 ) {
