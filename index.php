@@ -161,8 +161,20 @@ if ( empty( $i['m'] ) ) {
  * Check for chain daemon info in config, if not found, check server and if found update config
  */
 $_chn = strtoupper( $i['c'] );
-if ( $_chn === '_conf_' ) {
-    echo _out( $c['C'] );
+if ( $_chn === '_STAT_' ) {
+    switch( $i['m'] ) {
+        case 'chainlist':
+            $filtered = array_filter( $c['C'] );
+            if ( ! empty( $filtered ) ) {
+                echo _out( $c['C'] );
+                die();
+            }
+            else {
+                echo _out( '_no_chains_found_' );
+                die();
+            }
+            break;
+    }
 }
 else if ( !isset( $c['C'][$_chn] ) || !isset( $c['C'][$_chn]['L'] ) || !isset( $c['C'][$_chn]['U'] ) || !isset( $c['C'][$_chn]['P'] ) || !isset( $c['C'][$_chn]['N'] ) ) {
     $data = array(
