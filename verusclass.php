@@ -142,11 +142,11 @@ class Verus {
         $this->sts = curl_getinfo( $cur, CURLINFO_HTTP_CODE);
         if ( $mth === 'status' ) {
             if ( $this->sts != 404 ) {
-                return $this->lng[19];
+                return '0';
                 die();
             }
             else {
-                return $this->lng[20];
+                return '1';
                 die();
             }
         }
@@ -161,7 +161,7 @@ class Verus {
         else if ( $this->sts != 404 ) {
             switch ( $this->sts ) {
 		        case 0:
-		            $this->err = $this->lng[19];
+		            $this->err = '0';
                     break;
             }
         }
