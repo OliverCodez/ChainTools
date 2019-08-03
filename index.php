@@ -1,4 +1,5 @@
 <?php
+$vct_version = '0.4.0';
 /**
  * VerusChainTools
  * 
@@ -160,7 +161,22 @@ if ( empty( $i['m'] ) ) {
  * Check for chain daemon info in config, if not found, check server and if found update config
  */
 $_chn = strtoupper( $i['c'] );
-if ( !isset( $c['C'][$_chn] ) || !isset( $c['C'][$_chn]['L'] ) || !isset( $c['C'][$_chn]['U'] ) || !isset( $c['C'][$_chn]['P'] ) || !isset( $c['C'][$_chn]['N'] ) ) {
+if ( $_chn === '_STAT_' ) {
+    switch( $i['m'] ) {
+        case 'chainlist':
+            $filtered = array_filter( $c['C'] );
+            if ( ! empty( $filtered ) ) {
+                echo _out( $c['C'] );
+                die();
+            }
+            else {
+                echo _out( '_no_chains_found_' );
+                die();
+            }
+            break;
+    }
+}
+else if ( !isset( $c['C'][$_chn] ) || !isset( $c['C'][$_chn]['L'] ) || !isset( $c['C'][$_chn]['U'] ) || !isset( $c['C'][$_chn]['P'] ) || !isset( $c['C'][$_chn]['N'] ) ) {
     $data = array(
         'DYN' => TRUE,
         'S' => 'u',
@@ -209,12 +225,23 @@ function _go( $d ) {
     // Include config array
     global $c;
     global $lng;
+    global $vct_version;
     // New Verus class for interacting with daemon
     $verus = new Verus( $d['usr'], $d['pas'], $d['url'], $d['prt'], $d['pro'], $lng );
     $s = $verus->status();
-    if ( $s === $lng[19] ) {
-        return _out( $s, FALSE );
+    if ( $s == '0' ) {
+        $r = json_encode( array(
+            'stat' => $s,
+            'desc' => $lng[19],
+        ), TRUE );
+        return _out( $r, FALSE );
         die();
+    }
+    else {
+        $s = json_encode( array(
+            'stat' => $s,
+            'desc' => $lng[20],
+        ), TRUE );
     }
     $chn = $d['c'];
     $tx = $c['C'][$chn]['TX'];
@@ -250,12 +277,15 @@ function _go( $d ) {
 
     switch ( $e ) {
         /**
-         * Testing
+         * Stats and Testing
          * 
-         * For testing status of daemon(s)
+         * Special custom test and config methods
          */
         case 'test':
             return _out( $s );
+            break;
+        case 'vct_version':
+            return _out( $vct_version );
             break;
         /**
          * Helpful Tools
@@ -271,26 +301,6 @@ function _go( $d ) {
         // Return the current daemon version
         case 'version':
             return _out( $verus->getinfo()['version'] );
-            break;
-        // Return the lowest confirm TX
-        case 'lowest':
-            if ( !isset( $p ) ) {
-                return _out( $lng[9], FALSE );
-                break;
-            }
-            else if ( substr( $p, 1, 2 ) === 'zs' ) {
-                $r = $verus->z_listreceivedbyaddress( $p );
-                $a = array();
-                foreach ( $r as $v ) {
-                    array_push( $a, $v['amount'] );
-                }
-                return _out( array_sum( $a ) );
-                break;
-            }
-            else {
-                return _out( $verus->getreceivedbyaddress( $p ) );
-                break;
-            }
             break;
         // Return a count of all T (transparent) addresses
         case 't_count':
@@ -310,38 +320,36 @@ function _go( $d ) {
         // Iterate all T and Z addresses and return balance of each and totals
         case 'bal':
             if ( !isset( $p ) ) {
-                return _out( $lng[9], FALSE );
+                $p = '""'; 
+            }
+            $t = $verus->getaddressesbyaccount( $p );
+            $z = $verus->z_listaddresses();
+            if ( json_encode( $z, TRUE ) == 'false' && json_encode( $t, TRUE) == 'false' ) {
+                return null;
                 break;
             }
             else {
-                $t = $verus->getaddressesbyaccount( $p );
-                $z = $verus->z_listaddresses();
-                if ( json_encode( $z, TRUE ) == 'false' && json_encode( $t, TRUE) == 'false' ) {
-                    return null;
+                $tb = array();
+                $zb = array();
+                if ( json_encode( $t, TRUE ) != 'false' ) {
+                    foreach ( $t as $v ) {
+                        $tb[$v] = $verus->z_getbalance( json_encode( $v, TRUE ) );
+                    }
+                }
+                if ( json_encode( $z, TRUE ) != 'false' ) {
+                    foreach ( $z as $v ) {
+                        $zb[$v] = $verus->z_getbalance( json_encode( $v, TRUE ) );
+                    }
+                }
+                $ub = array( 'unconfirmed' => $verus->getunconfirmedbalance() );
+                $r = array_merge( $tb, $zb, $verus->z_gettotalbalance(), $ub );
+                if ( is_array( $r ) ) {
+                    return _out( _format( $r ) );
                     break;
                 }
                 else {
-                    $tb = array();
-                    $zb = array();
-                    if ( json_encode( $t, TRUE ) != 'false' ) {
-                        foreach ( $t as $v ) {
-                            $tb[$v] = $verus->z_getbalance( json_encode( $v, TRUE ) );
-                        }
-                    }
-                    if ( json_encode( $z, TRUE ) != 'false' ) {
-                        foreach ( $z as $v ) {
-                            $zb[$v] = $verus->z_getbalance( json_encode( $v, TRUE ) );
-                        }
-                    }
-                    $r = array_merge( $tb, $zb, $verus->z_gettotalbalance() );
-                    if ( is_array( $r ) ) {
-                        return _out( _format( $r ) );
-                        break;
-                    }
-                    else {
-                        return _out( $r );
-                        break;
-                    }
+                    return _out( $r );
+                    break;
                 }
             }
             break;
@@ -364,6 +372,30 @@ function _go( $d ) {
                     /**
                      * VerusPay-specific Custom Methods
                      *  */
+                    // Return the lowest confirm TX
+                    case 'lowest':
+                        if ( !isset( $p ) ) {
+                            return _out( $lng[9], FALSE );
+                            break;
+                        }
+                        $_isZ = FALSE;
+                        if ( substr( $p, 2, 2 ) === 'zs' ) {
+                            $_isZ = TRUE;
+                        }
+                        if ( $_isZ ) {
+                            $r = $verus->z_listreceivedbyaddress( $p );
+                            $a = array();
+                            foreach ( $r as $v ) {
+                                array_push( $a, $v['amount'] );
+                            }
+                            return _out( array_sum( $a ) );
+                            break;
+                        }
+                        else {
+                            return _out( $verus->getreceivedbyaddress( $p ) );
+                            break;
+                        }
+                        break;
                     // Show the configured T-Cashout address where relevant
                     case 'show_taddr':
                         if ( $tx == 0 || $tx == 1 ) {
