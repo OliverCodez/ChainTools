@@ -174,6 +174,9 @@ if ( $_chn === '_STAT_' ) {
                 die();
             }
             break;
+        case 'vct_version':
+            echo _out( $vct_version );
+            die();
     }
 }
 else if ( !isset( $c['C'][$_chn] ) || !isset( $c['C'][$_chn]['L'] ) || !isset( $c['C'][$_chn]['U'] ) || !isset( $c['C'][$_chn]['P'] ) || !isset( $c['C'][$_chn]['N'] ) ) {
@@ -225,7 +228,6 @@ function _go( $d ) {
     // Include config array
     global $c;
     global $lng;
-    global $vct_version;
     // New Verus class for interacting with daemon
     $verus = new Verus( $d['usr'], $d['pas'], $d['url'], $d['prt'], $d['pro'], $lng );
     $s = $verus->status();
@@ -283,9 +285,6 @@ function _go( $d ) {
          */
         case 'test':
             return _out( $s );
-            break;
-        case 'vct_version':
-            return _out( $vct_version );
             break;
         /**
          * Helpful Tools
