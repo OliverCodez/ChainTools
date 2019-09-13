@@ -275,7 +275,7 @@ function _go( $d ) {
     }
     $e = $d['m'];
     $p = $d['p'];
-    $o = $d['o'];
+    $o = $d['o']; // TODO: Usage?
 
     switch ( $e ) {
         /**
