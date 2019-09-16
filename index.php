@@ -1,4 +1,5 @@
 <?php
+define( 'VCTAccess', TRUE );
 $vct_version = '0.4.0';
 /**
  * VerusChainTools

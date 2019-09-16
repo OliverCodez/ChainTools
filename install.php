@@ -1,4 +1,7 @@
 <?php
+if ( ! defined( 'VCTAccess' ) ) {
+    die( 'Direct access denied' );
+}
 // Leading, non-zero number of version - used for compatibility checks in the main scripts
 $_version = '4';
 /**

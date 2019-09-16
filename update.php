@@ -1,4 +1,7 @@
 <?php
+if ( ! defined( 'VCTAccess' ) ) {
+    die( 'Direct access denied' );
+}
 /**
  * VerusChainTools Updater
  * 
