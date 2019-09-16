@@ -65,7 +65,7 @@ if ( file_exists( 'install.php' ) ) {
             // Create the config file and remove the install script
             $posted = array_change_key_case( $_POST, CASE_UPPER );
             $daemon = _get_daemon( $posted );
-            file_put_contents( 'config.php','<?php $c = \''.serialize( $daemon ).'\'; ?>' );
+            file_put_contents( 'config.php','<?php if(!defined(\'VCTAccess\')){die(\'Direct access denied\');} $c = \''.serialize( $daemon ).'\'; ?>' );
             unlink( 'install.php' );
             die( '<h2><center>Successfully Installed!</center></h2>' );
         }
