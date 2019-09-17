@@ -12,6 +12,7 @@ if ( ! defined( 'VCTAccess' ) ) {
  *      verusclass.php
  *      lang.php
  *      update.php (this file)
+ *      update-vp.php
  *      install.php
  *      demo.php
  *

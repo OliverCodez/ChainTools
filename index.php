@@ -15,6 +15,7 @@ $vct_version = '0.4.0';
  *      verusclass.php
  *      lang.php
  *      update.php
+ *      update-vp.php
  *      install.php (temporary installer)
  *      demo.php
  *
@@ -103,7 +104,12 @@ $lng = $lng[$c['L']];
 if ( isset( $_REQUEST['update'] ) ) {
     if ( $_SERVER['REQUEST_METHOD'] === 'GET' && $_REQUEST['update'] === $c['U'] && file_exists( 'update.php' ) ) {
         if ( is_writable( 'config.php' ) ) {
-            include_once( 'update.php' );
+            if ( isset( $_REQUEST['vp'] ) && $_REQUEST['vp'] === 1 ) {
+                include_once( 'update-vp.php' );
+            }
+            else {
+                include_once( 'update.php' );
+            }
             die();
         }
         else {

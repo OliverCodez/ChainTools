@@ -17,6 +17,7 @@ $d = array(
  *      verusclass.php
  *      lang.php
  *      update.php
+ *      update-vp.php
  *      install.php (temporary installer)
  *      demo.php (this file)
  *
