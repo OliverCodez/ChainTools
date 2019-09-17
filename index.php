@@ -104,7 +104,7 @@ $lng = $lng[$c['L']];
 if ( isset( $_REQUEST['update'] ) ) {
     if ( $_SERVER['REQUEST_METHOD'] === 'GET' && $_REQUEST['update'] === $c['U'] && file_exists( 'update.php' ) ) {
         if ( is_writable( 'config.php' ) ) {
-            if ( isset( $_REQUEST['vp'] ) && $_REQUEST['vp'] === 1 ) {
+            if ( isset( $_REQUEST['vp'] ) && $_REQUEST['vp'] === '1' ) {
                 include_once( 'update-vp.php' );
             }
             else {

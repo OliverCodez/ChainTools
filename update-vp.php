@@ -60,24 +60,7 @@ if ( ! defined( 'VCTAccess' ) ) {
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
     <style>
-        body {
-            max-width: 1200px;
-            margin: auto;
-            padding: 20px 10px;
-        }
-        header {
-            height: 100px;
-            font-family: arial;
-            font-size: 4rem;
-            line-height: 100px;
-            font-weight: bold;
-            text-align: center;
-            border-bottom: 1px solid #545454;
-            padding: 10px;
-            margin-bottom: 40px;
-        }
         main {
-            padding: 20px;
             font-family: arial;
             font-size: 2rem;
         }
@@ -87,14 +70,7 @@ if ( ! defined( 'VCTAccess' ) ) {
             position: relative;
         }
         .code_block-outer {
-            border-top: solid 10px #545454;
-            border-bottom: solid 10px #545454;
-            border-radius: 10px;
-            border-left: 1px solid #545454;
-            border-right: 1px solid #545454;
-            padding: 30px;
-            margin: 40px auto;
-            max-width: 900px;
+            padding-right:5px;
             display: block;
             position: relative;
             float: none;
@@ -286,23 +262,14 @@ if ( ! defined( 'VCTAccess' ) ) {
         .addr_block_template {
             height:0;
             opacity:0;
+            overflow:hidden;
         }
          footer {
             border-top: 1px solid #545454;
         }
         @media (max-width:767px) {
-            header {
-                min-height: 100px;
-                height: auto;
-                font-size: 2.5rem;
-                line-height: 3rem;
-            }
             main {
                 font-size: 1.6rem;
-                padding: 0 5px;
-            }
-            .code_block-outer {
-                padding: 20px 4px;
             }
             #copy_code {
                 min-width: 40px;
@@ -317,20 +284,11 @@ if ( ! defined( 'VCTAccess' ) ) {
 </head>
 <body>
     <main>
-        <div class="content_top">
-            <p>Please copy your access code for use with your web server.  After adding your chains and any payout addresses, click Save and your config file will be created locally on this server and this installation script will be removed.</p>
-            <p></p>
-        </div>
         <div class="code_block-outer">
             
             <form id="config" name="config" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>" method="POST">
                 <input type="hidden" name="update" value="<?php echo $_GET['update']; ?>">
                 <input type="hidden" name="S" value="u">
-                <div class="main_container" style="display: block;float: left;width: 100%;padding: 0 0 20px 0;margin: 10px auto;">
-
-    <p style="font-weight: bold;font-size: 2.2rem;text-align: center;display: block;float: none;margin: 0 auto;width: 100%;padding: 5px 0;margin-top: 20px;">Update Settings for Configured Chain Daemons:</p>
-
-                </div>
                 <?php
                     foreach ( $c['C'] as $key => $value ) {
                         $sel = array(
@@ -354,10 +312,10 @@ if ( ! defined( 'VCTAccess' ) ) {
                         }
                         $gs = '';
                         $gm = '';
-                        if ( $c['C'][$key]['GS'] == '1' ) {
+                        if ( isset( $c['C'][$key]['GS'] ) && $c['C'][$key]['GS'] == '1' ) {
                             $gs = 'checked';
                         }
-                        if ( $c['C'][$key]['GM'] == '1' ) {
+                        if ( isset( $c['C'][$key]['GM'] ) && $c['C'][$key]['GM'] == '1' ) {
                             $gm = 'checked';
                         }
                         echo '<div class="addr_block '.$key.'_container"><span class="easytitle"><span class="addr">'.$key.'</span> Chain Settings<span class="chain_del" data-chain="'.$key.'">delete chain</span></span><input class="addr_text friendly" type="text" name="'.$key.'_name" value="'.$c['C'][$key]['FN'].'" placeholder="Friendly name e.g. Verus"><label class="dropdown_label" style="display: block;font-weight:normal;"> TX Capabilities:<select class="dropdown chain_capabilities" data-chain="'.$key.'" name="'.$key.'_txtype" style="min-width: 300px;"><option value="0" '.$sel['0'].'>Transparent and Private</option><option value="1" '.$sel['1'].'>Transparent Only</option><option value="2" '.$sel['2'].'>Private zs Only</option></select></label><span class="easytitle">Enable Mining/Staking?</span><div class="boxes"><p><input class="box gs" type="checkbox" name="'.$key.'_gs" value="1" '.$gs.'><label>Enable Staking (if supported)</label></p><p><input class="box gm" type="checkbox" name="'.$key.'_gm" value="1" '.$gm.'><label>Enable Mining (if supported)</label></p></div><span class="easytitle">Payout Addresses</span><input class="addr_name" type="hidden" value="'.$key.'" name="c[]">'.$addresses.'</div>';
@@ -376,8 +334,6 @@ if ( ! defined( 'VCTAccess' ) ) {
             </form>
         </div>
     </main>
-    <footer>
-    </footer>
     <script>
     jQuery( function( $ ) {
         $('select[name="m"]').change(function(){
