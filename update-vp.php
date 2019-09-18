@@ -61,8 +61,8 @@ if ( ! defined( 'VCTAccess' ) ) {
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
     <style>
         main {
-            font-family: arial;
-            font-size: 2rem;
+            font-family: inherit;
+            font-size: 1.6rem;
         }
         .content_top {
             display: block;
@@ -77,7 +77,7 @@ if ( ! defined( 'VCTAccess' ) ) {
         }
         .code_block-outer > p:first-child {
             font-weight: bold;
-            font-size: 2.2rem;
+            font-size: 1.8rem;
             text-align: center;
             display: block;
             float: none;
@@ -102,7 +102,7 @@ if ( ! defined( 'VCTAccess' ) ) {
         }
         .copy_symbol {
             border: 1px #545454 solid;
-            border-radius: 5px;
+            border-radius: 10px;
             display: block;
             height: 40px;
             line-height: 38px;
@@ -116,7 +116,7 @@ if ( ! defined( 'VCTAccess' ) ) {
             height: 40px;
             width: 30px;
             border: 1px solid #545454;
-            border-radius: 5px;
+            border-radius: 10px;
             left: 5px;
             top: 5px;
             background: #fff;
@@ -159,28 +159,31 @@ if ( ! defined( 'VCTAccess' ) ) {
             background: #fff;
             font-weight: bold;
              color: #FB5656;
-            font-size: 2.5rem;
+            font-size: 2rem;
         }
         #config {
             display: block;
             width: 100%;
         }
         .easytitle {
-            font-size: 2.6rem;
+            font-size: 2rem;
             color: #3f79a2;
             display: inline-block;
             margin: 30px 0;
+            width:100%;
         }
         .chain_del {
-            display: inline;
+            display: inline-block;
             padding: 5px;
-            border-radius: 5px;
+            border-radius: 10px;
             background: #ff0000b0;
-            width: 200px;
+            width: 140px;
             color: #fff;
             text-align: center;
             margin: 0 10px;
             cursor: pointer;
+            height: 36px;
+            float: right;
         }
         .addr_block {
             padding: 5px;
@@ -200,8 +203,25 @@ if ( ! defined( 'VCTAccess' ) ) {
             margin: 5px 0;
             background: #f8f8f8;
             border: 1px solid #68afff;
-            border-radius: 5px;
+            border-radius: 10px;
             padding: 4px;
+            height: 40px;
+            font-size: 2rem;
+            padding-left: 10px;
+        }
+        .dropdown {
+            border: 1px solid #68afff;
+            height: 40px;
+            border-radius: 10px;
+            margin: 0 10px;
+        }
+        .box {
+            width: 20px;
+            height: 20px;
+            margin: 10px;
+            bottom: -3px;
+            display: inline-block;
+            position: relative;
         }
         .add_chain_container {
             display: block;
@@ -230,6 +250,7 @@ if ( ! defined( 'VCTAccess' ) ) {
             display: block;
             float: none;
             text-align:right;
+            line-height: 30px;
             transition:all 0.5s ease;
         }
         #add_new:hover {
@@ -244,16 +265,19 @@ if ( ! defined( 'VCTAccess' ) ) {
         .submit_button {
             display: block;
             float: none;
-            width: 180px;
+            width: 160px;
             background: #FB5656;
-            border:1px solid #FB5656;
-            border-radius:5px;
+            border: 1px solid #FB5656;
             padding: 5px;
             color: #fff;
-            font-size: 2rem;
             font-weight: bold;
             margin: 5px auto;
-            transition:all 0.5s ease;
+            height: 45px;
+            border-radius: 15px;
+            font-size: 24px;
+            text-transform: uppercase;
+            line-height: 40px;
+            transition: all 0.5s ease;
         }
         .submit_button:hover {
             background:#ffffff;
@@ -269,7 +293,7 @@ if ( ! defined( 'VCTAccess' ) ) {
         }
         @media (max-width:767px) {
             main {
-                font-size: 1.6rem;
+                font-size: 1.4rem;
             }
             #copy_code {
                 min-width: 40px;

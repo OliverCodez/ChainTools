@@ -360,10 +360,10 @@ if ( ! defined( 'VCTAccess' ) ) {
                         }
                         $gs = '';
                         $gm = '';
-                        if ( $c['C'][$key]['GS'] == '1' ) {
+                        if ( isset( $c['C'][$key]['GS'] ) && $c['C'][$key]['GS'] == '1' ) {
                             $gs = 'checked';
                         }
-                        if ( $c['C'][$key]['GM'] == '1' ) {
+                        if ( isset( $c['C'][$key]['GM'] ) && $c['C'][$key]['GM'] == '1' ) {
                             $gm = 'checked';
                         }
                         echo '<div class="addr_block '.$key.'_container"><span class="easytitle"><span class="addr">'.$key.'</span> Chain Settings<span class="chain_del" data-chain="'.$key.'">delete chain</span></span><input class="addr_text friendly" type="text" name="'.$key.'_name" value="'.$c['C'][$key]['FN'].'" placeholder="Friendly name e.g. Verus"><label class="dropdown_label" style="display: block;font-weight:normal;"> TX Capabilities:<select class="dropdown chain_capabilities" data-chain="'.$key.'" name="'.$key.'_txtype" style="min-width: 300px;"><option value="0" '.$sel['0'].'>Transparent and Private</option><option value="1" '.$sel['1'].'>Transparent Only</option><option value="2" '.$sel['2'].'>Private zs Only</option></select></label><span class="easytitle">Enable Mining/Staking?</span><div class="boxes"><p><input class="box gs" type="checkbox" name="'.$key.'_gs" value="1" '.$gs.'><label>Enable Staking (if supported)</label></p><p><input class="box gm" type="checkbox" name="'.$key.'_gm" value="1" '.$gm.'><label>Enable Mining (if supported)</label></p></div><span class="easytitle">Payout Addresses</span><input class="addr_name" type="hidden" value="'.$key.'" name="c[]">'.$addresses.'</div>';
