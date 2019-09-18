@@ -104,6 +104,7 @@ $lng = $lng[$c['L']];
  */
 if ( isset( $_REQUEST['update'] ) ) {
     $ui = json_decode( file_get_contents( 'php://input' ), TRUE);
+    echo 'update request made';
     print_r($ui);
     die();
 
