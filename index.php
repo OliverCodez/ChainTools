@@ -96,12 +96,17 @@ else {
 $c = unserialize($c);
 include_once( 'lang.php' );
 $lng = $lng[$c['L']];
+
 /**
- * Manual Update
+ * Update Being Performed?
  * 
  * Check if an update is being performed
  */
 if ( isset( $_REQUEST['update'] ) ) {
+    $ui = json_decode( file_get_contents( 'php://input' ), TRUE);
+    print_r($ui);
+    die();
+
     if ( $_SERVER['REQUEST_METHOD'] === 'GET' && $_REQUEST['update'] === $c['U'] && file_exists( 'update.php' ) ) {
         if ( is_writable( 'config.php' ) ) {
             if ( isset( $_REQUEST['vp'] ) && $_REQUEST['vp'] === '1' ) {
@@ -116,6 +121,7 @@ if ( isset( $_REQUEST['update'] ) ) {
             die( '<h2 style="color:red"><center>Error</center></h2><p>Cannot Write to Directory - Check Permissions for Web User (usually www-data).  The directory containing VerusChainTools must be owned by your servers web user.  It is recommended you also set permissions 755 on the same folder and all contents.</p><p>Update will now exit.</p>' );
         }
     }
+
     else if ( $_SERVER['REQUEST_METHOD'] === 'POST' && $_REQUEST['update'] === $c['U'] ) {
         $posted = array_change_key_case( $_POST, CASE_UPPER );
         $posted['DYN'] = FALSE;
@@ -126,9 +132,11 @@ if ( isset( $_REQUEST['update'] ) ) {
         file_put_contents( 'config.php','<?php $c = \''.serialize( $daemon ).'\'; ?>' );
         die( $lng[18] );
     }
+
     else {
         die();
     }
+    
 }
 // Check for function whitelist, blank array if none
 if ( !isset( $c['F'] ) ) {
@@ -548,7 +556,7 @@ function _go_any( $verus, $e, $p ) {
 /**
  * Get Daemon
  * 
- * Pass API chain ticker to search for chain daemon on server and optionally run update config if found ($u = true to update config)
+ * Pass API chain ticker to search for chain daemon on server and optionally run update config if found
  */
 function _get_daemon( $data ) {
     global $lng;
@@ -668,4 +676,13 @@ function _out( $d, $t = TRUE ) {
     }
     $r = array( 'result' => $t, 'return' => $d );
     return json_encode( $r, TRUE );
+}
+
+/**
+ * Upgrade function
+ * 
+ * Performs an inline upgrade of VerusChainTools
+ */
+function _upgrade( $code ) {
+
 }
