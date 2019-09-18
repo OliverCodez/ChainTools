@@ -105,7 +105,7 @@ $lng = $lng[$c['L']];
 if ( isset( $_REQUEST['update'] ) ) {
     $ui = json_decode( file_get_contents( 'php://input' ), TRUE);
     echo 'update request made';
-    print_r($ui);
+    echo '<br>contents of input: '.$ui;
     die();
 
     if ( $_SERVER['REQUEST_METHOD'] === 'GET' && $_REQUEST['update'] === $c['U'] && file_exists( 'update.php' ) ) {
