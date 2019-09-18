@@ -559,7 +559,7 @@ function _get_daemon( $data ) {
             if ( file_exists( 'config.php' ) && $data['S'] != 'u' ) {
                 unlink( 'config.php' );
             }
-            if ( $data['DYN'] === TRUE ) {
+            if ( isset( $data['DYN'] ) && $data['DYN'] === TRUE ) {
                 return FALSE;
                 die();
             }
