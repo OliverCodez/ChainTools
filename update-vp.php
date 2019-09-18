@@ -311,8 +311,9 @@ if ( ! defined( 'VCTAccess' ) ) {
         <div class="code_block-outer">
             
             <form id="config" name="config" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>" method="POST">
-                <input type="hidden" name="update" value="<?php echo $_GET['update']; ?>">
+                <input type="hidden" name="code" value="<?php echo $_GET['code']; ?>">
                 <input type="hidden" name="S" value="u">
+                <input type="hidden" name="update" value="2">
                 <?php
                     foreach ( $c['C'] as $key => $value ) {
                         $sel = array(

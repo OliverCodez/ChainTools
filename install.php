@@ -338,7 +338,7 @@ function rand_chars($c, $l, $u = FALSE) {
             <p>Thank you for installing VerusChainTools! Below is your unique Access Code and Update Code. Keep your Update Code in a secure location for future use, if you ever need to add more blockchain daemons or update any of your config settings. Your Access Code is for use with either VerusPay or the web tool you are using with the VerusChainTools API. Please verify the first number of your Access Code matches the first non-zero version number of this VerusChainTools API which you're installing.  For example, "4" would match with VerusChainTools version 0.4.2.  If it does not match, abandon this install and contact the developer.</p>
             <p></p>
             <p></p>
-            <p>After adding your chains and any payout addresses (for VerusPay users), click Save and your config file will be created locally on this server and this installation script will be removed.  If you need to change something or update these settings in the future, visit this same script and append the following to the URL: ?update=YOUR_PRIVATE_UPDATE_CODE ( e.g. https://127.127.27.27/?update=YourPrivateUpdateCode )</p>
+            <p>After adding your chains and any payout addresses (for VerusPay users), click Save and your config file will be created locally on this server and this installation script will be removed.  If you need to change something or update these settings in the future, visit this same script and append the following to the URL: ?code=YOUR_PRIVATE_UPDATE_CODE ( e.g. https://127.127.27.27/?code=YourPrivateUpdateCode )</p>
             <p></p>
         </div>
         <div class="code_block-outer">

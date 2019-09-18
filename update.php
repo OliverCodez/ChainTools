@@ -330,8 +330,9 @@ if ( ! defined( 'VCTAccess' ) ) {
         <div class="code_block-outer">
             
             <form id="config" name="config" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>" method="POST">
-                <input type="hidden" name="update" value="<?php echo $_GET['update']; ?>">
+                <input type="hidden" name="code" value="<?php echo $_GET['code']; ?>">
                 <input type="hidden" name="S" value="u">
+                <input type="hidden" name="update" value="2">
                 <div class="main_container" style="display: block;float: left;width: 100%;padding: 0 0 20px 0;margin: 10px auto;">
 
     <p style="font-weight: bold;font-size: 2.2rem;text-align: center;display: block;float: none;margin: 0 auto;width: 100%;padding: 5px 0;margin-top: 20px;">Update Settings for Configured Chain Daemons:</p>

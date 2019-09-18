@@ -25,6 +25,7 @@ $lng = array(
         '<h2><center>Update Successful!</center></h2>', // 18
         'daemon offline', // 19
         'daemon online', // 20
+        '<h2 style="color:red"><center>Error</center></h2><p>Cannot Write to Directory - Check Permissions for Web User (usually www-data).  The directory containing VerusChainTools must be owned by your servers web user.  It is recommended you also set permissions 755 on the same folder and all contents.</p><p>Update will now exit.</p>', // 21
     ),
     // Add more language translations with a 3 character array key following
 );

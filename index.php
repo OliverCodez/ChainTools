@@ -100,44 +100,23 @@ $lng = $lng[$c['L']];
 /**
  * Update Being Performed?
  * 
- * Check if an update is being performed
+ * Check if an update/upgrade is being performed and run upgrade function
  */
-if ( isset( $_REQUEST['update'] ) ) {
-    $ui = json_decode( file_get_contents( 'php://input' ), TRUE);
-    echo 'update request made';
-    echo '<br>contents of input: '.$ui;
-    die();
-
-    if ( $_SERVER['REQUEST_METHOD'] === 'GET' && $_REQUEST['update'] === $c['U'] && file_exists( 'update.php' ) ) {
-        if ( is_writable( 'config.php' ) ) {
-            if ( isset( $_REQUEST['vp'] ) && $_REQUEST['vp'] === '1' ) {
-                include_once( 'update-vp.php' );
-            }
-            else {
-                include_once( 'update.php' );
-            }
-            die();
-        }
-        else {
-            die( '<h2 style="color:red"><center>Error</center></h2><p>Cannot Write to Directory - Check Permissions for Web User (usually www-data).  The directory containing VerusChainTools must be owned by your servers web user.  It is recommended you also set permissions 755 on the same folder and all contents.</p><p>Update will now exit.</p>' );
-        }
+if ( isset( $_REQUEST['code'] ) && $_REQUEST['code'] === $c['U'] ) {
+    $ui = array(
+        't' => $_REQUEST['update'], // Type of request, codes: 0 = direct coin update; 1 = indirect/VerusPay coin update; 2 = save updated coin data; 3 = codebase upgrade to latest version
+        'c' => $_REQUEST['code'], // Update code passed
+        'p' => '',
+    );
+    if ( $ui['t'] == '2' ) {
+        $ui['p'] = array_change_key_case( $_POST, CASE_UPPER );
     }
-
-    else if ( $_SERVER['REQUEST_METHOD'] === 'POST' && $_REQUEST['update'] === $c['U'] ) {
-        $posted = array_change_key_case( $_POST, CASE_UPPER );
-        $posted['DYN'] = FALSE;
-        $c['S'] = $posted['S'];
-        $posted = _get_daemon( $posted );
-        unset( $posted['UPDATE'], $posted['S'], $posted['D'], $c['C'] );
-        $daemon = array_merge( $c, $posted );
-        file_put_contents( 'config.php','<?php $c = \''.serialize( $daemon ).'\'; ?>' );
-        die( $lng[18] );
+    if ( is_writable( 'config.php' ) ) {
+        _upgrade( $ui, $c, $lng );
     }
-
     else {
-        die();
+        die( $lang[21] );
     }
-    
 }
 // Check for function whitelist, blank array if none
 if ( !isset( $c['F'] ) ) {
@@ -684,6 +663,26 @@ function _out( $d, $t = TRUE ) {
  * 
  * Performs an inline upgrade of VerusChainTools
  */
-function _upgrade( $code ) {
-
+function _upgrade( $ui, $c, $lng ) {
+    if ( ! isset( $ui['t'] ) ) {
+        $ui['t'] = '0';
+    }
+    switch ( $ui['t'] ) { // 0 = direct coin update; 1 = indirect/VerusPay coin update; 2 = save updated coin data; 3 = codebase upgrade to latest version
+        case '0':
+            include_once( 'update.php' );
+            break;
+        case '1':
+            include_once( 'update-vp.php' );
+            break;
+        case '2':
+            $ui['p']['DYN'] = FALSE;
+            $c['S'] = $ui['p']['S'];
+            $ui['p'] = _get_daemon( $ui['p'] );
+            unset( $ui['p']['CODE'], $ui['p']['S'], $ui['p']['D'], $c['C'] );
+            $daemon = array_merge( $c, $ui['p'] );
+            file_put_contents( 'config.php','<?php $c = \''.serialize( $daemon ).'\'; ?>' );
+            break( $lng[18] );
+        case '3':
+            //Do Upgrade
+    }
 }
