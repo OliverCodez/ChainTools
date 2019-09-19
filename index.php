@@ -697,17 +697,19 @@ function _upgrade( $ui, $c, $lng ) {
                 {
                     if ($file != "." && $file != ".." && strtolower(substr($file, strrpos($file, '.') + 1)) == 'xz')
                     {
-                        $file1 = 'Downloaded '.$file;
+                        $file1 = $file;
                     }
                     if ($file != "." && $file != ".." && strtolower(substr($file, strrpos($file, '.') + 1)) == 'md5')
                     {
-                        $file2 = 'Downloaded '.$file;
+                        $file2 = $file;
                     }
                 }
                 closedir($handle);
             }
-            $content = $file1 . '<br>' . $file2;
-            echo '<pre style="width: 400px;display: block;position: relative;margin: 0 auto;background: #e3e3e3;padding: 10px 5px;border: inset 1px grey;height: 200px;">'.$content.'</pre>';
+            $content = 'Downloaded: ' . $file1 . '<br>' . 'Downloaded: ' . $file2;
+            echo '<pre style="width: 400px;display: block;position: relative;margin: 0 auto;background: #e3e3e3;padding: 10px 5px;border: inset 1px grey;height: 100px;">'.$content.'</pre>';
+            exec( 'tar -xvf ' . $file1 . ' | rm ' . $file1 );
+
             //Do Upgrade
     }
     die();
