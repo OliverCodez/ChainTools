@@ -104,7 +104,7 @@ $lng = $lng[$c['L']];
  */
 if ( isset( $_REQUEST['code'] ) && $_REQUEST['code'] === $c['U'] ) {
     if ( isset( $_REQUEST['version'] ) ) {
-        echo $lng[23] . $vct_version;
+        echo $lng[23] . '<h3 style="text-align:center;font-weight:bold;">' . $vct_version . '</h3>';
         die();
     }
     $ui = array(
