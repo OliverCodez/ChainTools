@@ -103,6 +103,10 @@ $lng = $lng[$c['L']];
  * Check if an update/upgrade is being performed and run upgrade function
  */
 if ( isset( $_REQUEST['code'] ) && $_REQUEST['code'] === $c['U'] ) {
+    if ( isset( $_REQUEST['version'] ) ) {
+        echo $lng[23] . $vct_version;
+        die();
+    }
     $ui = array(
         't' => '',
         'c' => $_REQUEST['code'], // Update code passed
@@ -728,6 +732,7 @@ function _upgrade( $ui, $c, $lng ) {
                     chmod( $file, 0755 );
                 }
             }
+            header( 'Location: ' . $_SERVER['PHP_SELF'] . '?code=' . $ui['c'] . '&version=true' );
     }
     die();
 }
