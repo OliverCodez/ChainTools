@@ -695,7 +695,7 @@ function _upgrade( $ui, $c, $lng ) {
             if ($handle = opendir('.')) {
                 while (false !== ($file = readdir($handle)))
                 {
-                    if ($file != "." && $file != ".." && strtolower(substr($file, strrpos($file, '.') + 1)) == 'tar.xz')
+                    if ($file != "." && $file != ".." && strtolower(substr($file, strrpos($file, '.') + 1)) == 'xz')
                     {
                         echo 'Downloaded '.$file;
                     }
