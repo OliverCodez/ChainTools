@@ -717,6 +717,7 @@ function _upgrade( $ui, $c, $lng ) {
                 chmod( $file, 0755 );
                 chdir( $udir );
             }
+            unlink( 'README.md' );
     }
     die();
 }
