@@ -104,11 +104,12 @@ $lng = $lng[$c['L']];
  */
 if ( isset( $_REQUEST['code'] ) && $_REQUEST['code'] === $c['U'] ) {
     $ui = array(
+        't' => '',
         'c' => $_REQUEST['code'], // Update code passed
         'p' => '',
     );
     // 'update' is for type of request, codes: 0 = direct coin update; 1 = indirect/VerusPay coin update; 2 = save updated coin data; 3 = codebase upgrade to latest version
-    if ( ! isset( $_REQUEST['update'] ) ) {
+    if ( isset( $_REQUEST['update'] ) ) {
         $ui['t'] = $_REQUEST['update'];
     }
     else {
