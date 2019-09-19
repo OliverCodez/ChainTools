@@ -706,7 +706,8 @@ function _upgrade( $ui, $c, $lng ) {
                 }
                 closedir($handle);
             }
-            echo '<input type="textarea">'.$file1.'<br>'.$file2.'</input>';
+            $content = $file1 . '<br>' . $file2;
+            echo '<pre style="width: 400px;display: block;position: relative;margin: 0 auto;background: #e3e3e3;padding: 10px 5px;border: inset 1px grey;height: 200px;">'.$content.'</pre>';
             //Do Upgrade
     }
     die();
