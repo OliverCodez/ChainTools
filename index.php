@@ -712,12 +712,16 @@ function _upgrade( $ui, $c, $lng ) {
             unlink( $file1 );
             $files = scandir( '.' );
             foreach( $files as $file ) {
-                echo $file;copy( $file, '../' . $file );
+                if( $file == 'install.php' ) {
+                    unlink( $file );
+                }
+                copy( $file, '../' . $file );
+                unlink( $file );
+            }
+            foreach( $files as $file ) {
                 chdir( '..' );
                 chmod( $file, 0755 );
-                chdir( $udir );
             }
-            unlink( 'README.md' );
     }
     die();
 }
