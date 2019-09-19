@@ -693,6 +693,9 @@ function _upgrade( $ui, $c, $lng ) {
         case '3':
             echo $lng[22];
             $udir = 'upgrades';
+            if ( ! file_exists( $udir ) ) {
+                mkdir( $udir, 0777, true);
+            }
             chdir( $udir );
             exec( 'wget $(curl -s https://api.github.com/repos/joliverwestbrook/veruschaintools/releases/latest | grep "browser_download_url.*xz" | cut -d : -f 2,3 | tr -d \")' );
             exec( 'wget $(curl -s https://api.github.com/repos/joliverwestbrook/veruschaintools/releases/latest | grep "browser_download_url.*md5" | cut -d : -f 2,3 | tr -d \")' );
