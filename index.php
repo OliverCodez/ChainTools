@@ -712,12 +712,11 @@ function _upgrade( $ui, $c, $lng ) {
             unlink( $file1 );
             $files = scandir( '.' );
             foreach( $files as $file ) {
+                copy( $file, '../' . $file );
+                chdir( '..' );
                 chmod( $file, 0755 );
-                //copy( $file, '..' );
+                chdir( $udir );
             }
-            copy( 'README.md', '../README.md' );
-
-            //Do Upgrade
     }
     die();
 }
