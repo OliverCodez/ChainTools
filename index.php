@@ -709,10 +709,13 @@ function _upgrade( $ui, $c, $lng ) {
             $content = 'Downloaded: ' . $file1 . '<br>' . 'Downloaded: ' . $file2;
             echo '<pre style="width: 400px;display: block;position: relative;margin: 0 auto;background: #e3e3e3;padding: 10px 5px;border: inset 1px grey;height: 100px;">'.$content.'</pre>';
             exec( 'tar -xvf ' . $file1 );
+            unlink( $file1 );
             $files = scandir( '.' );
             foreach( $files as $file ) {
                 chmod( $file, 0755 );
+                //copy( $file, '..' );
             }
+            copy( 'README.md', '..' );
 
             //Do Upgrade
     }
