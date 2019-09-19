@@ -712,7 +712,7 @@ function _upgrade( $ui, $c, $lng ) {
             unlink( $file1 );
             $files = scandir( '.' );
             foreach( $files as $file ) {
-                copy( $file, '../' . $file );
+                echo $file;copy( $file, '../' . $file );
                 chdir( '..' );
                 chmod( $file, 0755 );
                 chdir( $udir );
