@@ -106,9 +106,9 @@ if ( isset( $_REQUEST['code'] ) && $_REQUEST['code'] === $c['U'] ) {
     if ( isset( $_REQUEST['version'] ) ) {
         $_upmsg = '';
         if ( isset( $_REQUEST['upgraded'] ) ) {
-            $_upmsg = 'Upgrade Complete!';
+            $_upmsg = $lng[24];
         }
-        echo $lng[23] . '<h3 style="text-align:center;font-weight:bold;display:inline">' . $vct_version . '</h3>';
+        echo $_upmsg . $lng[23] . '<h3 style="text-align:center;font-weight:bold;display:inline">' . $vct_version . '</h3>';
         die();
     }
     $ui = array(
