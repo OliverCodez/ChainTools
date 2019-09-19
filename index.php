@@ -1,6 +1,6 @@
 <?php
 define( 'VCTAccess', TRUE );
-$vct_version = '0.5.0';
+$vct_version = '0.5.1';
 /**
  * VerusChainTools
  * 
@@ -24,7 +24,7 @@ $vct_version = '0.5.0';
  * @author   Oliver Westbrook <johnwestbrook@pm.me>
  * @copyright Copyright (c) 2019, John Oliver Westbrook
  * @link     https://github.com/joliverwestbrook/VerusChainTools
- * @version 0.5.0
+ * @version 0.5.1
  * 
  * ====================
  * 
@@ -104,6 +104,10 @@ $lng = $lng[$c['L']];
  */
 if ( isset( $_REQUEST['code'] ) && $_REQUEST['code'] === $c['U'] ) {
     if ( isset( $_REQUEST['version'] ) ) {
+        $_upmsg = '';
+        if ( isset( $_REQUEST['upgraded'] ) ) {
+            $_upmsg = 'Upgrade Complete!';
+        }
         echo $lng[23] . '<h3 style="text-align:center;font-weight:bold;display:inline">' . $vct_version . '</h3>';
         die();
     }
@@ -693,6 +697,9 @@ function _upgrade( $ui, $c, $lng ) {
         case '3':
             echo $lng[22];
             $udir = 'upgrades';
+            if ( ! file_exists( $udir ) ) {
+                mkdir( $udir, 0777, true);
+            }
             chdir( $udir );
             exec( 'wget $(curl -s https://api.github.com/repos/joliverwestbrook/veruschaintools/releases/latest | grep "browser_download_url.*xz" | cut -d : -f 2,3 | tr -d \")' );
             exec( 'wget $(curl -s https://api.github.com/repos/joliverwestbrook/veruschaintools/releases/latest | grep "browser_download_url.*md5" | cut -d : -f 2,3 | tr -d \")' );
@@ -732,7 +739,7 @@ function _upgrade( $ui, $c, $lng ) {
                     chmod( $file, 0755 );
                 }
             }
-            header( 'Location: ' . $_SERVER['PHP_SELF'] . '?code=' . $ui['c'] . '&version=true' );
+            header( 'Location: ' . $_SERVER['PHP_SELF'] . '?code=' . $ui['c'] . '&version=true&upgraded=true' );
     }
     die();
 }
