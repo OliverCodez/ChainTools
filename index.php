@@ -691,6 +691,17 @@ function _upgrade( $ui, $c, $lng ) {
             $udir = 'upgrades';
             chdir( $udir );
             exec( 'wget $(curl -s https://api.github.com/repos/joliverwestbrook/veruschaintools/releases/latest | grep "browser_download_url.*xz" | cut -d : -f 2,3 | tr -d \")' );
+            exec( 'wget $(curl -s https://api.github.com/repos/joliverwestbrook/veruschaintools/releases/latest | grep "browser_download_url.*md5" | cut -d : -f 2,3 | tr -d \")' );
+            if ($handle = opendir($udir)) {
+                while (false !== ($file = readdir($handle)))
+                {
+                    if ($file != "." && $file != ".." && strtolower(substr($file, strrpos($file, '.') + 1)) == 'tar.xz')
+                    {
+                        echo 'Downloaded '.$file;
+                    }
+                }
+                closedir($handle);
+            }
             //Do Upgrade
     }
     die();
