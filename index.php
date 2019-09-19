@@ -715,7 +715,7 @@ function _upgrade( $ui, $c, $lng ) {
                 chmod( $file, 0755 );
                 //copy( $file, '..' );
             }
-            copy( 'README.md', '..' );
+            copy( 'README.md', '../README.md' );
 
             //Do Upgrade
     }
