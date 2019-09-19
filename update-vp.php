@@ -3,16 +3,16 @@ if ( ! defined( 'VCTAccess' ) ) {
     die( 'Direct access denied' );
 }
 /**
- * VerusChainTools Updater
+ * VerusChainTools VerusPay-integrated Updater
  * 
- * Description: This file is the updater for VerusChainTools
+ * Description: This file is the VerusPay integrated updater for VerusChainTools
  * 
  * Included files:
  *      index.php
  *      verusclass.php
  *      lang.php
- *      update.php (this file)
- *      update-vp.php
+ *      update.php
+ *      update-vp.php (this file)
  *      install.php
  *      demo.php
  *
@@ -60,26 +60,9 @@ if ( ! defined( 'VCTAccess' ) ) {
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
     <style>
-        body {
-            max-width: 1200px;
-            margin: auto;
-            padding: 20px 10px;
-        }
-        header {
-            height: 100px;
-            font-family: arial;
-            font-size: 4rem;
-            line-height: 100px;
-            font-weight: bold;
-            text-align: center;
-            border-bottom: 1px solid #545454;
-            padding: 10px;
-            margin-bottom: 40px;
-        }
         main {
-            padding: 20px;
-            font-family: arial;
-            font-size: 2rem;
+            font-family: inherit;
+            font-size: 1.6rem;
         }
         .content_top {
             display: block;
@@ -87,21 +70,14 @@ if ( ! defined( 'VCTAccess' ) ) {
             position: relative;
         }
         .code_block-outer {
-            border-top: solid 10px #545454;
-            border-bottom: solid 10px #545454;
-            border-radius: 10px;
-            border-left: 1px solid #545454;
-            border-right: 1px solid #545454;
-            padding: 30px;
-            margin: 40px auto;
-            max-width: 900px;
+            padding-right:5px;
             display: block;
             position: relative;
             float: none;
         }
         .code_block-outer > p:first-child {
             font-weight: bold;
-            font-size: 2.2rem;
+            font-size: 1.8rem;
             text-align: center;
             display: block;
             float: none;
@@ -126,7 +102,7 @@ if ( ! defined( 'VCTAccess' ) ) {
         }
         .copy_symbol {
             border: 1px #545454 solid;
-            border-radius: 5px;
+            border-radius: 10px;
             display: block;
             height: 40px;
             line-height: 38px;
@@ -140,7 +116,7 @@ if ( ! defined( 'VCTAccess' ) ) {
             height: 40px;
             width: 30px;
             border: 1px solid #545454;
-            border-radius: 5px;
+            border-radius: 10px;
             left: 5px;
             top: 5px;
             background: #fff;
@@ -183,28 +159,31 @@ if ( ! defined( 'VCTAccess' ) ) {
             background: #fff;
             font-weight: bold;
              color: #FB5656;
-            font-size: 2.5rem;
+            font-size: 2rem;
         }
         #config {
             display: block;
             width: 100%;
         }
         .easytitle {
-            font-size: 2.6rem;
+            font-size: 2rem;
             color: #3f79a2;
             display: inline-block;
             margin: 30px 0;
+            width:100%;
         }
         .chain_del {
-            display: inline;
+            display: inline-block;
             padding: 5px;
-            border-radius: 5px;
+            border-radius: 10px;
             background: #ff0000b0;
-            width: 200px;
+            width: 140px;
             color: #fff;
             text-align: center;
             margin: 0 10px;
             cursor: pointer;
+            height: 36px;
+            float: right;
         }
         .addr_block {
             padding: 5px;
@@ -224,8 +203,25 @@ if ( ! defined( 'VCTAccess' ) ) {
             margin: 5px 0;
             background: #f8f8f8;
             border: 1px solid #68afff;
-            border-radius: 5px;
+            border-radius: 10px;
             padding: 4px;
+            height: 40px;
+            font-size: 2rem;
+            padding-left: 10px;
+        }
+        .dropdown {
+            border: 1px solid #68afff;
+            height: 40px;
+            border-radius: 10px;
+            margin: 0 10px;
+        }
+        .box {
+            width: 20px;
+            height: 20px;
+            margin: 10px;
+            bottom: -3px;
+            display: inline-block;
+            position: relative;
         }
         .add_chain_container {
             display: block;
@@ -254,6 +250,7 @@ if ( ! defined( 'VCTAccess' ) ) {
             display: block;
             float: none;
             text-align:right;
+            line-height: 30px;
             transition:all 0.5s ease;
         }
         #add_new:hover {
@@ -268,16 +265,19 @@ if ( ! defined( 'VCTAccess' ) ) {
         .submit_button {
             display: block;
             float: none;
-            width: 180px;
+            width: 160px;
             background: #FB5656;
-            border:1px solid #FB5656;
-            border-radius:5px;
+            border: 1px solid #FB5656;
             padding: 5px;
             color: #fff;
-            font-size: 2rem;
             font-weight: bold;
             margin: 5px auto;
-            transition:all 0.5s ease;
+            height: 45px;
+            border-radius: 15px;
+            font-size: 24px;
+            text-transform: uppercase;
+            line-height: 40px;
+            transition: all 0.5s ease;
         }
         .submit_button:hover {
             background:#ffffff;
@@ -286,23 +286,14 @@ if ( ! defined( 'VCTAccess' ) ) {
         .addr_block_template {
             height:0;
             opacity:0;
+            overflow:hidden;
         }
          footer {
             border-top: 1px solid #545454;
         }
         @media (max-width:767px) {
-            header {
-                min-height: 100px;
-                height: auto;
-                font-size: 2.5rem;
-                line-height: 3rem;
-            }
             main {
-                font-size: 1.6rem;
-                padding: 0 5px;
-            }
-            .code_block-outer {
-                padding: 20px 4px;
+                font-size: 1.4rem;
             }
             #copy_code {
                 min-width: 40px;
@@ -316,28 +307,13 @@ if ( ! defined( 'VCTAccess' ) ) {
 
 </head>
 <body>
-    <header>
-        <div>Welcome to the VerusChainTools Updater</div>
-    </header>
     <main>
-        <div class="content_top">
-            <p>Thank you for installing VerusChainTools! Below is your unique Access Code and a section to add your installed daemons.  Please verify the leading 4 characters of the Access Code match the version number of VerusChainTools which you're installing.  For example "v040" for version 0.4.0.</p>
-            <p></p>
-            <p></p>
-            <p>Please copy your access code for use with your web server.  After adding your chains and any payout addresses, click Save and your config file will be created locally on this server and this installation script will be removed.</p>
-            <p></p>
-        </div>
         <div class="code_block-outer">
             
             <form id="config" name="config" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>" method="POST">
                 <input type="hidden" name="code" value="<?php echo $_GET['code']; ?>">
                 <input type="hidden" name="S" value="u">
                 <input type="hidden" name="update" value="2">
-                <div class="main_container" style="display: block;float: left;width: 100%;padding: 0 0 20px 0;margin: 10px auto;">
-
-    <p style="font-weight: bold;font-size: 2.2rem;text-align: center;display: block;float: none;margin: 0 auto;width: 100%;padding: 5px 0;margin-top: 20px;">Update Settings for Configured Chain Daemons:</p>
-
-                </div>
                 <?php
                     foreach ( $c['C'] as $key => $value ) {
                         $sel = array(
@@ -383,8 +359,6 @@ if ( ! defined( 'VCTAccess' ) ) {
             </form>
         </div>
     </main>
-    <footer>
-    </footer>
     <script>
     jQuery( function( $ ) {
         $('select[name="m"]').change(function(){
