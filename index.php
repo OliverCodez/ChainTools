@@ -691,4 +691,5 @@ function _upgrade( $ui, $c, $lng ) {
             exec( 'wget $(curl -s https://api.github.com/repos/joliverwestbrook/veruschaintools/releases/latest | grep "browser_download_url.*xz" | cut -d : -f 2,3 | tr -d \")' );
             //Do Upgrade
     }
+    die();
 }
