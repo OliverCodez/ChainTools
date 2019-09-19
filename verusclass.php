@@ -1,4 +1,7 @@
 <?php
+if ( ! defined( 'VCTAccess' ) ) {
+    die( 'Direct access denied' );
+}
 /**
  * VerusChainTools
  * 
@@ -13,6 +16,7 @@
  *      verusclass.php (this file)
  *      lang.php
  *      update.php
+ *      update-vp.php
  *      install.php (temporary installer)
  *      demo.php
  *
@@ -21,7 +25,7 @@
  * @author   Oliver Westbrook <johnwestbrook@pm.me>
  * @copyright Copyright (c) 2019, John Oliver Westbrook
  * @link     https://github.com/joliverwestbrook/VerusChainTools
- * @version 0.4.0
+ * @version 0.5.0
  * 
  * ====================
  * 

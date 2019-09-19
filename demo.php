@@ -17,6 +17,7 @@ $d = array(
  *      verusclass.php
  *      lang.php
  *      update.php
+ *      update-vp.php
  *      install.php (temporary installer)
  *      demo.php (this file)
  *
@@ -25,7 +26,7 @@ $d = array(
  * @author   Oliver Westbrook <johnwestbrook@pm.me>
  * @copyright Copyright (c) 2019, John Oliver Westbrook
  * @link     https://github.com/joliverwestbrook/VerusChainTools
- * @version 0.4.0
+ * @version 0.5.0
  * 
  * ====================
  * 

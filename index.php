@@ -1,5 +1,6 @@
 <?php
-$vct_version = '0.4.0';
+define( 'VCTAccess', TRUE );
+$vct_version = '0.5.0';
 /**
  * VerusChainTools
  * 
@@ -14,6 +15,7 @@ $vct_version = '0.4.0';
  *      verusclass.php
  *      lang.php
  *      update.php
+ *      update-vp.php
  *      install.php (temporary installer)
  *      demo.php
  *
@@ -22,7 +24,7 @@ $vct_version = '0.4.0';
  * @author   Oliver Westbrook <johnwestbrook@pm.me>
  * @copyright Copyright (c) 2019, John Oliver Westbrook
  * @link     https://github.com/joliverwestbrook/VerusChainTools
- * @version 0.4.0
+ * @version 0.5.0
  * 
  * ====================
  * 
@@ -64,7 +66,7 @@ if ( file_exists( 'install.php' ) ) {
             // Create the config file and remove the install script
             $posted = array_change_key_case( $_POST, CASE_UPPER );
             $daemon = _get_daemon( $posted );
-            file_put_contents( 'config.php','<?php $c = \''.serialize( $daemon ).'\'; ?>' );
+            file_put_contents( 'config.php','<?php if(!defined(\'VCTAccess\')){die(\'Direct access denied\');} $c = \''.serialize( $daemon ).'\'; ?>' );
             unlink( 'install.php' );
             die( '<h2><center>Successfully Installed!</center></h2>' );
         }
@@ -94,33 +96,37 @@ else {
 $c = unserialize($c);
 include_once( 'lang.php' );
 $lng = $lng[$c['L']];
+
 /**
- * Manual Update
+ * Update Being Performed?
  * 
- * Check if an update is being performed
+ * Check if an update/upgrade is being performed and run upgrade function
  */
-if ( isset( $_REQUEST['update'] ) ) {
-    if ( $_SERVER['REQUEST_METHOD'] === 'GET' && $_REQUEST['update'] === $c['U'] && file_exists( 'update.php' ) ) {
-        if ( is_writable( 'config.php' ) ) {
-            include_once( 'update.php' );
-            die();
-        }
-        else {
-            die( '<h2 style="color:red"><center>Error</center></h2><p>Cannot Write to Directory - Check Permissions for Web User (usually www-data).  The directory containing VerusChainTools must be owned by your servers web user.  It is recommended you also set permissions 755 on the same folder and all contents.</p><p>Update will now exit.</p>' );
-        }
+if ( isset( $_REQUEST['code'] ) && $_REQUEST['code'] === $c['U'] ) {
+    if ( isset( $_REQUEST['version'] ) ) {
+        echo $lng[23] . '<h3 style="text-align:center;font-weight:bold;display:inline">' . $vct_version . '</h3>';
+        die();
     }
-    else if ( $_SERVER['REQUEST_METHOD'] === 'POST' && $_REQUEST['update'] === $c['U'] ) {
-        $posted = array_change_key_case( $_POST, CASE_UPPER );
-        $posted['DYN'] = FALSE;
-        $c['S'] = $posted['S'];
-        $posted = _get_daemon( $posted );
-        unset( $posted['UPDATE'], $posted['S'], $posted['D'], $c['C'] );
-        $daemon = array_merge( $c, $posted );
-        file_put_contents( 'config.php','<?php $c = \''.serialize( $daemon ).'\'; ?>' );
-        die( $lng[18] );
+    $ui = array(
+        't' => '',
+        'c' => $_REQUEST['code'], // Update code passed
+        'p' => '',
+    );
+    // 'update' is for type of request, codes: 0 = direct coin update; 1 = indirect/VerusPay coin update; 2 = save updated coin data; 3 = codebase upgrade to latest version
+    if ( isset( $_REQUEST['update'] ) ) {
+        $ui['t'] = $_REQUEST['update'];
     }
     else {
-        die();
+        $ui['t'] = '0';
+    }
+    if ( $ui['t'] == '2' ) {
+        $ui['p'] = array_change_key_case( $_POST, CASE_UPPER );
+    }
+    if ( is_writable( 'config.php' ) ) {
+        _upgrade( $ui, $c, $lng );
+    }
+    else {
+        die( $lang[21] );
     }
 }
 // Check for function whitelist, blank array if none
@@ -275,7 +281,7 @@ function _go( $d ) {
     }
     $e = $d['m'];
     $p = $d['p'];
-    $o = $d['o'];
+    $o = $d['o']; // TODO: Usage?
 
     switch ( $e ) {
         /**
@@ -541,7 +547,7 @@ function _go_any( $verus, $e, $p ) {
 /**
  * Get Daemon
  * 
- * Pass API chain ticker to search for chain daemon on server and optionally run update config if found ($u = true to update config)
+ * Pass API chain ticker to search for chain daemon on server and optionally run update config if found
  */
 function _get_daemon( $data ) {
     global $lng;
@@ -552,7 +558,7 @@ function _get_daemon( $data ) {
             if ( file_exists( 'config.php' ) && $data['S'] != 'u' ) {
                 unlink( 'config.php' );
             }
-            if ( $data['DYN'] === TRUE ) {
+            if ( isset( $data['DYN'] ) && $data['DYN'] === TRUE ) {
                 return FALSE;
                 die();
             }
@@ -661,4 +667,72 @@ function _out( $d, $t = TRUE ) {
     }
     $r = array( 'result' => $t, 'return' => $d );
     return json_encode( $r, TRUE );
+}
+
+/**
+ * Upgrade function
+ * 
+ * Performs an inline upgrade of VerusChainTools
+ */
+function _upgrade( $ui, $c, $lng ) {
+    switch ( $ui['t'] ) { // 0 = direct coin update; 1 = indirect/VerusPay coin update; 2 = save updated coin data; 3 = codebase upgrade to latest version
+        case '0':
+            include_once( 'update.php' );
+            break;
+        case '1':
+            include_once( 'update-vp.php' );
+            break;
+        case '2':
+            $ui['p']['DYN'] = FALSE;
+            $c['S'] = $ui['p']['S'];
+            $ui['p'] = _get_daemon( $ui['p'] );
+            unset( $ui['p']['CODE'], $ui['p']['S'], $ui['p']['D'], $c['C'] );
+            $daemon = array_merge( $c, $ui['p'] );
+            file_put_contents( 'config.php','<?php $c = \''.serialize( $daemon ).'\'; ?>' );
+            die( $lng[18] );
+        case '3':
+            echo $lng[22];
+            $udir = 'upgrades';
+            chdir( $udir );
+            exec( 'wget $(curl -s https://api.github.com/repos/joliverwestbrook/veruschaintools/releases/latest | grep "browser_download_url.*xz" | cut -d : -f 2,3 | tr -d \")' );
+            exec( 'wget $(curl -s https://api.github.com/repos/joliverwestbrook/veruschaintools/releases/latest | grep "browser_download_url.*md5" | cut -d : -f 2,3 | tr -d \")' );
+            if ($handle = opendir('.')) {
+                while (false !== ($file = readdir($handle)))
+                {
+                    if ($file != "." && $file != ".." && strtolower(substr($file, strrpos($file, '.') + 1)) == 'xz')
+                    {
+                        $file1 = $file;
+                    }
+                    if ($file != "." && $file != ".." && strtolower(substr($file, strrpos($file, '.') + 1)) == 'md5')
+                    {
+                        $file2 = $file;
+                    }
+                }
+                closedir($handle);
+            }
+            $content = 'Downloaded: ' . $file1 . '<br>' . 'Downloaded: ' . $file2;
+            echo '<pre style="width: 400px;display: block;position: relative;margin: 0 auto;background: #e3e3e3;padding: 10px 5px;border: inset 1px grey;height: 100px;">'.$content.'</pre>';
+            exec( 'tar -xvf ' . $file1 );
+            unlink( $file1 );
+            $files = scandir( '.' );
+            foreach( $files as $file ) {
+                if ( is_file( $file ) ) {
+                    if( $file == 'install.php' ) {
+                        unlink( $file );
+                    }
+                    else {
+                        copy( $file, '../' . $file );
+                        unlink( $file );
+                    }
+                }
+            }
+            foreach( $files as $file ) {
+                if ( is_file( $file ) ) {
+                    chdir( '..' );
+                    chmod( $file, 0755 );
+                }
+            }
+            header( 'Location: ' . $_SERVER['PHP_SELF'] . '?code=' . $ui['c'] . '&version=true' );
+    }
+    die();
 }
