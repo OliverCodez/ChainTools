@@ -23,7 +23,7 @@ $_version = '5';
  * @author   Oliver Westbrook <johnwestbrook@pm.me>
  * @copyright Copyright (c) 2019, John Oliver Westbrook
  * @link     https://github.com/joliverwestbrook/VerusChainTools
- * @version 0.5.0
+ * @version 0.5.1
  * 
  * ====================
  * 

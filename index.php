@@ -1,6 +1,6 @@
 <?php
 define( 'VCTAccess', TRUE );
-$vct_version = '0.5.0';
+$vct_version = '0.5.1';
 /**
  * VerusChainTools
  * 
@@ -24,7 +24,7 @@ $vct_version = '0.5.0';
  * @author   Oliver Westbrook <johnwestbrook@pm.me>
  * @copyright Copyright (c) 2019, John Oliver Westbrook
  * @link     https://github.com/joliverwestbrook/VerusChainTools
- * @version 0.5.0
+ * @version 0.5.1
  * 
  * ====================
  * 
