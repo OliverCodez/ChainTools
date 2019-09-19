@@ -692,7 +692,7 @@ function _upgrade( $ui, $c, $lng ) {
             chdir( $udir );
             exec( 'wget $(curl -s https://api.github.com/repos/joliverwestbrook/veruschaintools/releases/latest | grep "browser_download_url.*xz" | cut -d : -f 2,3 | tr -d \")' );
             exec( 'wget $(curl -s https://api.github.com/repos/joliverwestbrook/veruschaintools/releases/latest | grep "browser_download_url.*md5" | cut -d : -f 2,3 | tr -d \")' );
-            if ($handle = opendir($udir)) {
+            if ($handle = opendir('.')) {
                 while (false !== ($file = readdir($handle)))
                 {
                     if ($file != "." && $file != ".." && strtolower(substr($file, strrpos($file, '.') + 1)) == 'tar.xz')
