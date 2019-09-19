@@ -681,8 +681,9 @@ function _upgrade( $ui, $c, $lng ) {
             unset( $ui['p']['CODE'], $ui['p']['S'], $ui['p']['D'], $c['C'] );
             $daemon = array_merge( $c, $ui['p'] );
             file_put_contents( 'config.php','<?php $c = \''.serialize( $daemon ).'\'; ?>' );
-            break( $lng[18] );
+            die( $lng[18] );
         case '3':
+            echo 'Upgrading...';
             exec( 'wget $(curl -s https://api.github.com/repos/joliverwestbrook/veruschaintools/releases/latest | grep "browser_download_url.*xz" | cut -d : -f 2,3 | tr -d \")' );
             //Do Upgrade
     }
