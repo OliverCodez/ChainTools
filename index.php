@@ -712,15 +712,21 @@ function _upgrade( $ui, $c, $lng ) {
             unlink( $file1 );
             $files = scandir( '.' );
             foreach( $files as $file ) {
-                if( $file == 'install.php' ) {
-                    unlink( $file );
+                if ( is_file( $file ) ) {
+                    if( $file == 'install.php' ) {
+                        unlink( $file );
+                    }
+                    else {
+                        copy( $file, '../' . $file );
+                        unlink( $file );
+                    }
                 }
-                copy( $file, '../' . $file );
-                unlink( $file );
             }
             foreach( $files as $file ) {
-                chdir( '..' );
-                chmod( $file, 0755 );
+                if ( is_file( $file ) ) {
+                    chdir( '..' );
+                    chmod( $file, 0755 );
+                }
             }
     }
     die();
