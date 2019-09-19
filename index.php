@@ -104,10 +104,16 @@ $lng = $lng[$c['L']];
  */
 if ( isset( $_REQUEST['code'] ) && $_REQUEST['code'] === $c['U'] ) {
     $ui = array(
-        't' => $_REQUEST['update'], // Type of request, codes: 0 = direct coin update; 1 = indirect/VerusPay coin update; 2 = save updated coin data; 3 = codebase upgrade to latest version
         'c' => $_REQUEST['code'], // Update code passed
         'p' => '',
     );
+    // 'update' is for type of request, codes: 0 = direct coin update; 1 = indirect/VerusPay coin update; 2 = save updated coin data; 3 = codebase upgrade to latest version
+    if ( ! isset( $_REQUEST['update'] ) ) {
+        $ui['t'] = $_REQUEST['update'];
+    }
+    else {
+        $ui['t'] = '0';
+    }
     if ( $ui['t'] == '2' ) {
         $ui['p'] = array_change_key_case( $_POST, CASE_UPPER );
     }
@@ -664,9 +670,6 @@ function _out( $d, $t = TRUE ) {
  * Performs an inline upgrade of VerusChainTools
  */
 function _upgrade( $ui, $c, $lng ) {
-    if ( ! isset( $ui['t'] ) ) {
-        $ui['t'] = '0';
-    }
     switch ( $ui['t'] ) { // 0 = direct coin update; 1 = indirect/VerusPay coin update; 2 = save updated coin data; 3 = codebase upgrade to latest version
         case '0':
             include_once( 'update.php' );
