@@ -697,11 +697,16 @@ function _upgrade( $ui, $c, $lng ) {
                 {
                     if ($file != "." && $file != ".." && strtolower(substr($file, strrpos($file, '.') + 1)) == 'xz')
                     {
-                        echo 'Downloaded '.$file;
+                        $file1 = 'Downloaded '.$file;
+                    }
+                    if ($file != "." && $file != ".." && strtolower(substr($file, strrpos($file, '.') + 1)) == 'md5')
+                    {
+                        $file2 = 'Downloaded '.$file;
                     }
                 }
                 closedir($handle);
             }
+            echo '<input type="textarea">'.$file1.'<br>'.$file2.'</input>';
             //Do Upgrade
     }
     die();
