@@ -104,6 +104,10 @@ $lng = $lng[$c['L']];
  */
 if ( isset( $_REQUEST['code'] ) && $_REQUEST['code'] === $c['U'] ) {
     if ( isset( $_REQUEST['version'] ) ) {
+        $_upmsg = '';
+        if ( isset( $_REQUEST['upgraded'] ) ) {
+            $_upmsg = 'Upgrade Complete!';
+        }
         echo $lng[23] . '<h3 style="text-align:center;font-weight:bold;display:inline">' . $vct_version . '</h3>';
         die();
     }
@@ -735,7 +739,7 @@ function _upgrade( $ui, $c, $lng ) {
                     chmod( $file, 0755 );
                 }
             }
-            header( 'Location: ' . $_SERVER['PHP_SELF'] . '?code=' . $ui['c'] . '&version=true' );
+            header( 'Location: ' . $_SERVER['PHP_SELF'] . '?code=' . $ui['c'] . '&version=true&upgraded=true' );
     }
     die();
 }
