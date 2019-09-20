@@ -562,8 +562,14 @@ function _get_daemon( $data ) {
     global $lng;
     foreach ( $data['C'] as $k => $v ) {
         $v = strtoupper( $v );
+        if ( $v == 'ARRR' ) {
+            $vf = 'PIRATE';
+        }
+        else {
+            $vf = $v;
+        }
         $dir = $data[$v.'_DIR'];
-        if ( !isset( $dir ) || empty( $dir ) || !strstr( $dir, $vf ) ) { // Not Found on Server
+        if ( !isset( $dir ) || empty( $dir ) ) ) { // Not Found on Server
             if ( file_exists( 'config.php' ) && $data['S'] != 'u' ) {
                 unlink( 'config.php' );
             }
