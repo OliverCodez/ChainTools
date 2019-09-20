@@ -569,7 +569,7 @@ function _get_daemon( $data ) {
             $vf = $v;
         }
         $dir = $data[$v.'_DIR'];
-        if ( !isset( $dir ) || empty( $dir ) ) ) { // Not Found on Server
+        if ( !isset( $dir ) || empty( $dir ) ) { // Not Found on Server
             if ( file_exists( 'config.php' ) && $data['S'] != 'u' ) {
                 unlink( 'config.php' );
             }
