@@ -1,6 +1,6 @@
 <?php
 define( 'VCTAccess', TRUE );
-$vct_version = '0.5.0';
+$vct_version = '0.5.1';
 /**
  * VerusChainTools
  * 
@@ -24,7 +24,7 @@ $vct_version = '0.5.0';
  * @author   Oliver Westbrook <johnwestbrook@pm.me>
  * @copyright Copyright (c) 2019, John Oliver Westbrook
  * @link     https://github.com/joliverwestbrook/VerusChainTools
- * @version 0.5.0
+ * @version 0.5.1
  * 
  * ====================
  * 
@@ -95,7 +95,12 @@ else {
 // Set config settings to array
 $c = unserialize($c);
 include_once( 'lang.php' );
-$lng = $lng[$c['L']];
+if ( isset( $c['L'] ) ) {
+    $lng = $lng[$c['L']];
+}
+else {
+    $lng = $lng['eng'];
+}
 
 /**
  * Update Being Performed?
@@ -104,7 +109,11 @@ $lng = $lng[$c['L']];
  */
 if ( isset( $_REQUEST['code'] ) && $_REQUEST['code'] === $c['U'] ) {
     if ( isset( $_REQUEST['version'] ) ) {
-        echo $lng[23] . '<h3 style="text-align:center;font-weight:bold;display:inline">' . $vct_version . '</h3>';
+        $_upmsg = '';
+        if ( isset( $_REQUEST['upgraded'] ) ) {
+            $_upmsg = $lng[24];
+        }
+        echo $_upmsg . $lng[23] . '<h3 style="text-align:center;font-weight:bold;display:inline">' . $vct_version . '</h3>';
         die();
     }
     $ui = array(
@@ -553,8 +562,14 @@ function _get_daemon( $data ) {
     global $lng;
     foreach ( $data['C'] as $k => $v ) {
         $v = strtoupper( $v );
-        $dir = trim( shell_exec( 'find /opt /home -type d -name "'.$v.'" 2>&1 | grep -v "Permission denied"' ) );
-        if ( !isset( $dir ) || empty( $dir ) || !strstr( $dir, $v ) ) { // Not Found on Server
+        if ( $v == 'ARRR' ) { // TODO: Find a better solution for this
+            $vf = 'PIRATE';
+        }
+        else {
+            $vf = $v;
+        }
+        $dir = trim( shell_exec( 'find /opt /home -type d -name "'.$vf.'" 2>&1 | grep -v "Permission denied"' ) );
+        if ( !isset( $dir ) || empty( $dir ) || !strstr( $dir, $vf ) ) { // Not Found on Server
             if ( file_exists( 'config.php' ) && $data['S'] != 'u' ) {
                 unlink( 'config.php' );
             }
@@ -593,9 +608,9 @@ function _get_daemon( $data ) {
                 unset( $data[$v.'_Z'] );
             }
             $data['C'][$v]['L'] = $dir;
-            $data['C'][$v]['U'] = trim( substr( shell_exec( 'cat ' . $dir . '/' . $v . '.conf | grep "rpcuser="' ), strlen( 'rpcuser=' ) ) );
-            $data['C'][$v]['P'] = trim( substr( shell_exec( 'cat ' . $dir . '/' . $v . '.conf | grep "rpcpassword="' ), strlen( 'rpcpassword=' ) ) );
-            $data['C'][$v]['N'] = trim( substr( shell_exec( 'cat ' . $dir . '/' . $v . '.conf | grep "rpcport="' ), strlen( 'rpcport=' ) ) );
+            $data['C'][$v]['U'] = trim( substr( shell_exec( 'cat ' . $dir . '/' . $vf . '.conf | grep "rpcuser="' ), strlen( 'rpcuser=' ) ) );
+            $data['C'][$v]['P'] = trim( substr( shell_exec( 'cat ' . $dir . '/' . $vf . '.conf | grep "rpcpassword="' ), strlen( 'rpcpassword=' ) ) );
+            $data['C'][$v]['N'] = trim( substr( shell_exec( 'cat ' . $dir . '/' . $vf . '.conf | grep "rpcport="' ), strlen( 'rpcport=' ) ) );
             unset( $data['C'][$k] );
         }
     }
@@ -693,6 +708,9 @@ function _upgrade( $ui, $c, $lng ) {
         case '3':
             echo $lng[22];
             $udir = 'upgrades';
+            if ( ! file_exists( $udir ) ) {
+                mkdir( $udir, 0777, true);
+            }
             chdir( $udir );
             exec( 'wget $(curl -s https://api.github.com/repos/joliverwestbrook/veruschaintools/releases/latest | grep "browser_download_url.*xz" | cut -d : -f 2,3 | tr -d \")' );
             exec( 'wget $(curl -s https://api.github.com/repos/joliverwestbrook/veruschaintools/releases/latest | grep "browser_download_url.*md5" | cut -d : -f 2,3 | tr -d \")' );
@@ -732,7 +750,7 @@ function _upgrade( $ui, $c, $lng ) {
                     chmod( $file, 0755 );
                 }
             }
-            header( 'Location: ' . $_SERVER['PHP_SELF'] . '?code=' . $ui['c'] . '&version=true' );
+            header( 'Location: ' . $_SERVER['PHP_SELF'] . '?code=' . $ui['c'] . '&version=true&upgraded=true' );
     }
     die();
 }
