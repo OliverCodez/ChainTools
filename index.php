@@ -212,7 +212,7 @@ else if ( !isset( $c['C'][$_chn] ) || !isset( $c['C'][$_chn]['L'] ) || !isset( $
     }
     $c['S'] = $data['S'];
     $c['C'] = array_merge( $c['C'], $data['C'] );
-    file_put_contents( 'config.php','<?php $c = \''.serialize( $c ).'\'; ?>' );
+    file_put_contents( 'config.php','<?php if(!defined(\'VCTAccess\')){die(\'Direct access denied\');} $c = \''.serialize( $c ).'\'; ?>' );
     $daemon = $c['C'][$_chn];
 }
 else {
@@ -562,14 +562,14 @@ function _get_daemon( $data ) {
     global $lng;
     foreach ( $data['C'] as $k => $v ) {
         $v = strtoupper( $v );
-        if ( $v == 'ARRR' ) { // TODO: Find a better solution for this
+        if ( $v == 'ARRR' ) {
             $vf = 'PIRATE';
         }
         else {
             $vf = $v;
         }
-        $dir = trim( shell_exec( 'find /opt /home -type d -name "'.$vf.'" 2>&1 | grep -v "Permission denied"' ) );
-        if ( !isset( $dir ) || empty( $dir ) || !strstr( $dir, $vf ) ) { // Not Found on Server
+        $dir = $data[$v.'_DIR'];
+        if ( !isset( $dir ) || empty( $dir ) ) ) { // Not Found on Server
             if ( file_exists( 'config.php' ) && $data['S'] != 'u' ) {
                 unlink( 'config.php' );
             }
@@ -703,7 +703,7 @@ function _upgrade( $ui, $c, $lng ) {
             $ui['p'] = _get_daemon( $ui['p'] );
             unset( $ui['p']['CODE'], $ui['p']['S'], $ui['p']['D'], $c['C'] );
             $daemon = array_merge( $c, $ui['p'] );
-            file_put_contents( 'config.php','<?php $c = \''.serialize( $daemon ).'\'; ?>' );
+            file_put_contents( 'config.php','<?php if(!defined(\'VCTAccess\')){die(\'Direct access denied\');} $c = \''.serialize( $daemon ).'\'; ?>' );
             die( $lng[18] );
         case '3':
             echo $lng[22];
