@@ -437,6 +437,7 @@ if ( ! defined( 'VCTAccess' ) ) {
                 $(newAddr).children('.easytitle').children('.addr').text(chn.toUpperCase());
                 $(newAddr).children('.easytitle').children('.chain_del').data('chain', chn);
                 $(newAddr).children('.friendly').attr('name',chn+'_name');
+                $(newAddr).children('.chaindir').attr('name',chn+'_dir');
                 $(newAddr).children('.boxes').children('p').children('.gs').attr('name',chn+'_gs');
                 $(newAddr).children('.boxes').children('p').children('.gm').attr('name',chn+'_gm');
                 $(newAddr).children('.taddr').attr('name',chn+'_t').attr('id',chn+'_t');
@@ -462,6 +463,7 @@ if ( ! defined( 'VCTAccess' ) ) {
         <span class="addr"></span> Chain Settings<span class="chain_del" data-chain="">delete chain</span>
     </span>
     <input class="addr_text friendly" type="text" name="" value="" placeholder="Friendly name e.g. Verus">
+    <input class="addr_text chaindir" type="text" name="" value="" placeholder="Enter the folder location, i.e. /home/user/.komodo/VRSC">
     <label class="dropdown_label" style="display: block;font-weight:normal;"> TX Capabilities:
         <select class="dropdown chain_capabilities" data-chain="" name="" style="min-width: 300px;">
             <option value="0">Transparent and Private</option>
