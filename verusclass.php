@@ -25,7 +25,7 @@ if ( ! defined( 'VCTAccess' ) ) {
  * @author   Oliver Westbrook <johnwestbrook@pm.me>
  * @copyright Copyright (c) 2019, John Oliver Westbrook
  * @link     https://github.com/joliverwestbrook/VerusChainTools
- * @version 0.5.1
+ * @version 0.5.2
  * 
  * ====================
  * 
@@ -145,12 +145,12 @@ class Verus {
         $this->ret = json_decode( $this->raw, true );
         $this->sts = curl_getinfo( $cur, CURLINFO_HTTP_CODE);
         if ( $mth === 'status' ) {
-            if ( $this->sts != 404 ) {
-                return '0';
+            if ( $this->sts == 404 || $this->sts == 200 ) {
+                return '1';
                 die();
             }
             else {
-                return '1';
+                return '0';
                 die();
             }
         }
