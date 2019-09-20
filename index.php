@@ -95,7 +95,12 @@ else {
 // Set config settings to array
 $c = unserialize($c);
 include_once( 'lang.php' );
-$lng = $lng[$c['L']];
+if ( isset( $c['L'] ) ) {
+    $lng = $lng[$c['L']];
+}
+else {
+    $lng = $lng['eng'];
+}
 
 /**
  * Update Being Performed?
@@ -557,8 +562,14 @@ function _get_daemon( $data ) {
     global $lng;
     foreach ( $data['C'] as $k => $v ) {
         $v = strtoupper( $v );
-        $dir = trim( shell_exec( 'find /opt /home -type d -name "'.$v.'" 2>&1 | grep -v "Permission denied"' ) );
-        if ( !isset( $dir ) || empty( $dir ) || !strstr( $dir, $v ) ) { // Not Found on Server
+        if ( $v == 'ARRR' ) { // TODO: Find a better solution for this
+            $vf = 'PIRATE';
+        }
+        else {
+            $vf = $v;
+        }
+        $dir = trim( shell_exec( 'find /opt /home -type d -name "'.$vf.'" 2>&1 | grep -v "Permission denied"' ) );
+        if ( !isset( $dir ) || empty( $dir ) || !strstr( $dir, $vf ) ) { // Not Found on Server
             if ( file_exists( 'config.php' ) && $data['S'] != 'u' ) {
                 unlink( 'config.php' );
             }
@@ -597,9 +608,9 @@ function _get_daemon( $data ) {
                 unset( $data[$v.'_Z'] );
             }
             $data['C'][$v]['L'] = $dir;
-            $data['C'][$v]['U'] = trim( substr( shell_exec( 'cat ' . $dir . '/' . $v . '.conf | grep "rpcuser="' ), strlen( 'rpcuser=' ) ) );
-            $data['C'][$v]['P'] = trim( substr( shell_exec( 'cat ' . $dir . '/' . $v . '.conf | grep "rpcpassword="' ), strlen( 'rpcpassword=' ) ) );
-            $data['C'][$v]['N'] = trim( substr( shell_exec( 'cat ' . $dir . '/' . $v . '.conf | grep "rpcport="' ), strlen( 'rpcport=' ) ) );
+            $data['C'][$v]['U'] = trim( substr( shell_exec( 'cat ' . $dir . '/' . $vf . '.conf | grep "rpcuser="' ), strlen( 'rpcuser=' ) ) );
+            $data['C'][$v]['P'] = trim( substr( shell_exec( 'cat ' . $dir . '/' . $vf . '.conf | grep "rpcpassword="' ), strlen( 'rpcpassword=' ) ) );
+            $data['C'][$v]['N'] = trim( substr( shell_exec( 'cat ' . $dir . '/' . $vf . '.conf | grep "rpcport="' ), strlen( 'rpcport=' ) ) );
             unset( $data['C'][$k] );
         }
     }
