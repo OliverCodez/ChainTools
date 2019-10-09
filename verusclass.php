@@ -23,7 +23,6 @@ if ( ! defined( 'VCTAccess' ) ) {
  * @category Cryptocurrency
  * @package  VerusChainTools
  * @author   Oliver Westbrook
- =======
  * @copyright Copyright (c) 2019, John Oliver Westbrook
  * @link     https://github.com/joliverwestbrook/VerusChainTools
  * @version 0.5.2
