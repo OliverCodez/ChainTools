@@ -21,7 +21,7 @@ $vct_version = '0.5.2';
  *
  * @category Cryptocurrency
  * @package  VerusChainTools
- * @author   Oliver Westbrook <johnwestbrook@pm.me>
+ * @author   Oliver Westbrook 
  * @copyright Copyright (c) 2019, John Oliver Westbrook
  * @link     https://github.com/joliverwestbrook/VerusChainTools
  * @version 0.5.2
@@ -569,7 +569,7 @@ function _get_daemon( $data ) {
             $vf = $v;
         }
         $dir = $data[$v.'_DIR'];
-        if ( !isset( $dir ) || empty( $dir ) ) ) { // Not Found on Server
+        if ( !isset( $dir ) || empty( $dir ) ) { // Not Found on Server
             if ( file_exists( 'config.php' ) && $data['S'] != 'u' ) {
                 unlink( 'config.php' );
             }
