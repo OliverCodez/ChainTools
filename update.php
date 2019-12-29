@@ -3,9 +3,9 @@ if ( ! defined( 'VCTAccess' ) ) {
     die( 'Direct access denied' );
 }
 /**
- * VerusChainTools Updater
+ * VerusChainTools+ Updater
  * 
- * Description: This file is the updater for VerusChainTools
+ * Description: This file is the updater for VerusChainTools+
  * 
  * Included files:
  *      index.php
@@ -17,11 +17,11 @@ if ( ! defined( 'VCTAccess' ) ) {
  *      demo.php
  *
  * @category Cryptocurrency
- * @package  VerusChainTools
+ * @package  VerusChainTools+
  * @author   Oliver Westbrook 
  * @copyright Copyright (c) 2019, John Oliver Westbrook
  * @link     https://github.com/joliverwestbrook/VerusChainTools
- * @version 0.5.2
+ * @version 0.6.0
  * 
  * ====================
  * 
@@ -56,7 +56,7 @@ if ( ! defined( 'VCTAccess' ) ) {
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/css/bootstrap.min.css">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.0/jquery.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/js/bootstrap.min.js"></script>
-    <title>VerusChainTools Installer</title>
+    <title>VerusChainTools+ Installer</title>
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
     <style>
@@ -317,11 +317,11 @@ if ( ! defined( 'VCTAccess' ) ) {
 </head>
 <body>
     <header>
-        <div>Welcome to the VerusChainTools Updater</div>
+        <div>Welcome to the VerusChainTools+ Updater</div>
     </header>
     <main>
         <div class="content_top">
-            <p>Thank you for installing VerusChainTools! Below is your unique Access Code and a section to add your installed daemons.  Please verify the leading 4 characters of the Access Code match the version number of VerusChainTools which you're installing.  For example "v040" for version 0.4.0.</p>
+            <p>Thank you for installing VerusChainTools+! Below is your unique Access Code and a section to add your installed daemons.  Please verify the leading 4 characters of the Access Code match the version number of VerusChainTools+ which you're installing.  For example "v040" for version 0.4.0.</p>
             <p></p>
             <p></p>
             <p>Please copy your access code for use with your web server.  After adding your chains and any payout addresses, click Save and your config file will be created locally on this server and this installation script will be removed.</p>

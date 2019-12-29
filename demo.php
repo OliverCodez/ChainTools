@@ -1,16 +1,16 @@
 <?php
 // IMPORTANT
-// Define your VCT installation URL/IP and your Access Code (generated during install) in the following variables
-$url = 'localhost/path/to/vct/script';
+// Define your VCT+installation URL/IP and your Access Code (generated during install) in the following variables
+$url = 'URL-orIP-to_VCT';
 $d = array(
     'a' => 'accesscodeGeneratedDuringInstall',
 );
 /**
- * Demo file for VerusChainTools
+ * Demo file for VerusChainTools+
  * 
- * Description: This demo file is meant for both testing VerusChainTools in a new installation environment
+ * Description: This demo file is meant for both testing VerusChainTools+ in a new installation environment
  * as well as learning the functions and how to access them using the external website which will be used
- * in a use-case/endpoint for working with the VCT Api.
+ * in a use-case/endpoint for working with the VCT+Api.
  * 
  * Included files:
  *      index.php
@@ -22,11 +22,11 @@ $d = array(
  *      demo.php (this file)
  *
  * @category Cryptocurrency
- * @package  VerusChainTools
+ * @package  VerusChainTools+
  * @author   Oliver Westbrook 
  * @copyright Copyright (c) 2019, John Oliver Westbrook
  * @link     https://github.com/joliverwestbrook/VerusChainTools
- * @version 0.5.2
+ * @version 0.6.0
  * 
  * ====================
  * 
@@ -103,7 +103,7 @@ function vg_go( $url, $d ) {
     $d = json_encode( $d );
     curl_setopt( $ch, CURLOPT_SSL_VERIFYPEER, false );
     curl_setopt( $ch, CURLOPT_URL, $url );
-    curl_setopt( $ch, CURLOPT_USERAGENT, 'VerusChainTools' );
+    curl_setopt( $ch, CURLOPT_USERAGENT, 'VerusChainTools+' );
     curl_setopt( $ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json','Accept: application/json') );
     curl_setopt( $ch, CURLOPT_POST, 1);
     curl_setopt( $ch, CURLOPT_POSTFIELDS, $d );
@@ -125,7 +125,7 @@ function vg_go( $url, $d ) {
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/css/bootstrap.min.css">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.0/jquery.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/js/bootstrap.min.js"></script>
-    <title>VerusChainTools Demo-er..er</title>
+    <title>VerusChainTools+ Demo-er..er</title>
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
     <style>
@@ -284,14 +284,14 @@ function vg_go( $url, $d ) {
 </head>
 <body>
     <header>
-        <div>Welcome to the VerusChainTools Demo-erer!</div>
+        <div>Welcome to the VerusChainTools+ Demo-erer!</div>
     </header>
     <main>
 	<h3 class="link_title"><a href="#demo">Jump to Form</a></h3>
         <h3 id="instructions_button">Instructions (click to expand)</h3>
         <div class="content_top" id="instructions">
             <div class="instructions_inner">
-                <p>Thank you for installing VerusChainTools and contributing by doing some demos and testing things out.</p>
+                <p>Thank you for installing VerusChainTools+ and contributing by doing some demos and testing things out.</p>
                 <p>Please let me know if you run into errors or unexpected behaviors! I'm always improving the script and the entire community benefits when people provide feedback.</p> 
                 <p>Using the form below you can interact with the Verus test blockchain, VRSCTEST, using commands you'd normally use from the CLI (command line interface) wallet. Don't know CLI?  Don't worry! Part of the purpose of this demo is to help developers and anyone else curious become familiar and skilled in the "dark arts" of CLI! :)</p>
                 <p></p>

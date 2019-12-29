@@ -9,7 +9,7 @@ chmod +x /tmp/veruspayinstall/veruspay_scripts -R
 clear
 echo "     =========================================================="
 echo "     |   WELCOME TO THE VERUS CHAINTOOLS DAEMON INSTALLER!    |"
-echo "     |                             version 0.5.2              |"
+echo "     |                             version 0.6.0              |"
 echo "     |                                                        |"
 echo "     |  Support for: Verus, Pirate, Komodo                    |"
 echo "     |                                                        |"
@@ -107,7 +107,7 @@ if [ "$remoteinstall" == "1" ];then
 else
     sleep 1
 fi
-echo "Install Base Wallet Daemons (VRSC, ARRR, and KMD supported in this installer - VCT supports any bitcoin or zcash forked chain, but these are the base chains we can install here as they are the officially supported chains by this project) along with Verus Chain Tools?  You can just install VCT if you prefer: "
+echo "Install Base Wallet Daemons (VRSC, ARRR, and KMD supported in this installer - VCT+supports any bitcoin or zcash forked chain, but these are the base chains we can install here as they are the officially supported chains by this project) along with Verus Chain Tools?  You can just install VCT+if you prefer: "
 echo ""
 echo "(Yes (to install any of the three chains) or No (to just install VCT))"
 read whatinstall
@@ -398,31 +398,31 @@ echo ""
 echo ""
 sleep 3
 cd /tmp/veruspayinstall
-wget https://github.com/joliverwestbrook/VerusChainTools/releases/download/0.5.2/veruschaintools_0_5_2.tar.xz
-wget https://github.com/joliverwestbrook/VerusChainTools/releases/download/0.5.2/veruschaintools_0_5_2.md5
-md5vctraw=`md5sum -b veruschaintools_0_5_2.tar.xz`
-md5vct=${md5vctraw/% *veruschaintools_0_5_2.tar.xz/}
-md5vctcompare=`cat veruschaintools_0_5_2.md5`
+wget https://github.com/joliverwestbrook/VerusChainTools/releases/download/0.5.2/VerusChainTools_0_5_2.tar.xz
+wget https://github.com/joliverwestbrook/VerusChainTools/releases/download/0.5.2/VerusChainTools_0_5_2.md5
+md5vctraw=`md5sum -b VerusChainTools+_0_5_2.tar.xz`
+md5vct=${md5vctraw/% *VerusChainTools+_0_5_2.tar.xz/}
+md5vctcompare=`cat VerusChainTools+_0_5_2.md5`
 if [ "$md5vctcompare" == "$md5vct" ];then
      echo "Checksum matched using MD5!  Continuing..."
 else
-     echo "VerusChainTools checksum did not match! Exiting..."
+     echo "VerusChainTools+ checksum did not match! Exiting..."
      echo ""
      echo "Please report this in the Verus discord"
      exit
 fi
-tar -xvf veruschaintools_0_5_2.tar.xz
-rm veruschaintools_0_5_2.tar.xz
-rm veruschaintools_0_5_2.md5
-sudo mkdir $rootpath/veruschaintools
-sudo mv /tmp/veruspayinstall/* $rootpath/veruschaintools
+tar -xvf VerusChainTools+_0_5_2.tar.xz
+rm VerusChainTools+_0_5_2.tar.xz
+rm VerusChainTools+_0_5_2.md5
+sudo mkdir $rootpath/VerusChainTools
+sudo mv /tmp/veruspayinstall/* $rootpath/VerusChainTools
 clear
 echo "Installing Verus Chain Tools..."
 echo ""
 echo ""
 sleep 3
-sudo chown -R www-data:www-data $rootpath/veruschaintools
-sudo chmod 755 -R $rootpath/veruschaintools
+sudo chown -R www-data:www-data $rootpath/VerusChainTools
+sudo chmod 755 -R $rootpath/VerusChainTools
 clear
 if [ "$vrsc" == "1" ];then
     echo "Downloading and unpacking latest Verus CLI release..."
@@ -721,9 +721,9 @@ echo "    |      Verus VRSC:  $vrscstat                          |"
 echo "    |      Komodo KMD:  $kmdstat                           |"
 echo "    |                                                      |"
 echo "    |   ------------------------------------------------   |"
-echo "    |   Finish VCT Install by navigating to:               |"
+echo "    |   Finish VCT+Install by navigating to:               |"
 echo "    |   ------------------------------------------------   |"
-echo "    |      Daemon URL: $domain/veruschaintools             |"
+echo "    |      Daemon URL: $domain/VerusChainTools             |"
 echo "    |                                                      |"
 echo "    |  REMOTE/DAEMON-ONLY USERS IMPORTANT NOTE:            |"
 echo "    |        After you follow the install at the URL above |"

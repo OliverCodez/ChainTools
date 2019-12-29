@@ -1,8 +1,8 @@
-# BEGIN VerusChainTools
+# BEGIN VerusChainTools+
 ErrorDocument 400 /thispagedoesntexist.php
 ErrorDocument 401 /thispagedoesntexist.php
 ErrorDocument 402 /thispagedoesntexist.php
 ErrorDocument 403 /thispagedoesntexist.php
 ErrorDocument 404 /thispagedoesntexist.php
 ErrorDocument 500 /thispagedoesntexist.php
-# END VerusChainTools
+# END VerusChainTools+

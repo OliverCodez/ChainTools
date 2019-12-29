@@ -3,9 +3,9 @@ if ( ! defined( 'VCTAccess' ) ) {
     die( 'Direct access denied' );
 }
 /**
- * VerusChainTools VerusPay-integrated Updater
+ * VerusChainTools+ VerusPay-integrated Updater
  * 
- * Description: This file is the VerusPay integrated updater for VerusChainTools
+ * Description: This file is the VerusPay integrated updater for VerusChainTools+
  * 
  * Included files:
  *      index.php
@@ -17,11 +17,11 @@ if ( ! defined( 'VCTAccess' ) ) {
  *      demo.php
  *
  * @category Cryptocurrency
- * @package  VerusChainTools
+ * @package  VerusChainTools+
  * @author   Oliver Westbrook 
  * @copyright Copyright (c) 2019, John Oliver Westbrook
  * @link     https://github.com/joliverwestbrook/VerusChainTools
- * @version 0.5.2
+ * @version 0.6.0
  * 
  * ====================
  * 
@@ -56,7 +56,7 @@ if ( ! defined( 'VCTAccess' ) ) {
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/css/bootstrap.min.css">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.0/jquery.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/js/bootstrap.min.js"></script>
-    <title>VerusChainTools Installer</title>
+    <title>VerusChainTools+ Installer</title>
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
     <style>

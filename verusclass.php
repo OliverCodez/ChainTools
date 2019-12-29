@@ -3,11 +3,11 @@ if ( ! defined( 'VCTAccess' ) ) {
     die( 'Direct access denied' );
 }
 /**
- * VerusChainTools
+ * VerusChainTools+
  * 
  * Description: A toolkit for interacting with Verus and Verus PBaaS blockchains, 
  * allowing websites to access the daemon RPC via PHP for a more secure and 
- * flexible integration. VerusChainTools works with VerusCoin, PBaaS by Verus 
+ * flexible integration. VerusChainTools+ works with VerusCoin, PBaaS by Verus 
  * chains, Komodo and Komodo asset chains, and any Verus, Komodo, Zcash, or 
  * Bitcoin fork with minimal adaptation.
  * 
@@ -21,11 +21,11 @@ if ( ! defined( 'VCTAccess' ) ) {
  *      demo.php
  *
  * @category Cryptocurrency
- * @package  VerusChainTools
+ * @package  VerusChainTools+
  * @author   Oliver Westbrook
  * @copyright Copyright (c) 2019, John Oliver Westbrook
  * @link     https://github.com/joliverwestbrook/VerusChainTools
- * @version 0.5.2
+ * @version 0.6.0
  * 
  * ====================
  * 

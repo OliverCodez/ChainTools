@@ -2,12 +2,10 @@
 if ( ! defined( 'VCTAccess' ) ) {
     die( 'Direct access denied' );
 }
-// Leading, non-zero number of version - used for compatibility checks in the main scripts
-$_version = '5';
 /**
- * VerusChainTools Installer
+ * VerusChainTools+ Installer
  * 
- * Description: This file is a one-time installer for a first-use of VerusChainTools
+ * Description: This file is a one-time installer for a first-use of VerusChainTools+. This file is removed after a successful install.
  * 
  * Included files:
  *      index.php
@@ -19,11 +17,11 @@ $_version = '5';
  *      demo.php
  *
  * @category Cryptocurrency
- * @package  VerusChainTools
+ * @package  VerusChainTools+
  * @author   Oliver Westbrook 
  * @copyright Copyright (c) 2019, John Oliver Westbrook
  * @link     https://github.com/joliverwestbrook/VerusChainTools
- * @version 0.5.2
+ * @version 0.6.0
  * 
  * ====================
  * 
@@ -51,15 +49,37 @@ $_version = '5';
  * 
  * ====================
  */
-$accessCode = $_version . rand_chars( 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890', 71, TRUE );
-$updateCode = 'U' . $_version . rand_chars( 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890', 70, TRUE );
-// TODO: Build function to check for Verus daemon as minimun prerequisite for installation
-function rand_chars($c, $l, $u = FALSE) {
-    if ( !$u ) {
-        for ($s = '', $i = 0, $z = strlen($c)-1; $i < $l; $x = rand(0,$z), $s .= $c{$x}, $i++);
+$_version = '6';
+// Check for AJAX call for adding coins
+if ( isset( $_POST[ 'whatdaemon' ] ) ) {
+    $whatdaemon = strtolower( $_POST[ 'whatdaemon' ] );
+    $r = isDaemon( $whatdaemon );
+    exit( $r );
+}
+// This function will be called in an ajax on adding each new coin/daemon in the install or update process
+function isDaemon( $whatdaemon ) {
+    // TODO: This to array; confirm duplicate, if not error for user to correct; feed into config after confirmed; use ajax after each coin add
+    $_daemonArray = array();
+    $_daemonArray = preg_split( '/\s+/', trim( shell_exec( 'for i in $(pgrep "' . $whatdaemon . '"); do readlink -f /proc/"$i"/exe; done' ) ) );
+    if ( empty( $_daemonArray ) ) {
+        $r = json_encode( array( 'error' => '<p><span style="color:red;font-weight:bold">' . $whatdaemon . '</span> daemon not found to be running on this server! If you misspelled the daemon name or have not started the daemon, please correct the issue and refresh this page to try again. If you believe there is a problem with this install script, please submit an issue on GitHub at <a href="https://github.com/joliverwestbrook/VerusChainTools/issues">https://github.com/joliverwestbrook/VerusChainTools/issues</a></p><form id="config" name="config" action="' . $url_self . '" method="POST"><div class="submit_container"><input class="submit_button" type="submit" value="Try Again"></div></form>' ) );
     }
     else {
-        for ($i = 0, $z = strlen($c)-1, $s = $c{rand(0,$z)}, $i = 1; $i != $l; $x = rand(0,$z), $s .= $c{$x}, $s = ($s{$i} == $s{$i-1} ? substr($s,0,-1) : $s), $i=strlen($s));
+        check if array elements are same, if not alert and offer choice for the "right" one, otherwise just put the right one
+        run command "getinfo" and get "name" value for coin
+        $r = json_encode( array( 'folder' => 'value', 'name' => 'value' ) );
+    }
+    return $r;
+}
+$url_self = htmlspecialchars($_SERVER["PHP_SELF"]);
+$accessCode = 'A' . $_version . '_' . rand_chars( 'xgSYiMmVPlvoj8fQO7TUp06WyBGAdz1EeknFtKqaJrHDsRZh94LbX2NIc5wuC3', 69, TRUE );
+$updateCode = 'U' . $_version . '_' . rand_chars( 'xgSYiMmVPlvoj8fQO7TUp06WyBGAdz1EeknFtKqaJrHDsRZh94LbX2NIc5wuC3', 69, TRUE );
+function rand_chars( $c, $l, $u = FALSE ) {
+    if ( ! $u ) {
+        for ( $s = '', $i = 0, $z = strlen( $c ) - 1; $i < $l; $x = rand( 0, $z ), $s .= $c{ $x }, $i++ );
+    }
+    else {
+        for ( $i = 0, $z = strlen( $c ) - 1, $s = $c{ rand( 0, $z ) }, $i = 1; $i != $l; $x = rand( 0, $z ), $s .= $c{ $x }, $s = ( $s{ $i } == $s{ $i - 1 } ? substr( $s, 0, -1 ) : $s ), $i = strlen( $s ) );
     }
     return $s;
 }
@@ -70,7 +90,7 @@ function rand_chars($c, $l, $u = FALSE) {
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/css/bootstrap.min.css">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.0/jquery.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/js/bootstrap.min.js"></script>
-    <title>VerusChainTools Installer</title>
+    <title>VerusChainTools+ Installer</title>
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
     <style>
@@ -99,6 +119,15 @@ function rand_chars($c, $l, $u = FALSE) {
             display: block;
             float: none;
             position: relative;
+        }
+        .content_header {
+            font-weight: bold;
+            padding: 5px 0;
+            border: dotted green 1px;
+            width: 200px;
+            margin: -20px auto 15px auto;
+            text-align: center;
+            color: darkgreen;
         }
         .code_block-outer {
             border-top: solid 10px #545454;
@@ -248,6 +277,17 @@ function rand_chars($c, $l, $u = FALSE) {
             height: 60px;
             width: 230px;
         }
+        #daemon_name {
+            display: block;
+            float: left;
+            width: 200px;
+            height: 52px;
+            background: #f8f8f8;
+            padding: 4px;
+            border: 1px dotted #f9cb03;
+            font-size: 16px;
+            text-align:center;
+        }
         #chain_name {
             display: block;
             float: left;
@@ -331,11 +371,11 @@ function rand_chars($c, $l, $u = FALSE) {
 </head>
 <body>
     <header>
-        <div>Welcome to the VerusChainTools Installer</div>
+        <div>Welcome to the VerusChainTools+ Installer</div>
     </header>
     <main>
         <div class="content_top">
-            <p>Thank you for installing VerusChainTools! Below is your unique Access Code and Update Code. Keep your Update Code in a secure location for future use, if you ever need to add more blockchain daemons or update any of your config settings. Your Access Code is for use with either VerusPay or the web tool you are using with the VerusChainTools API. Please verify the first number of your Access Code matches the first non-zero version number of this VerusChainTools API which you're installing.  For example, "4" would match with VerusChainTools version 0.4.2.  If it does not match, abandon this install and contact the developer.</p>
+            <p>Thank you for installing VerusChainTools+. Below is your unique Access Code and Update Code. Keep your Update Code in a secure location for future use, if you ever need to add more blockchain daemons or update any of your config settings. Your Access Code is for use with either VerusPay or the web tool you are using with the VerusChainTools+ API. Please verify the first number of your Access Code matches the first non-zero version number of this VerusChainTools+ API which you're installing.  For example, "4" would match with VerusChainTools+ version 0.4.2.  If it does not match, abandon this install and contact the developer.</p>
             <p></p>
             <p></p>
             <p>After adding your chains and any payout addresses (for VerusPay users), click Save and your config file will be created locally on this server and this installation script will be removed.  If you need to change something or update these settings in the future, visit this same script and append the following to the URL: ?code=YOUR_PRIVATE_UPDATE_CODE ( e.g. https://127.127.27.27/?code=YourPrivateUpdateCode )</p>
@@ -362,14 +402,14 @@ function rand_chars($c, $l, $u = FALSE) {
                     <p id="usuccess_div">Update Code Copied</p>
                 </div>
             </div>
-            <form id="config" name="config" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>" method="POST">
+            <form id="config" name="config" action="<?php echo $url_self; ?>" method="POST">
                 <input type="hidden" name="S" value="s">
                 <input type="hidden" name="D" value="<?php echo date( 'Y-m-d H:i:s', time() ); ?>">
                 <input type="hidden" name="A" value="<?php echo $accessCode; ?>">
                 <input type="hidden" name="U" value="<?php echo $updateCode; ?>">
                 <div class="main_container" style="display: block;float: left;width: 100%;padding: 0 0 20px 0;margin: 10px auto;">
-    <p style="font-weight: bold;font-size: 2.2rem;text-align: center;display: block;float: none;margin: 0 auto;width: 100%;padding: 5px 0;margin-top: 20px;">Choose VerusChainTools Mode and Language:</p>
-    <span style="font-size: 16px;padding: 0 0 20px;display: block;">Choose how you intend to use VerusChainTools and your preferred language.</span>
+    <p style="font-weight: bold;font-size: 2.2rem;text-align: center;display: block;float: none;margin: 0 auto;width: 100%;padding: 5px 0;margin-top: 20px;">Choose VerusChainTools+ Mode and Language:</p>
+    <span style="font-size: 16px;padding: 0 0 20px;display: block;">Choose how you intend to use VerusChainTools+ and your preferred language.</span>
                     <select name="m" id="vct_mode" style="display: block;width: 100%;margin: 10px 40px;max-width: 300px;">
                         <option value="_vp_" selected="">VerusPay WordPress Mode</option>
                         <option value="_bg_">Full Bridge Mode</option>
@@ -453,12 +493,31 @@ function rand_chars($c, $l, $u = FALSE) {
         $('#add_new').on('click touchstart', function(){
             var newAddr = $('.addr_block_template').clone();
             var chn = $('#chain_name').val().toLowerCase();
+            if ( empty( chn ) ) {
+                alert( 'You must enter the name of the daemon for the coin you are adding' );
+                return;
+            }
+            else {
+                // TODO: Fix up this ajax to interact with the isDaemon function on every new attempt at adding a coin (on click / touchstart of #add_new) - disallow adding coins if the daemon is not found running - enforces clean install, clean and accurate config, update/upgrade ready for future support
+                $.ajax( {
+                    method: 'POST',
+                    url: window.location.pathname,
+                    whatdaemon: 1
+                } ).success( function( result ) {
+                    // TODO:
+                    //on return, 
+                    //var chn = getinfo->name return
+                    //var dir = found directory of daemon
+                } ).error( function( result ) {
+                    //TODO: create error function
+                });
+            }
                 $(newAddr).addClass(chn+'_container');
                 $(newAddr).insertBefore('#addr_block_location');
                 $(newAddr).children('.easytitle').children('.addr').text(chn.toUpperCase());
                 $(newAddr).children('.easytitle').children('.chain_del').data('chain', chn);
                 $(newAddr).children('.friendly').attr('name',chn+'_name');
-                $(newAddr).children('.chaindir').attr('name',chn+'_dir');
+                    // TODO: FIX for populating value from var dir --> $(newAddr).children('.chaindir').attr('name',chn+'_dir');
                 $(newAddr).children('.boxes').children('p').children('.gs').attr('name',chn+'_gs');
                 $(newAddr).children('.boxes').children('p').children('.gm').attr('name',chn+'_gm');
                 $(newAddr).children('.taddr').attr('name',chn+'_t').attr('id',chn+'_t');

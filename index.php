@@ -1,12 +1,12 @@
 <?php
 define( 'VCTAccess', TRUE );
-$vct_version = '0.5.2';
+$vct_version = '0.6.0';
 /**
- * VerusChainTools
+ * VerusChainTools+
  * 
  * Description: A toolkit for interacting with Verus and Verus PBaaS blockchains, 
  * allowing websites to access the daemon RPC via PHP for a more secure and 
- * flexible integration. VerusChainTools works with VerusCoin, PBaaS by Verus 
+ * flexible integration. VerusChainTools+ works with VerusCoin, PBaaS by Verus 
  * chains, Komodo and Komodo asset chains, and any Verus, Komodo, Zcash, or 
  * Bitcoin fork with minimal adaptation.
  * 
@@ -20,11 +20,11 @@ $vct_version = '0.5.2';
  *      demo.php
  *
  * @category Cryptocurrency
- * @package  VerusChainTools
+ * @package  VerusChainTools+
  * @author   Oliver Westbrook 
  * @copyright Copyright (c) 2019, John Oliver Westbrook
  * @link     https://github.com/joliverwestbrook/VerusChainTools
- * @version 0.5.2
+ * @version 0.6.0
  * 
  * ====================
  * 
@@ -76,7 +76,7 @@ if ( file_exists( 'install.php' ) ) {
         }
     }
     else {
-        die( '<h2 style="color:red"><center>Error</center></h2><p>Cannot Write to Directory - Check Permissions for Web User (usually www-data).  The directory containing VerusChainTools must be owned by your servers web user.  It is recommended you also set permissions 755 on the same folder and all contents.</p><p>Install will now exit.</p>' );
+        die( '<h2 style="color:red"><center>Error</center></h2><p>Cannot Write to Directory - Check Permissions for Web User (usually www-data but could be different on your system).  The directory containing VerusChainTools+ must be owned by your servers web user.  It is recommended you also set minimum permissions of 755 on the folder and at min 644 on all contents within the folder.</p><p>Install will now exit.</p>' );
     }
 }
 
@@ -687,7 +687,7 @@ function _out( $d, $t = TRUE ) {
 /**
  * Upgrade function
  * 
- * Performs an inline upgrade of VerusChainTools
+ * Performs an inline upgrade of VerusChainTools+
  */
 function _upgrade( $ui, $c, $lng ) {
     switch ( $ui['t'] ) { // 0 = direct coin update; 1 = indirect/VerusPay coin update; 2 = save updated coin data; 3 = codebase upgrade to latest version
@@ -712,8 +712,8 @@ function _upgrade( $ui, $c, $lng ) {
                 mkdir( $udir, 0777, true);
             }
             chdir( $udir );
-            exec( 'wget $(curl -s https://api.github.com/repos/joliverwestbrook/veruschaintools/releases/latest | grep "browser_download_url.*xz" | cut -d : -f 2,3 | tr -d \")' );
-            exec( 'wget $(curl -s https://api.github.com/repos/joliverwestbrook/veruschaintools/releases/latest | grep "browser_download_url.*md5" | cut -d : -f 2,3 | tr -d \")' );
+            exec( 'wget $(curl -s https://api.github.com/repos/joliverwestbrook/VerusChainTools/releases/latest | grep "browser_download_url.*xz" | cut -d : -f 2,3 | tr -d \")' );
+            exec( 'wget $(curl -s https://api.github.com/repos/joliverwestbrook/VerusChainTools/releases/latest | grep "browser_download_url.*md5" | cut -d : -f 2,3 | tr -d \")' );
             if ($handle = opendir('.')) {
                 while (false !== ($file = readdir($handle)))
                 {
