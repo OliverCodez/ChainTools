@@ -360,7 +360,7 @@ if ( ! defined( 'VCTAccess' ) ) {
         </div>
     </main>
     <script>
-    jQuery( function( $ ) {
+    jQuery( document ).ready( function( $ ) {
         $('select[name="m"]').change(function(){
             if($(this).val() == "_lt_"){
                 $('#vct_limits').val('').attr('name','f').fadeIn();

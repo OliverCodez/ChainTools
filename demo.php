@@ -55,7 +55,6 @@ $d = array(
  * ====================
  * 
  */
-
 $_mth = null;
 $_chn = null;
 $_par = null;
@@ -123,191 +122,59 @@ function vg_go( $url, $d ) {
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/demo-styles.css">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.0/jquery.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/js/bootstrap.min.js"></script>
     <title>VerusChainTools+ Demo-er..er</title>
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-    <style>
-        body {
-            max-width: 1200px;
-            margin: auto;
-            padding: 20px 10px 10px 10px;
-        }
-        h2 {
-            display: block;
-            font-size: 2.4rem;
-            padding: 20px 40px 0 40px;
-        }
-        header {
-            height: 100px;
-            font-family: arial;
-            font-size: 4rem;
-            line-height: 100px;
-            font-weight: bold;
-            text-align: center;
-            border-bottom: 1px solid #545454;
-            padding: 10px;
-            margin-bottom: 40px;
-        }
-        main {
-            padding: 20px 20px 0 20px;
-            font-family: arial;
-            font-size: 1.4rem;
-        }
-        .content_top {
-            display: block;
-            float: none;
-            position: relative;
-        }
-        .return_area {
-            display: block;
-            position: relative;
-            word-wrap: anywhere;
-            background: whitesmoke;
-            padding: 40px;
-            border-radius: 10px;
-            font-size:1.6rem;
-            color: #000;
-        }
-        .form_block-outer {
-            border-top: solid 10px #545454;
-            border-bottom: solid 10px #545454;
-            border-radius: 10px;
-            border-left: 1px solid #545454;
-            border-right: 1px solid #545454;
-            margin: 10px auto;
-	    margin-bottom:10px
-            max-width: 1000px;
-            display: block;
-            position: relative;
-            float: none;
-        }
-        .form_block-outer > p:first-child {
-            font-weight: bold;
-            font-size: 2.2rem;
-            text-align: center;
-            display: block;
-            float: none;
-            margin: 0 auto;
-            width: 100%;
-            padding: 5px 0;
-        }
-	.link_title {
-	    display:block;
-	    float:none;
-	    width:220px;
-	    margin: 5px auto;
-	    text-align:center;
-	}
-        #demo {
-            display: block;
-            width: 100%;
-        }
-        .add_chain_container {
-            display: block;
-            float: none;
-            margin: 20px auto;
-            height: 60px;
-            width: 230px;
-        }
-        .submit_container {
-            margin: 30px auto;
-            border-top: solid 1px #545454;
-            padding-top: 40px;
-        }
-        .submit_button {
-            display: block;
-            float: none;
-            width: 180px;
-            background: #FB5656;
-            border:1px solid #FB5656;
-            border-radius:5px;
-            padding: 5px;
-            color: #fff;
-            font-size: 2rem;
-            font-weight: bold;
-            margin: 5px auto;
-            transition:all 0.5s ease;
-        }
-        .submit_button:hover {
-            background:#ffffff;
-            color:#FB5656;
-        }
-         footer {
-            //border-top: 1px solid #545454;
-        }
-        #instructions_button {
-            cursor:pointer;
-            font-size: 2rem;
-            text-align: center;
-        }
-        #instructions {
-            height:0;
-            overflow: hidden;
-            transition: all 0.5s ease;
-        }
-        .height_auto {
-            height:100% !important;
-        }
-        input[type=text] {
-            background: none;
-            border: 1px solid #5353;
-            border-radius: 10px;
-            height: 60px;
-            padding: 10px;
-            line-height: 40px;
-            margin: 10px auto;
-            display: block;
-            min-width: 260px;
-            max-width: 600px;
-            width: 100%;
-            font-size: 2rem;
-        }
-        @media (max-width:767px) {
-            header {
-                min-height: 100px;
-                height: auto;
-                font-size: 2.5rem;
-                line-height: 3rem;
-            }
-            main {
-                font-size: 1.6rem;
-                padding: 0 5px;
-            }
-            .form_block-outer {
-                padding: 20px 4px;
-            }
-        }
-    </style>
-
 </head>
 <body>
     <header>
-        <div>Welcome to the VerusChainTools+ Demo-erer!</div>
+        <div>Demo VCT+</div>
     </header>
     <main>
 	<h3 class="link_title"><a href="#demo">Jump to Form</a></h3>
-        <h3 id="instructions_button">Instructions (click to expand)</h3>
-        <div class="content_top" id="instructions">
-            <div class="instructions_inner">
-                <p>Thank you for installing VerusChainTools+ and contributing by doing some demos and testing things out.</p>
-                <p>Please let me know if you run into errors or unexpected behaviors! I'm always improving the script and the entire community benefits when people provide feedback.</p> 
-                <p>Using the form below you can interact with the Verus test blockchain, VRSCTEST, using commands you'd normally use from the CLI (command line interface) wallet. Don't know CLI?  Don't worry! Part of the purpose of this demo is to help developers and anyone else curious become familiar and skilled in the "dark arts" of CLI! :)</p>
-                <p></p>
-                <p>To use the form below, begin by simply entering a valid "method" and leave the Chain default at VRSCTEST.  If you know the correct Params for the Method you are running, enter it and click Go.  If you don't know the right Params, it will return telling you an example in the exact format you would enter it.</p>
-                <p></p>
-                <p>Go ahead! Try it out!</p>
-                <p></p>
-                <p>Results are shown in the cells above the form, just below these instructions.  The Raw Return can be narrowed down by entering one of the returned value titles in the Options field in the form. If you are confused hit me up on Discord!  Enjoy :)</p>
+        <div class="collapsible">
+            <h2 class="collapsible_button">Instructions (click to expand)</h2>
+            <div class="content_top collapsible_inner">
+                <div>
+                    <p>Thank you for installing VerusChainTools+ and contributing by doing some demos and testing things out.</p>
+                    <p>Please let me know if you run into errors or unexpected behaviors! I'm always improving the script and the entire community benefits when people provide feedback.</p> 
+                    <p>Using the form below you can interact with the Verus test blockchain, VRSCTEST, using commands you'd normally use from the CLI (command line interface) wallet. Don't know CLI?  Don't worry! Part of the purpose of this demo is to help developers and anyone else curious become familiar and skilled in the "dark arts" of CLI! :)</p>
+                    <p></p>
+                    <p>To use the form below, begin by simply entering a valid "method" and leave the Chain default at VRSCTEST.  If you know the correct Params for the Method you are running, enter it and click Go.  If you don't know the right Params, it will return telling you an example in the exact format you would enter it.</p>
+                    <p></p>
+                    <p>Go ahead! Try it out!</p>
+                    <p></p>
+                    <p>Results are shown in the cells above the form, just below these instructions.  The Raw Return can be narrowed down by entering one of the returned value titles in the Options field in the form. If you are confused hit me up on Discord!  Enjoy :)</p>
+                </div>
             </div>
         </div>
-	<h2>Original Curl Api Call:</h2>
-        <div class="return_area"><?php echo json_encode( $d );?></div>
-        <h2>Narrowed Return:</h2>
-        <div class="return_area" style="background: #aeffaf;"><?php echo $opt_d;?></div>
-	<h2 id="raw">Raw Return:</h2>
-        <div class="return_area"><?php echo $raw_r;?></div>
+        <div class="collapsible">
+	        <h2 class="collapsible_button">Original Curl Api Call:</h2>
+            <div class="collapsible_inner">
+                <div class="return_area">
+                    <?php echo json_encode( $d );?>
+                </div>
+            </div>
+        </div>
+        <div class="collapsible">
+            <h2 class="collapsible_button">Narrowed Return:</h2>
+            <div class="collapsible_inner">
+                <div class="return_area" style="background: #aeffaf;">
+                    <?php echo $opt_d;?>
+                </div>
+            </div>
+        </div>
+        <div class="collapsible active">
+            <h2 class="collapsible_button" id="raw">Raw Return:</h2>
+            <div class="collapsible_inner">
+                <div class="return_area">
+                    <?php echo $raw_r;?>
+                </div>
+            </div>
+        </div>
         <div class="form_block-outer">
             <form id="demo" name="demo" action="" method="POST">
                 <input type="text" name="method" value='<?php echo $_mth; ?>' placeholder="Method (the command)">
@@ -322,19 +189,29 @@ function vg_go( $url, $d ) {
     </main>
     <footer>
     </footer>
+    <!-- Login Form -->
+    
+    <!-- End of Form -->
     <script>
-
-        jQuery('#instructions_button').on('click touchstart', function(){
-            jQuery('#instructions').toggleClass('active');
-            if ( jQuery('#instructions').hasClass('active') ) {
-                var newHeight = jQuery(".instructions_inner").height();
-    	        jQuery('#instructions').animate({height:newHeight});
+    jQuery( document ).ready( function( $ ) {
+        // On Load
+        var elactive = $( '.active' ).find( '.collapsible_inner' );
+        var loadHeight = elactive.children( ':first' ).outerHeight();
+        elactive.animate( { height:loadHeight } );
+        // On Click
+        $( '.collapsible' ).on( 'click touchstart', function() {
+            var el = $( this );
+            var elin = el.find( '.collapsible_inner' );
+            el.toggleClass( 'active' );
+            if ( el.hasClass( 'active' ) ) {
+                var newHeight = elin.children( ':first' ).outerHeight();
+    	        elin.animate( { height:newHeight } );
             }
             else {
-                jQuery('#instructions').animate({height:'0'});
+                elin.animate( { height:'0' } );
             }
         });
-
+    });
     </script>
 </body>
 </html>
